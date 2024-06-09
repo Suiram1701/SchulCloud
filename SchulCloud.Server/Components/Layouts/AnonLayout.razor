@@ -105,7 +105,7 @@
                                         }
                                     }
 
-                                    <div class="d-flex">
+                                    <div class="d-flex align-items-center">
                                         <button class="d-flex dropdown-item@(IsActiveElement(_activeColorTheme, ColorTheme.Auto)) @IsElementDisabled(!_autoModeAvailable)" aria-disabled="@(!_autoModeAvailable)" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Auto))">
                                             <FontsIcon Name="contrast" />
                                             <span class="ms-2">@_localizer["themeAuto"]</span>
@@ -113,7 +113,7 @@
 
                                         @if (!_autoModeAvailable)
                                         {
-                                            <span data-bs-toggle="tooltip" data-bs-placement="right" title="@_localizer["themeAuto_NotSupported"]">
+                                            <span class="d-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="right" title="@_localizer["themeAuto_NotSupported"]">
                                                 <FontsIcon Name="help" />
                                             </span>
                                         }
@@ -168,29 +168,31 @@
 
     private const string ThemeKey = ".AspNetCore.Theme";
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
+        string? cultureCookieValue = await CookieHelper.GetCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
+        if (!string.IsNullOrEmpty(cultureCookieValue))
         {
-            string? cultureCookieValue = await CookieHelper.GetCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
-            if (!string.IsNullOrEmpty(cultureCookieValue))
-            {
-                _activeCulture = Thread.CurrentThread.CurrentUICulture;
-            }
-
-            _autoModeAvailable = await JSRuntime.InvokeAsync<bool>("autoColorThemeAvailable");
-
-            ColorTheme theme = await BrowserStorage.GetItemAsync<ColorTheme>(ThemeKey);
-            if (theme == ColorTheme.Auto && !_autoModeAvailable)
-            {
-                _activeColorTheme = ColorTheme.Light;
-            }
-            else
-            {
-                _activeColorTheme = theme;
-            }
+            _activeCulture = Thread.CurrentThread.CurrentUICulture;
         }
 
+        _autoModeAvailable = await JSRuntime.InvokeAsync<bool>("autoColorThemeAvailable");
+
+        ColorTheme theme = await BrowserStorage.GetItemAsync<ColorTheme>(ThemeKey);
+        if (theme == ColorTheme.Auto && !_autoModeAvailable)
+        {
+            _activeColorTheme = ColorTheme.Light;
+        }
+        else
+        {
+            _activeColorTheme = theme;
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
         await JSRuntime.InvokeVoidAsync("onAfterRender");
         await base.OnAfterRenderAsync(firstRender);
     }

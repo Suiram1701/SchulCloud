@@ -1,4 +1,4 @@
-﻿// Called once when the window in initialized.
+﻿// Called once when the window is initialized.
 $(document).ready(function () {
 
     // Initialize color theme.
@@ -33,7 +33,7 @@ function setTheme(theme) {
     }
 
     $('html').attr('data-bs-theme', theme);
-};
+}
 
 function autoColorThemeAvailable() {
     if (window.matchMedia) {
