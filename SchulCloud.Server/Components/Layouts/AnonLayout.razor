@@ -43,100 +43,79 @@
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <div class="dropdown mx-1">
-                            <button class="d-flex align-items-center btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                @if (_activeCulture is not null)
-                                {
-                                    <img class="me-2" src="/static/img/flag.@(_activeCulture.Name).svg" width="32px" />
-                                    @_activeCulture.DisplayName
-                                }
-                                else
+                        <Dropdown>
+                            <DropdownToggleButton Class="d-flex align-items-center">
+                                @if (_activeCulture is null)
                                 {
                                     <FontsIcon Name="language" />
                                     <span class="ms-2">@_localizer["cultureAuto"]</span>
                                 }
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <button class="d-flex dropdown-item@(IsActiveElement(_activeCulture, null))" @onclick="@(() => CultureChange_ClickAsync(null))">
-                                        <FontsIcon Name="language" />
-                                        <span class="ms-2">@_localizer["cultureAuto"]</span>
-                                    </button>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-
-                                @foreach (CultureInfo culture in _localizationOptions.Value.SupportedCultures.Select(culture => new CultureInfo(culture)))
+                                else
                                 {
-                                    <li>
-                                        <button class="dropdown-item@(IsActiveElement(_activeCulture, culture))" @onclick="@(() => CultureChange_ClickAsync(culture))">
-                                            <img class="me-2" src="/static/img/flag.@(culture.Name).svg" width="32px" />
-                                            @culture.DisplayName
-                                        </button>
-                                    </li>
+                                    <img src="/static/img/flag.@(_activeCulture).svg" width="32px" />
+                                    <span class="ms-2">@_activeCulture.DisplayName</span>
                                 }
-                            </ul>
-                        </div>
+                            </DropdownToggleButton>
+
+                            <DropdownMenu Position="DropdownMenuPosition.End">
+                                <DropdownItem Type="ButtonType.Button" Class="d-flex align-item-center" Active="_activeCulture is null" @onclick="@(() => CultureChange_ClickAsync(null))">
+                                    <FontsIcon Name="language" />
+                                    <span class="mx-1">@_localizer["cultureAuto"]</span>
+                                </DropdownItem>
+                                <DropdownDivider/>
+                                
+                                @foreach (CultureInfo culture in _localizationOptions.Value.SupportedCultures.Select(c => new CultureInfo(c)))
+                                {
+                                    <DropdownItem Type="ButtonType.Button" Active="_activeCulture?.Equals(culture) ?? false" @onclick="@(() => CultureChange_ClickAsync(culture))">
+                                        <img src="/static/img/flag.@(culture.Name).svg" width="32px" />
+                                        <span class="ms-2">@culture.DisplayName</span>
+                                    </DropdownItem>
+                                }
+                            </DropdownMenu>
+                        </Dropdown>
                     </li>
                     <li class="nav-item">
-                        <div class="dropdown mx-1">
-                            <button class="d-flex align-items-center btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <Dropdown>
+                            <DropdownToggleButton Class="d-flex align-items-center">
                                 @{
+                                    string themeName = _activeColorTheme.ToString();
                                     string iconName = _activeColorTheme switch
                                     {
                                         ColorTheme.Auto => "contrast",
-                                        _ => _activeColorTheme.ToString().ToLower() + "_mode"
+                                        _ => themeName.ToLower() + "_mode"
                                     };
                                 }
                                 <FontsIcon Name="@iconName" />
-                                <span class="ms-2">@_localizer["theme" + _activeColorTheme]</span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    @{
-                                        string IsElementDisabled(bool condition)
-                                        {
-                                            if (condition)
-                                            {
-                                                return "disabled";
-                                            }
-                                            return string.Empty;
-                                        }
+                                <span class="ms-2">@_localizer["theme" + themeName]</span>
+                            </DropdownToggleButton>
+
+                            <DropdownMenu Position="DropdownMenuPosition.End">
+                                <div class="d-flex align-items-center">
+                                    <DropdownItem Type="ButtonType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Auto" Disabled="!_autoModeAvailable"
+                                                  @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Auto))">
+                                        <FontsIcon Name="contrast" />
+                                        <span class="ms-2">@_localizer["themeAuto"]</span>
+                                    </DropdownItem>
+
+                                    @if (!_autoModeAvailable)
+                                    {
+                                        <Tooltip Title="@_localizer["themeAuto_NotSupported"]" Class="d-flex align-items-center me-1">
+                                            <FontsIcon Name="help" />
+                                        </Tooltip>
                                     }
+                                </div>
+                                <DropdownDivider />
 
-                                    <div class="d-flex align-items-center">
-                                        <button class="d-flex dropdown-item@(IsActiveElement(_activeColorTheme, ColorTheme.Auto)) @IsElementDisabled(!_autoModeAvailable)" aria-disabled="@(!_autoModeAvailable)" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Auto))">
-                                            <FontsIcon Name="contrast" />
-                                            <span class="ms-2">@_localizer["themeAuto"]</span>
-                                        </button>
-
-                                        @if (!_autoModeAvailable)
-                                        {
-                                            <span class="d-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="right" title="@_localizer["themeAuto_NotSupported"]">
-                                                <FontsIcon Name="help" />
-                                            </span>
-                                        }
-                                    </div>
-
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <button class="d-flex dropdown-item@(IsActiveElement(_activeColorTheme, ColorTheme.Light))" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Light))">
-                                        <FontsIcon Name="light_mode" />
-                                        <span class="ms-2">@_localizer["themeLight"]</span>
-                                    </button>
-                                </li>
-                                <li>
-                                    <button class="d-flex dropdown-item@(IsActiveElement(_activeColorTheme, ColorTheme.Dark))" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Dark))">
-                                        <FontsIcon Name="dark_mode" />
-                                        <span class="ms-2">@_localizer["themeDark"]</span>
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
+                                <DropdownItem Type="ButtonType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Light" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Light))">
+                                    <FontsIcon Name="light_mode" />
+                                    <span class="ms-2">@_localizer["themeLight"]</span>
+                                </DropdownItem>
+                                <DropdownItem Type="ButtonType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Dark" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Dark))">
+                                    <FontsIcon Name="dark_mode" />
+                                    <span class="ms-2">@_localizer["themeDark"]</span>
+                                </DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
                     </li>
                 </ul>
             </div>
@@ -189,12 +168,6 @@
         }
 
         await base.OnInitializedAsync();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await JSRuntime.InvokeVoidAsync("onAfterRender");
-        await base.OnAfterRenderAsync(firstRender);
     }
 
     private async Task CultureChange_ClickAsync(CultureInfo? culture)

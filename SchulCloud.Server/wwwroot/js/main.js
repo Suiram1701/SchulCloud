@@ -17,11 +17,6 @@ $(document).ready(function () {
     }
 });
 
-// Called every time blazor renders the page.
-function onAfterRender() {
-    $('[data-bs-toggle="tooltip"]').tooltip();
-}
-
 function setTheme(theme) {
     if (theme === 'auto') {
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {

@@ -27,6 +27,7 @@ public class Program
         builder.Services.AddOptions<PresentationOptions>()
             .BindConfiguration("Presentation");
 
+        builder.Services.AddBlazorBootstrap();
         builder.Services.AddBlazoredLocalStorage();
         builder.Services.AddScoped<IRequestState, RequestState>();
         builder.Services.AddScoped<ICookieHelper, CookieHelper>();
