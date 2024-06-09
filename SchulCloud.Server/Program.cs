@@ -1,4 +1,10 @@
+using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Options;
 using SchulCloud.Server.Components;
+using SchulCloud.Server.Options;
+using SchulCloud.Server.Utils;
+using SchulCloud.Server.Utils.Interfaces;
 
 namespace SchulCloud.Server;
 
@@ -9,10 +15,21 @@ public class Program
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.AddServiceDefaults();
 
+        builder.Services.AddOptions<LocalizationOptions>()
+            .BindConfiguration("Localization");
+        builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
+
         // Add services to the container.
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
+
+        builder.Services.AddOptions<PresentationOptions>()
+            .BindConfiguration("Presentation");
+
+        builder.Services.AddBlazoredLocalStorage();
+        builder.Services.AddScoped<IRequestState, RequestState>();
+        builder.Services.AddScoped<ICookieHelper, CookieHelper>();
 
         WebApplication app = builder.Build();
 
@@ -31,9 +48,29 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+        app.UseStatusCodePagesWithReExecute("/error/{0}");
 
-        app.UseStaticFiles();
+        app.UseStaticFiles("/static");
         app.UseAntiforgery();
+
+        app.UseRequestLocalization(options =>
+        {
+            LocalizationOptions localizationOptions = app.Services.GetRequiredService<IOptions<LocalizationOptions>>().Value;
+
+            options.SetDefaultCulture("en");
+            options.AddSupportedCultures(localizationOptions.SupportedCultures.ToArray());
+            options.AddSupportedUICultures(localizationOptions.SupportedCultures.ToArray());
+
+            options.FallBackToParentCultures = localizationOptions.FallbackToParentCulture;
+            options.FallBackToParentUICultures = localizationOptions.FallbackToParentCulture;
+
+            options.ApplyCurrentCultureToResponseHeaders = localizationOptions.ApplyToHeader;
+
+            options.RequestCultureProviders = [
+                new CookieRequestCultureProvider(),
+                new AcceptLanguageHeaderRequestCultureProvider()
+                ];
+        });
 
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()

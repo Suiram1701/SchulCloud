@@ -1,0 +1,19 @@
+﻿@using SchulCloud.Server.Utils.Interfaces
+
+@page "/error/{code:int}"
+@rendermode InteractiveServer
+
+@inject IRequestState _state
+
+<h3>Error: @Code</h3>
+
+@code {
+    [Parameter]
+    public int Code { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _state["pageTitle"] = Code;
+        base.OnInitialized();
+    }
+}

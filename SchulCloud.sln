@@ -5,9 +5,9 @@ VisualStudioVersion = 17.10.34928.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.Server", "SchulCloud.Server\SchulCloud.Server.csproj", "{D7E9DDB0-1F9A-4436-A4DB-6C236CBFF640}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.Server.Client", "SchulCloud.Client\SchulCloud.Client.csproj", "{EB31D836-F064-44A7-A701-BFC92278374F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.Client", "SchulCloud.Client\SchulCloud.Client.csproj", "{EB31D836-F064-44A7-A701-BFC92278374F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SchulCloud.AppHost", "SchulCloud.AppHost\SchulCloud.AppHost.csproj", "{04B3EA12-3562-402D-B134-10A02C02F2C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.AppHost", "SchulCloud.AppHost\SchulCloud.AppHost.csproj", "{04B3EA12-3562-402D-B134-10A02C02F2C2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.ServiceDefaults", "SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj", "{5B4CFAEE-9381-46E6-8EA8-D142D8F0FFED}"
 EndProject

@@ -1,0 +1,16 @@
+﻿@using SchulCloud.Server.Utils.Interfaces
+
+@page "/error/404"
+@rendermode InteractiveServer
+
+@inject IRequestState _state
+
+<h3>Error: 404</h3>
+
+@code {
+    protected override void OnInitialized()
+    {
+        _state["pageTitle"] = "404";
+        base.OnInitialized();
+    }
+}

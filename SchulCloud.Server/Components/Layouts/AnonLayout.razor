@@ -1,0 +1,260 @@
+﻿@using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Options
+@using SchulCloud.Server.Enums
+@using SchulCloud.Server.Options
+@using System.Globalization;
+@using SchulCloud.Server.Utils.Interfaces
+@using System.Collections.Immutable
+
+@inherits LayoutComponentBase
+
+@inject IStringLocalizer<AnonLayout> _localizer
+@inject IOptionsSnapshot<PresentationOptions> _presentationOptions
+@inject IOptions<SchulCloud.Server.Options.LocalizationOptions> _localizationOptions
+@inject IRequestState _state
+
+<PageTitle>@_state.GetValue("pageTitle") - @_presentationOptions.Value.ApplicationName</PageTitle>
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">@_presentationOptions.Value.ApplicationName</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="w-100 d-flex justify-content-between">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <NavLink class="d-flex nav-link mx-2" href="/auth/signIn">
+                            <FontsIcon Name="login" />
+                            <span class="ms-2">@_localizer["signInBtn"]</span>
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="d-flex nav-link mx-1" href="/auth/signUp">
+                            <FontsIcon Name="person_add" />
+                            <span class="ms-2">@_localizer["signUpBtn"]</span>
+                        </NavLink>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <div class="dropdown mx-1">
+                            <button class="d-flex align-items-center btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @if (_activeCulture is not null)
+                                {
+                                    <img class="me-2" src="/static/img/flag.@(_activeCulture.Name).svg" width="32px" />
+                                    @_activeCulture.DisplayName
+                                }
+                                else
+                                {
+                                    <FontsIcon Name="language" />
+                                    <span class="ms-2">@_localizer["cultureAuto"]</span>
+                                }
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <button class="d-flex dropdown-item@(IsActiveElement(_activeCulture, null))" @onclick="@(() => CultureChange_ClickAsync(null))">
+                                        <FontsIcon Name="language" />
+                                        <span class="ms-2">@_localizer["cultureAuto"]</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                                @foreach (CultureInfo culture in _localizationOptions.Value.SupportedCultures.Select(culture => new CultureInfo(culture)))
+                                {
+                                    <li>
+                                        <button class="dropdown-item@(IsActiveElement(_activeCulture, culture))" @onclick="@(() => CultureChange_ClickAsync(culture))">
+                                            <img class="me-2" src="/static/img/flag.@(culture.Name).svg" width="32px" />
+                                            @culture.DisplayName
+                                        </button>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="dropdown mx-1">
+                            <button class="d-flex align-items-center btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @{
+                                    string iconName = _activeColorTheme switch
+                                    {
+                                        ColorTheme.Auto => "contrast",
+                                        _ => _activeColorTheme.ToString().ToLower() + "_mode"
+                                    };
+                                }
+                                <FontsIcon Name="@iconName" />
+                                <span class="ms-2">@_localizer["theme" + _activeColorTheme]</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    @{
+                                        string IsElementDisabled(bool condition)
+                                        {
+                                            if (condition)
+                                            {
+                                                return "disabled";
+                                            }
+                                            return string.Empty;
+                                        }
+                                    }
+
+                                    <div class="d-flex">
+                                        <button class="d-flex dropdown-item@(IsActiveElement(_activeColorTheme, ColorTheme.Auto)) @IsElementDisabled(!_autoModeAvailable)" aria-disabled="@(!_autoModeAvailable)" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Auto))">
+                                            <FontsIcon Name="contrast" />
+                                            <span class="ms-2">@_localizer["themeAuto"]</span>
+                                        </button>
+
+                                        @if (!_autoModeAvailable)
+                                        {
+                                            <span data-bs-toggle="tooltip" data-bs-placement="right" title="@_localizer["themeAuto_NotSupported"]">
+                                                <FontsIcon Name="help" />
+                                            </span>
+                                        }
+                                    </div>
+
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <button class="d-flex dropdown-item@(IsActiveElement(_activeColorTheme, ColorTheme.Light))" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Light))">
+                                        <FontsIcon Name="light_mode" />
+                                        <span class="ms-2">@_localizer["themeLight"]</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="d-flex dropdown-item@(IsActiveElement(_activeColorTheme, ColorTheme.Dark))" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Dark))">
+                                        <FontsIcon Name="dark_mode" />
+                                        <span class="ms-2">@_localizer["themeDark"]</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<main>
+    @Body
+</main>
+
+@code {
+    private CultureInfo? _activeCulture;
+
+    private ColorTheme _activeColorTheme;
+
+    private bool _autoModeAvailable = true;
+
+    [Inject]
+    private NavigationManager NavigationManager { get; init; } = default!;
+
+    [Inject]
+    private ILocalStorageService BrowserStorage { get; init; } = default!;
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; init; } = default!;
+
+    [Inject]
+    private ICookieHelper CookieHelper { get; init; } = default!;
+
+    private const string ThemeKey = ".AspNetCore.Theme";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            string? cultureCookieValue = await CookieHelper.GetCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
+            if (!string.IsNullOrEmpty(cultureCookieValue))
+            {
+                _activeCulture = Thread.CurrentThread.CurrentUICulture;
+            }
+
+            _autoModeAvailable = await JSRuntime.InvokeAsync<bool>("autoColorThemeAvailable");
+
+            ColorTheme theme = await BrowserStorage.GetItemAsync<ColorTheme>(ThemeKey);
+            if (theme == ColorTheme.Auto && !_autoModeAvailable)
+            {
+                _activeColorTheme = ColorTheme.Light;
+            }
+            else
+            {
+                _activeColorTheme = theme;
+            }
+        }
+
+        await JSRuntime.InvokeVoidAsync("onAfterRender");
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task CultureChange_ClickAsync(CultureInfo? culture)
+    {
+        if (_activeCulture?.Name == culture?.Name)
+        {
+            return;
+        }
+
+        if (culture is not null)
+        {
+            CookieOptions options = new() { MaxAge = TimeSpan.FromDays(400) };
+
+            string cookieValue = CookieRequestCultureProvider.MakeCookieValue(new(culture));
+            await CookieHelper.SetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, cookieValue, options);
+        }
+        else
+        {
+            await CookieHelper.RemoveCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
+        }
+
+        _activeCulture = culture;
+
+        NavigationManager.Refresh(forceReload: true);
+    }
+
+    private async Task ColorThemeChange_ClickAsync(ColorTheme theme)
+    {
+        if (_activeColorTheme == theme)
+        {
+            return;
+        }
+
+        if (theme == ColorTheme.Auto)
+        {
+            await BrowserStorage.RemoveItemAsync(ThemeKey);
+        }
+        else
+        {
+            await BrowserStorage.SetItemAsync(ThemeKey, theme);
+        }
+
+        await DisplayColorThemeAsync(theme);
+    }
+
+    private async ValueTask DisplayColorThemeAsync(ColorTheme theme)
+    {
+        if (!_autoModeAvailable && theme == ColorTheme.Auto)
+        {
+            theme = ColorTheme.Light;
+        }
+
+        _activeColorTheme = theme;
+        await JSRuntime.InvokeVoidAsync("setTheme", theme.ToString().ToLower());
+    }
+
+    private string IsActiveElement(object? element, object? otherElement)
+    {
+        if (element?.Equals(otherElement) ?? otherElement is null)
+        {
+            return " active";
+        }
+        return string.Empty;
+    }
+}
