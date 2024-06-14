@@ -5,6 +5,7 @@ using SchulCloud.Server.Components;
 using SchulCloud.Server.Options;
 using SchulCloud.Server.Utils;
 using SchulCloud.Server.Utils.Interfaces;
+using SchulCloud.ServiceDefaults;
 
 namespace SchulCloud.Server;
 

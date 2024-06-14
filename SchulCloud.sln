@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.AppHost", "Schul
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.ServiceDefaults", "SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj", "{5B4CFAEE-9381-46E6-8EA8-D142D8F0FFED}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.DbManager", "SchulCloud.DbManager\SchulCloud.DbManager.csproj", "{05E3D580-09D2-49CE-8508-81EC3F4C8E74}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.Database", "SchulCloud.Database\SchulCloud.Database.csproj", "{F52F5164-C760-41CB-A103-9BB8171AE3CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{5B4CFAEE-9381-46E6-8EA8-D142D8F0FFED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B4CFAEE-9381-46E6-8EA8-D142D8F0FFED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B4CFAEE-9381-46E6-8EA8-D142D8F0FFED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05E3D580-09D2-49CE-8508-81EC3F4C8E74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05E3D580-09D2-49CE-8508-81EC3F4C8E74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05E3D580-09D2-49CE-8508-81EC3F4C8E74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05E3D580-09D2-49CE-8508-81EC3F4C8E74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F52F5164-C760-41CB-A103-9BB8171AE3CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F52F5164-C760-41CB-A103-9BB8171AE3CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F52F5164-C760-41CB-A103-9BB8171AE3CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F52F5164-C760-41CB-A103-9BB8171AE3CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
