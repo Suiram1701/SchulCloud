@@ -20,7 +20,10 @@ internal class Program
                 options.AddSource(DbInitializer.ActivitySourceName);
             });
 
-        builder.AddNpgsqlDbContext<SchulCloudDbContext>("schulcloud-db");
+        builder.AddNpgsqlDbContext<SchulCloudDbContext>("schulcloud-db", null, options =>
+        {
+            options.EnableSensitiveDataLogging(false);
+        });
         builder.Services.AddIdentityCore<User>()
             .AddRoles<Role>()
             .AddEntityFrameworkStores<SchulCloudDbContext>();

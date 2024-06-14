@@ -71,19 +71,19 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
             .Select(role => role.Name)
             .ToListAsync(ct);
 
-        await TryAddDefaultRoleAsync(RoleNames.AdminRoleName, Color.Red, defaultRoles, roleManager, activity);
-        await TryAddDefaultRoleAsync(RoleNames.TeacherRoleName, Color.Blue, defaultRoles, roleManager, activity);
-        await TryAddDefaultRoleAsync(RoleNames.StudentRoleName, Color.Green, defaultRoles, roleManager, activity);
+        await TryAddDefaultRoleAsync(RoleNames.AdminRoleName, "#FF0000", defaultRoles, roleManager, activity);
+        await TryAddDefaultRoleAsync(RoleNames.TeacherRoleName, "#0000FF", defaultRoles, roleManager, activity);
+        await TryAddDefaultRoleAsync(RoleNames.StudentRoleName, "#008000", defaultRoles, roleManager, activity);
     }
 
-    private async Task TryAddDefaultRoleAsync(string roleName, Color color, IEnumerable<string?> roles, RoleManager<Role> manager, Activity? activity)
+    private async Task TryAddDefaultRoleAsync(string roleName, string hexColor, IEnumerable<string?> roles, RoleManager<Role> manager, Activity? activity)
     {
         if (!roles.Contains(roleName))
         {
             Role role = new()
             {
                 Name = roleName,
-                Color = ColorTranslator.ToHtml(color),
+                Color = hexColor,
                 DefaultRole = true
             };
             IdentityResult result = await manager.CreateAsync(role);
@@ -91,7 +91,7 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
             if (result.Succeeded)
             {
                 _logger.LogInformation("Created default role '{role}' with id {id}.", roleName, role.Id);
-                activity?.AddEvent(new($"Add role '{roleName}' with id {role.Id}."));
+                activity?.AddEvent(new($"Added role '{roleName}'."));
             }
             else
             {
@@ -106,7 +106,6 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
     private async Task AddDefaultUserAsync(IServiceProvider serviceProvider, Activity? activity)
     {
         UserManager<User> userManager = serviceProvider.GetRequiredService<UserManager<User>>();
-        RoleManager<Role> roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
 
         IEnumerable<User> adminUsers = await userManager.GetUsersInRoleAsync(RoleNames.AdminRoleName);
         if (!adminUsers.Any())
@@ -117,8 +116,14 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
             {
                 UserName = userOptions.UserName,
                 Email = userOptions.Email,
+                EmailConfirmed = true
             };
             IdentityResult result = await userManager.CreateAsync(user, userOptions.Password);
+
+            if (result.Succeeded)
+            {
+                result = await userManager.AddToRoleAsync(user, RoleNames.AdminRoleName);
+            }
 
             if (result.Succeeded)
             {
