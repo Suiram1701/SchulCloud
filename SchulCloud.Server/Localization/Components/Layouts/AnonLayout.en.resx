@@ -100,8 +100,8 @@
   <data name="signInBtn" xml:space="preserve">
     <value>Sign in</value>
   </data>
-  <data name="signUpBtn" xml:space="preserve">
-    <value>Sign up</value>
+  <data name="registerBtn" xml:space="preserve">
+    <value>Register</value>
   </data>
   <data name="cultureAuto" xml:space="preserve">
     <value>automatically</value>

@@ -1,19 +1,18 @@
-﻿@using SchulCloud.Server.Utils.Interfaces
+﻿@using Microsoft.AspNetCore.Authorization
+@using SchulCloud.Server.Utils.Interfaces
 
 @page "/error/{code:int}"
 @rendermode InteractiveServer
 
+@attribute [AllowAnonymous]
+
 @inject IRequestState _state
+
+<SchulCloudPageTitle Title="@Code.ToString()" />
 
 <h3>Error: @Code</h3>
 
 @code {
     [Parameter]
     public int Code { get; set; }
-
-    protected override void OnInitialized()
-    {
-        _state["pageTitle"] = Code;
-        base.OnInitialized();
-    }
 }
