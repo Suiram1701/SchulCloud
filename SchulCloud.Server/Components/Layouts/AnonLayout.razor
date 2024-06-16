@@ -13,9 +13,13 @@
 @inherits LayoutComponentBase
 
 @inject IStringLocalizer<AnonLayout> _localizer
-@inject IOptionsSnapshot<PresentationOptions> _presentationOptions
+@inject ILocalStorageService _browserStorage
+@inject IJSRuntime _jSRuntime
 @inject IOptions<SchulCloud.Server.Options.LocalizationOptions> _localizationOptions
+@inject IOptionsSnapshot<PresentationOptions> _presentationOptions
 @inject IRequestState _state
+@inject ICookieHelper _cookieHelper
+@inject NavigationManager _navigationManager
 
 <PageTitle>@_state.GetValue("pageTitle") - @_presentationOptions.Value.ApplicationName</PageTitle>
 
@@ -35,9 +39,9 @@
                         </NavLink>
                     </li>
                     <li class="nav-item">
-                        <NavLink class="d-flex nav-link mx-1" href="/auth/signUp">
+                        <NavLink class="d-flex nav-link mx-1" href="/auth/register">
                             <FontsIcon Name="person_add" />
-                            <span class="ms-2">@_localizer["signUpBtn"]</span>
+                            <span class="ms-2">@_localizer["registerBtn"]</span>
                         </NavLink>
                     </li>
                 </ul>
@@ -122,7 +126,7 @@
         </div>
     </div>
 </nav>
-<main>
+<main class="h-auto">
     @Body
 </main>
 
@@ -133,31 +137,19 @@
 
     private bool _autoModeAvailable = true;
 
-    [Inject]
-    private NavigationManager NavigationManager { get; init; } = default!;
-
-    [Inject]
-    private ILocalStorageService BrowserStorage { get; init; } = default!;
-
-    [Inject]
-    private IJSRuntime JSRuntime { get; init; } = default!;
-
-    [Inject]
-    private ICookieHelper CookieHelper { get; init; } = default!;
-
     private const string ThemeKey = ".AspNetCore.Theme";
 
     protected override async Task OnInitializedAsync()
     {
-        string? cultureCookieValue = await CookieHelper.GetCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
+        string? cultureCookieValue = await _cookieHelper.GetCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
         if (!string.IsNullOrEmpty(cultureCookieValue))
         {
             _activeCulture = Thread.CurrentThread.CurrentUICulture;
         }
 
-        _autoModeAvailable = await JSRuntime.InvokeAsync<bool>("autoColorThemeAvailable");
+        _autoModeAvailable = await _jSRuntime.InvokeAsync<bool>("autoColorThemeAvailable");
 
-        ColorTheme theme = await BrowserStorage.GetItemAsync<ColorTheme>(ThemeKey);
+        ColorTheme theme = await _browserStorage.GetItemAsync<ColorTheme>(ThemeKey);
         if (theme == ColorTheme.Auto && !_autoModeAvailable)
         {
             _activeColorTheme = ColorTheme.Light;
@@ -182,16 +174,16 @@
             CookieOptions options = new() { MaxAge = TimeSpan.FromDays(400) };
 
             string cookieValue = CookieRequestCultureProvider.MakeCookieValue(new(culture));
-            await CookieHelper.SetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, cookieValue, options);
+            await _cookieHelper.SetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, cookieValue, options);
         }
         else
         {
-            await CookieHelper.RemoveCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
+            await _cookieHelper.RemoveCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
         }
 
         _activeCulture = culture;
 
-        NavigationManager.Refresh(forceReload: true);
+        _navigationManager.Refresh(forceReload: true);
     }
 
     private async Task ColorThemeChange_ClickAsync(ColorTheme theme)
@@ -203,11 +195,11 @@
 
         if (theme == ColorTheme.Auto)
         {
-            await BrowserStorage.RemoveItemAsync(ThemeKey);
+            await _browserStorage.RemoveItemAsync(ThemeKey);
         }
         else
         {
-            await BrowserStorage.SetItemAsync(ThemeKey, theme);
+            await _browserStorage.SetItemAsync(ThemeKey, theme);
         }
 
         await DisplayColorThemeAsync(theme);
@@ -221,7 +213,7 @@
         }
 
         _activeColorTheme = theme;
-        await JSRuntime.InvokeVoidAsync("setTheme", theme.ToString().ToLower());
+        await _jSRuntime.InvokeVoidAsync("setTheme", theme.ToString().ToLower());
     }
 
     private string IsActiveElement(object? element, object? otherElement)

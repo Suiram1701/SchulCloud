@@ -35,5 +35,6 @@ public interface ICookieHelper
     /// Deletes a cookie with the specified name.
     /// </summary>
     /// <param name="name">The name of the cookie to delete.</param>
-    public ValueTask RemoveCookieAsync(string name);
+    /// <param name="path">The path of the cookie to delete</param>
+    public ValueTask RemoveCookieAsync(string name, string? path = null);
 }

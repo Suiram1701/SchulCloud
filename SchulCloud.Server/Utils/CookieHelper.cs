@@ -42,9 +42,11 @@ public class CookieHelper(IJSRuntime jS) : ICookieHelper
             .ToImmutableDictionary(cookie => cookie.First(), cookie => cookie.Last());
     }
 
-    public async ValueTask RemoveCookieAsync(string name)
+    public async ValueTask RemoveCookieAsync(string name, string? path = null)
     {
-        string cookieString = $"{name}=; Max-Age=0;";
+        path ??= "/";
+
+        string cookieString = $"{name}=; path={path}; Max-Age=0;";
         await _jSRuntime.InvokeVoidAsync("eval", $"document.cookie = \"{cookieString}\"");
     }
 }
