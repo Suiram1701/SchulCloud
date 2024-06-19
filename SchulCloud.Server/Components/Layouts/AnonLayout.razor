@@ -137,27 +137,38 @@
 
     private const string ThemeKey = ".AspNetCore.Theme";
 
-    protected override async Task OnInitializedAsync()
+    [Inject]
+    private IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
+
+    protected override void OnInitialized()
     {
-        string? cultureCookieValue = await _cookieHelper.GetCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
+        string? cultureCookieValue = HttpContextAccessor.HttpContext?.Request.Cookies[CookieRequestCultureProvider.DefaultCookieName];
         if (!string.IsNullOrEmpty(cultureCookieValue))
         {
             _activeCulture = Thread.CurrentThread.CurrentUICulture;
         }
 
-        _autoModeAvailable = await _jSRuntime.InvokeAsync<bool>("autoColorThemeAvailable");
+        base.OnInitialized();
+    }
 
-        ColorTheme theme = await _browserStorage.GetItemAsync<ColorTheme>(ThemeKey);
-        if (theme == ColorTheme.Auto && !_autoModeAvailable)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
         {
-            _activeColorTheme = ColorTheme.Light;
-        }
-        else
-        {
-            _activeColorTheme = theme;
+            _autoModeAvailable = await _jSRuntime.InvokeAsync<bool>("autoColorThemeAvailable");
+
+            ColorTheme theme = await _browserStorage.GetItemAsync<ColorTheme>(ThemeKey);
+            if (theme == ColorTheme.Auto && !_autoModeAvailable)
+            {
+                _activeColorTheme = ColorTheme.Light;
+            }
+            else
+            {
+                _activeColorTheme = theme;
+            }
         }
 
-        await base.OnInitializedAsync();
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private async Task CultureChange_ClickAsync(CultureInfo? culture)

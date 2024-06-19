@@ -18,6 +18,7 @@ public class Program
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.AddServiceDefaults();
+        builder.Services.AddHttpContextAccessor();
 
         builder.AddNpgsqlDbContext<SchulCloudDbContext>("schulcloud-db");
         builder.Services.AddIdentity<User, Role>()
@@ -36,16 +37,13 @@ public class Program
             options.SlidingExpiration = true;
         });
 
-        builder.Services.AddOptions<LocalizationOptions>()
-            .BindConfiguration("Localization");
+        builder.Services.Configure<PresentationOptions>(builder.Configuration.GetSection("Presentation"));
+        builder.Services.Configure<LocalizationOptions>(builder.Configuration.GetSection("Localization"));
         builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
-
-        builder.Services.AddOptions<PresentationOptions>()
-            .BindConfiguration("Presentation");
 
         builder.Services
             .AddBlazorBootstrap()
