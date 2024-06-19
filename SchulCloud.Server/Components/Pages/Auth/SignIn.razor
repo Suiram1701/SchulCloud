@@ -1,0 +1,140 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.DataProtection
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Localization
+@using SchulCloud.Database.Models
+@using SchulCloud.Server.Models
+@using SchulCloud.Server.Utils.Interfaces
+
+@page "/auth/signIn"
+@rendermode InteractiveServer
+
+@attribute [AllowAnonymous]
+
+@inject ILogger<SignIn> _logger
+@inject IStringLocalizer<SignIn> _localizer
+@inject IRequestState _state
+@inject SignInManager<User> _signInManager
+@inject NavigationManager _navigationManager
+
+<SchulCloudPageTitle Title="@_localizer["title"]" />
+
+<HeadContent>
+    <style>
+        div.input-group.has-validation {
+            margin-top: -1px;
+        }
+        input.is-invalid {
+            background-image: none !important;
+        }
+        input.passwordInput.is-invalid {
+            border-top-color: var(--bs-border-color) !important;
+        }
+    </style>
+</HeadContent>
+
+<div class="container py-5 my-5">
+    <div class="row mb-2">
+        <div class="col" />
+        <div class="col-6">
+            <h3>@_localizer["formHeader"]</h3>
+        </div>
+        <div class="col" />
+    </div>
+    <div class="row">
+        <div class="col" />
+        <div class="col-6">
+            <EditForm FormName="signIn" Model="Model" OnSubmit="SignInAsync">
+                <div class="input-group">
+                    <span class="input-group-text rounded-bottom-0 p-0">
+                        <Button Class="d-flex align-items-center" @onclick="ToggleUserSelection_Click">
+                            @{
+                                string iconName = Model.IsEmailAddress ? "mail" : "alternate_email";
+                            }
+                            <FontsIcon Name="@iconName" />
+                        </Button>
+                    </span>
+
+                    <div class="form-floating@(IsInputInvalid())">
+                        @{
+                            string userInputName = Model.IsEmailAddress ? "email" : "text";
+                            string localizerName = Model.IsEmailAddress ? "formEmailPlaceholder" : "formUsernamePlaceholder";
+                            string inputPlaceholder = Model.IsEmailAddress ? "person@example.com" : "example Person";
+                        }
+                        <input type="@userInputName" class="form-control rounded-bottom-0@(IsInputInvalid())" id="floatingUsername" @bind="Model.User" @bind:after="Input_Changed" placeholder="@inputPlaceholder" required />
+                        <label for="floatingUsername">@_localizer[localizerName]</label>
+                    </div>
+                </div>
+
+                <div class="input-group has-validation">
+                    <span class="input-group-text rounded-top-0 p-0">
+                        <Button Class="d-flex align-items-center" @onclick="PasswordVisible_Click">
+                            @{
+                                string iconName = _passwordVisible ? "visibility" : "visibility_off";
+                            }
+                            <FontsIcon Name="@iconName" />
+                        </Button>
+                    </span>
+
+                    <div class="form-floating@(IsInputInvalid())">
+                        @{
+                            string inputType = _passwordVisible ? "text" : "password";
+                        }
+                        <input type="@inputType" class="passwordInput form-control rounded-top-0@(IsInputInvalid())" id="floatingPassword" @bind="Model.Password" @bind:after="Input_Changed" placeholder="password" autocomplete="off" required />
+                        <label for="floatingPassword">@_localizer["formPasswordPlaceholder"]</label>
+                    </div>
+
+                    <div class="invalid-feedback">@_localizer["form_InvalidData"]</div>
+                </div>
+
+                <div class="form-check my-3">
+                    <InputCheckbox class="form-check-input" @bind-Value="Model.RememberMe" id="rememberMe" />
+                    <label class="form-check-label" for="rememberMe">@_localizer["formPersistent"]</label>
+                </div>
+
+                <Button Class="w-100" Color="ButtonColor.Primary" Type="ButtonType.Submit">@_localizer["formSubmit"]</Button>
+            </EditForm>
+        </div>
+        <div class="col" />
+    </div>
+</div>
+
+@code {
+    private bool _invalidSubmit = false;
+
+    private bool _passwordVisible = false;
+
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromForm(FormName = "signIn")]
+    public SignInModel Model { get; set; } = new();
+
+    private async Task SignInAsync()
+    {
+    }
+
+    private void Input_Changed()
+    {
+        _invalidSubmit = false;
+    }
+
+    private void ToggleUserSelection_Click()
+    {
+        Model.IsEmailAddress = !Model.IsEmailAddress;
+    }
+
+    private void PasswordVisible_Click()
+    {
+        _passwordVisible = !_passwordVisible;
+    }
+
+    private string IsInputInvalid()
+    {
+        if (_invalidSubmit)
+        {
+            return " is-invalid";
+        }
+        return string.Empty;
+    }
+}

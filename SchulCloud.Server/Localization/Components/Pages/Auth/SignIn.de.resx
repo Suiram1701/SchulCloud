@@ -97,25 +97,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="signInBtn" xml:space="preserve">
+  <data name="title" xml:space="preserve">
     <value>Anmelden</value>
   </data>
-  <data name="registerBtn" xml:space="preserve">
-    <value>Registrieren</value>
+  <data name="formHeader" xml:space="preserve">
+    <value>Bitte anmelden</value>
   </data>
-  <data name="cultureAuto" xml:space="preserve">
-    <value>Automatisch</value>
+  <data name="formUsernamePlaceholder" xml:space="preserve">
+    <value>Nutzername</value>
   </data>
-  <data name="themeAuto" xml:space="preserve">
-    <value>Automatisch</value>
+  <data name="formPasswordPlaceholder" xml:space="preserve">
+    <value>Passwort</value>
   </data>
-  <data name="themeLight" xml:space="preserve">
-    <value>Hell</value>
+  <data name="formPersistent" xml:space="preserve">
+    <value>Angemeldet bleiben</value>
   </data>
-  <data name="themeDark" xml:space="preserve">
-    <value>Dunkel</value>
+  <data name="formSubmit" xml:space="preserve">
+    <value>Anmelden</value>
   </data>
-  <data name="themeAuto_NotSupported" xml:space="preserve">
-    <value>Das automatische Auslesen des Farbschemas wird von Ihrem Browser nicht unterstützt.</value>
+  <data name="form_InvalidData" xml:space="preserve">
+    <value>Der Benutzername oder das Passwort ist falsch.</value>
+  </data>
+  <data name="formEmailPlaceholder" xml:space="preserve">
+    <value>E-Mail</value>
   </data>
 </root>

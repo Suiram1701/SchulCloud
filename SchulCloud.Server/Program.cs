@@ -1,6 +1,9 @@
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Options;
+using SchulCloud.Database;
+using SchulCloud.Database.Models;
 using SchulCloud.Server.Components;
 using SchulCloud.Server.Options;
 using SchulCloud.Server.Utils;
@@ -16,11 +19,27 @@ public class Program
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.AddServiceDefaults();
 
+        builder.AddNpgsqlDbContext<SchulCloudDbContext>("schulcloud-db");
+        builder.Services.AddIdentity<User, Role>()
+            .AddEntityFrameworkStores<SchulCloudDbContext>()
+            .AddDefaultTokenProviders();
+
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            options.LoginPath = "/auth/signIn";
+            options.LogoutPath = "/auth/signOut";
+            options.AccessDeniedPath = "/error/403";
+
+            options.ReturnUrlParameter = "returnUrl";
+
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+            options.SlidingExpiration = true;
+        });
+
         builder.Services.AddOptions<LocalizationOptions>()
             .BindConfiguration("Localization");
         builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
-        // Add services to the container.
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
@@ -28,16 +47,15 @@ public class Program
         builder.Services.AddOptions<PresentationOptions>()
             .BindConfiguration("Presentation");
 
-        builder.Services.AddBlazorBootstrap();
-        builder.Services.AddBlazoredLocalStorage();
-        builder.Services.AddScoped<IRequestState, RequestState>();
-        builder.Services.AddScoped<ICookieHelper, CookieHelper>();
+        builder.Services
+            .AddBlazorBootstrap()
+            .AddBlazoredLocalStorage()
+            .AddScoped<IRequestState, RequestState>()
+            .AddScoped<ICookieHelper, CookieHelper>();
 
         WebApplication app = builder.Build();
-
         app.MapDefaultEndpoints();
 
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -53,7 +71,10 @@ public class Program
         app.UseStatusCodePagesWithReExecute("/error/{0}");
 
         app.UseStaticFiles("/static");
+
+        app.UseAuthentication();
         app.UseAntiforgery();
+        app.UseAuthorization();
 
         app.UseRequestLocalization(options =>
         {
