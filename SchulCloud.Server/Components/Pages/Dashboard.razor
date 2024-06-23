@@ -1,9 +1,14 @@
 ﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
 
 @page "/"
 @rendermode InteractiveServer
 
 @attribute [Authorize]
+
+@inject IStringLocalizer<Dashboard> _localizer
+
+<SchulCloudPageTitle Title="@_localizer["title"]" />
 
 @code {
 

@@ -1,3 +1,71 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Options
+@using SchulCloud.Database.Models
+@using SchulCloud.Server.Options
 
-@Body
+@inherits LayoutComponentBase
+
+@attribute [Authorize]
+
+@inject IStringLocalizer<MainLayout> _localizer
+@inject IOptionsSnapshot<PresentationOptions> _presentationOptions
+@inject UserManager<User> _userManager
+@inject RoleManager<Role> _roleManager
+
+<div class="container-fluid h-100">
+    <div class="row flex-nowrap h-100">
+        <div class="col-auto col-sm-4 col-lg-2 col-xxl-2 d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary h-100">
+            <a class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none" href="/">@_presentationOptions.Value.ApplicationName</a>
+            <hr />
+
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li>
+                    <NavLink class="d-flex align-items-center nav-link" href="/">
+                        <FontsIcon Name="dashboard" />
+                        <span class="ms-2">@_localizer["menuDashboard"]</span>
+                    </NavLink>
+                </li>
+            </ul>
+
+            <hr />
+            <Dropdown>
+                <DropdownToggleButton Class="d-flex align-items-center">
+                    <FontsIcon Name="account_circle" />     @* This will be later replaced with the real user image. *@
+                    <strong class="ms-2">@_userManager.GetUserName(_user)</strong>
+                </DropdownToggleButton>
+
+                <DropdownMenu>
+                    <DropdownDivider />
+                    <DropdownItem Type="ButtonType.Link" To="/auth/signOut" Class="d-flex align-items-center">
+                        <FontsIcon Name="logout" />
+                        <span class="ms-2">@_localizer["accountSignOut"]</span>
+                     </DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+        </div>
+
+        <div class="col">
+            <main class="h-auto">
+                @Body
+            </main>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ClaimsPrincipal _user = default!;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
+        _user = state.User;
+    }
+}
