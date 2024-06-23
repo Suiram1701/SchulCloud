@@ -16,16 +16,17 @@
 @inject IOptionsSnapshot<PresentationOptions> _presentationOptions
 @inject UserManager<User> _userManager
 @inject RoleManager<Role> _roleManager
+@inject NavigationManager _navigationManager
 
 <div class="container-fluid h-100">
     <div class="row flex-nowrap h-100">
-        <div class="col-auto col-sm-4 col-lg-2 col-xxl-2 d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary h-100">
+        <div class="col-auto d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary h-100" style="min-width: 230px">
             <a class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none" href="/">@_presentationOptions.Value.ApplicationName</a>
             <hr />
 
             <ul class="nav nav-pills flex-column mb-auto">
                 <li>
-                    <NavLink class="d-flex align-items-center nav-link" href="/">
+                    <NavLink class="d-flex align-items-center nav-link" href="/" Match="NavLinkMatch.All">
                         <FontsIcon Name="dashboard" />
                         <span class="ms-2">@_localizer["menuDashboard"]</span>
                     </NavLink>
@@ -40,6 +41,21 @@
                 </DropdownToggleButton>
 
                 <DropdownMenu>
+                    <DropdownItem Type="ButtonType.Link" To="/account" Active="@IsActive("/account")" Class="d-flex align-items-center">
+                        <FontsIcon Name="person" />
+                        <span class="ms-2">@_localizer["account"]</span>
+                    </DropdownItem>
+
+                    <DropdownItem Type="ButtonType.Link" To="/account/security" Active="@IsActive("/account/security")" Class="d-flex align-items-center">
+                        <FontsIcon Name="security" />
+                        <span class="ms-2">@_localizer["accountSecurity"]</span>
+                    </DropdownItem>
+
+                    <DropdownItem Type="ButtonType.Link" To="/account/settings" Active="@IsActive("/account/settings")" Class="d-flex align-items-center">
+                        <FontsIcon Name="settings" />
+                        <span class="ms-2">@_localizer["accountSettings"]</span>
+                    </DropdownItem>
+
                     <DropdownDivider />
                     <DropdownItem Type="ButtonType.Link" To="/auth/signOut" Class="d-flex align-items-center">
                         <FontsIcon Name="logout" />
@@ -67,5 +83,11 @@
     {
         AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
         _user = state.User;
+    }
+
+    private bool IsActive(string path)
+    {
+        Uri uri = new(_navigationManager.Uri);
+        return uri.AbsolutePath.Equals(path);
     }
 }

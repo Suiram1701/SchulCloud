@@ -97,19 +97,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="menuDashboard" xml:space="preserve">
-    <value>Dashboard</value>
-  </data>
-  <data name="accountSignOut" xml:space="preserve">
-    <value>sign out</value>
-  </data>
-  <data name="account" xml:space="preserve">
-    <value>Account</value>
-  </data>
-  <data name="accountSecurity" xml:space="preserve">
-    <value>Security</value>
-  </data>
-  <data name="accountSettings" xml:space="preserve">
-    <value>Settings</value>
+  <data name="title" xml:space="preserve">
+    <value>Account Security</value>
   </data>
 </root>

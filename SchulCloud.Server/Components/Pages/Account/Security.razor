@@ -1,0 +1,15 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization;
+
+@page "/account/security"
+@rendermode InteractiveServer
+
+@attribute [Authorize]
+
+@inject IStringLocalizer<Security> _localizer
+
+<SchulCloudPageTitle Title="@_localizer["title"]" />
+
+@code {
+
+}
