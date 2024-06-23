@@ -103,8 +103,8 @@
   <data name="formHeader" xml:space="preserve">
     <value>Bitte anmelden</value>
   </data>
-  <data name="formUsernamePlaceholder" xml:space="preserve">
-    <value>Nutzername</value>
+  <data name="formUserPlaceholder" xml:space="preserve">
+    <value>E-Mail Adresse oder Benutzername</value>
   </data>
   <data name="formPasswordPlaceholder" xml:space="preserve">
     <value>Passwort</value>
@@ -115,10 +115,16 @@
   <data name="formSubmit" xml:space="preserve">
     <value>Anmelden</value>
   </data>
-  <data name="form_InvalidData" xml:space="preserve">
+  <data name="signIn_Failed" xml:space="preserve">
     <value>Der Benutzername oder das Passwort ist falsch.</value>
   </data>
-  <data name="formEmailPlaceholder" xml:space="preserve">
-    <value>E-Mail</value>
+  <data name="signIn_NotAllowed" xml:space="preserve">
+    <value>Es ist diesem Nutzer derzeit nicht erlaubt sich anzumelden.</value>
+  </data>
+  <data name="signIn_LockedOut" xml:space="preserve">
+    <value>Der Benutzer ist derzeit gesperrt. Versuchen Sie es in {0} erneut.</value>
+  </data>
+  <data name="signIn_LockedOut_NotSpecified" xml:space="preserve">
+    <value>Der Benutzer ist auf unbestimmte Zeit gesperrt.</value>
   </data>
 </root>

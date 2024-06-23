@@ -103,8 +103,8 @@
   <data name="formHeader" xml:space="preserve">
     <value>Please sign in</value>
   </data>
-  <data name="formUsernamePlaceholder" xml:space="preserve">
-    <value>Username</value>
+  <data name="formUserPlaceholder" xml:space="preserve">
+    <value>Email address or username</value>
   </data>
   <data name="formPasswordPlaceholder" xml:space="preserve">
     <value>password</value>
@@ -115,10 +115,16 @@
   <data name="formPersistent" xml:space="preserve">
     <value>remain signed in</value>
   </data>
-  <data name="form_InvalidData" xml:space="preserve">
+  <data name="signIn_Failed" xml:space="preserve">
     <value>The username or password is incorrect.</value>
   </data>
-  <data name="formEmailPlaceholder" xml:space="preserve">
-    <value>e-mail</value>
+  <data name="signIn_NotAllowed" xml:space="preserve">
+    <value>This user is currently not allowed to log in.</value>
+  </data>
+  <data name="signIn_LockedOut" xml:space="preserve">
+    <value>The user is currently locked out. Please try again in {0}.</value>
+  </data>
+  <data name="signIn_LockedOut_NotSpecified" xml:space="preserve">
+    <value>The user is banned indefinitely.</value>
   </data>
 </root>

@@ -17,14 +17,6 @@ public class SignInModel
     public string User { get; set; } = string.Empty;
 
     /// <summary>
-    /// Indicates whether the <see cref="User"/> is the email address of the user.
-    /// </summary>
-    /// <remarks>
-    /// By default true
-    /// </remarks>
-    public bool IsEmailAddress { get; set; } = true;
-
-    /// <summary>
     /// The password of the user.
     /// </summary>
     [Required]

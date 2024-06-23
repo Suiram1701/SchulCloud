@@ -18,10 +18,12 @@ public class Program
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.AddServiceDefaults();
-        builder.Services.AddHttpContextAccessor();
-
         builder.AddNpgsqlDbContext<SchulCloudDbContext>("schulcloud-db");
-        builder.Services.AddIdentity<User, Role>()
+        builder.Services.AddIdentity<User, Role>(options =>
+        {
+            options.User.RequireUniqueEmail = true;
+            options.SignIn.RequireConfirmedEmail = true;
+        })
             .AddEntityFrameworkStores<SchulCloudDbContext>()
             .AddDefaultTokenProviders();
 
@@ -44,6 +46,7 @@ public class Program
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
+        builder.Services.AddCascadingAuthenticationState();
 
         builder.Services
             .AddBlazorBootstrap()
