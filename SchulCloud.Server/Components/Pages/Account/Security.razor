@@ -1,5 +1,11 @@
-﻿@using Microsoft.AspNetCore.Authorization
+﻿@using Humanizer
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Localization;
+@using Microsoft.Extensions.Options
+@using SchulCloud.Database.Models
+@using System.Text;
+@using System.Runtime.CompilerServices
 
 @page "/account/security"
 @rendermode InteractiveServer
@@ -7,9 +13,73 @@
 @attribute [Authorize]
 
 @inject IStringLocalizer<Security> _localizer
+@inject IOptions<PasswordOptions> _passwdOptions
 
 <SchulCloudPageTitle Title="@_localizer["title"]" />
 
-@code {
+<div class="d-flex flex-column mt-3">
+    <h3 class="text-center">@_localizer["tabHeader"]</h3>
 
+    <div class="mt-4 mx-3 d-flex flex-column justify-content-center">
+        <Tabs Class="justify-content-center" EnableFadeEffect>
+            <Tab Title="@_localizer["tabMethods"]">
+                <Content>
+                    <Accordion Class="mt-2" AlwaysOpen>
+                        <AccordionItem>
+                            <TitleTemplate>
+                                <div class="d-flex justify-content-between align-items-center flex-fill">
+                                    <div class="d-flex align-items-center">
+                                        <FontsIcon Name="password" />
+                                        <span class="ms-3">@_localizer["methodPassword"]</span>
+                                    </div>
+
+                                    @{
+                                        DateTimeOffset lastSignIn = DateTimeOffset.Now.AddHours(-1);     @* This value is only a placeholder for the further implementation. *@
+                                    }
+                                    <span class="mx-2">@_localizer["method_LastSignIn", lastSignIn.Humanize()]</span>
+                                </div>
+                            </TitleTemplate>
+                            <Content>
+                                @{
+                                    const string locPrefix = "methodPassword_";
+                                    PasswordOptions options = _passwdOptions.Value;
+
+                                    object? ShowWhenTrue(bool condition, string paramName)
+                                    {
+                                        ArgumentNullException.ThrowIfNull(paramName, nameof(paramName));
+
+                                        if (condition)
+                                        {
+                                            @_localizer[locPrefix + paramName]
+                                        }
+
+                                        return null;
+                                    }
+                                }
+
+                                <p>@_localizer[locPrefix + "Desc"]</p>
+                                <p class="lh-base">
+                                    @_localizer[locPrefix + "RequiredLength", options.RequiredLength.ToWords()]<br />
+                                    @_localizer[locPrefix + "RequiredUniqueChars", options.RequiredUniqueChars.ToWords()]<br />
+                                    @ShowWhenTrue(options.RequireNonAlphanumeric, nameof(options.RequireNonAlphanumeric))<br />
+                                    @ShowWhenTrue(options.RequireLowercase, nameof(options.RequireLowercase))<br />
+                                    @ShowWhenTrue(options.RequireUppercase, nameof(options.RequireUppercase))<br />
+                                    @ShowWhenTrue(options.RequireDigit, nameof(options.RequireDigit))<br />
+                                </p>
+                            </Content>
+                        </AccordionItem>
+                    </Accordion>
+                </Content>
+            </Tab>
+
+            <Tab Title="@_localizer["tabMfa"]">
+                <Content>
+                    Mfa
+                </Content>
+            </Tab>
+        </Tabs>
+    </div>
+</div>
+
+@code {
 }
