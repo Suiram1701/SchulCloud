@@ -14,6 +14,7 @@
 
 @inject IStringLocalizer<Security> _localizer
 @inject IOptions<PasswordOptions> _passwdOptions
+@inject IdentityErrorDescriber _errorDescriber
 
 <SchulCloudPageTitle Title="@_localizer["title"]" />
 
@@ -44,27 +45,25 @@
                                     const string locPrefix = "methodPassword_";
                                     PasswordOptions options = _passwdOptions.Value;
 
-                                    object? ShowWhenTrue(bool condition, string paramName)
+                                    string? ShowWhenTrue(bool condition, Func<IdentityError> errorProvider)
                                     {
-                                        ArgumentNullException.ThrowIfNull(paramName, nameof(paramName));
-
                                         if (condition)
                                         {
-                                            @_localizer[locPrefix + paramName]
+                                            @errorProvider().Description
                                         }
 
                                         return null;
                                     }
                                 }
 
-                                <p>@_localizer[locPrefix + "Desc"]</p>
+                                <p>@_localizer["methodPassword_Desc"]</p>
                                 <p class="lh-base">
-                                    @_localizer[locPrefix + "RequiredLength", options.RequiredLength.ToWords()]<br />
-                                    @_localizer[locPrefix + "RequiredUniqueChars", options.RequiredUniqueChars.ToWords()]<br />
-                                    @ShowWhenTrue(options.RequireNonAlphanumeric, nameof(options.RequireNonAlphanumeric))<br />
-                                    @ShowWhenTrue(options.RequireLowercase, nameof(options.RequireLowercase))<br />
-                                    @ShowWhenTrue(options.RequireUppercase, nameof(options.RequireUppercase))<br />
-                                    @ShowWhenTrue(options.RequireDigit, nameof(options.RequireDigit))<br />
+                                    @_errorDescriber.PasswordTooShort(options.RequiredLength).Description<br />
+                                    @_errorDescriber.PasswordRequiresUniqueChars(options.RequiredUniqueChars).Description<br />
+                                    @ShowWhenTrue(options.RequireNonAlphanumeric, _errorDescriber.PasswordRequiresNonAlphanumeric)<br />
+                                    @ShowWhenTrue(options.RequireLowercase, _errorDescriber.PasswordRequiresLower)<br />
+                                    @ShowWhenTrue(options.RequireUppercase, _errorDescriber.PasswordRequiresUpper)<br />
+                                    @ShowWhenTrue(options.RequireDigit, _errorDescriber.PasswordRequiresDigit)
                                 </p>
                             </Content>
                         </AccordionItem>

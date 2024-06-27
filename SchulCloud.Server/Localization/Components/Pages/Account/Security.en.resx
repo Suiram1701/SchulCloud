@@ -118,22 +118,4 @@
   <data name="methodPassword_Desc" xml:space="preserve">
     <value>The password is used to log in to this account. To protect your account, keep your password secret and do not share it with anyone. Use a strong password to log in to your account. Your password must meet at least the following security requirements.</value>
   </data>
-  <data name="methodPassword_RequiredLength" xml:space="preserve">
-    <value>The password must be at least {0} characters long.</value>
-  </data>
-  <data name="methodPassword_RequireNonAlphanumeric" xml:space="preserve">
-    <value>The password must contain at least one non-alphanumeric character. </value>
-  </data>
-  <data name="methodPassword_RequireLowercase" xml:space="preserve">
-    <value>The password must contain at least one lowercase letter. </value>
-  </data>
-  <data name="methodPassword_RequireUppercase" xml:space="preserve">
-    <value>The password must contain at least one uppercase letter. </value>
-  </data>
-  <data name="methodPassword_RequireDigit" xml:space="preserve">
-    <value>The password must contain at least one number. </value>
-  </data>
-  <data name="methodPassword_RequiredUniqueChars" xml:space="preserve">
-    <value>The password must contain at least {0} different characters.</value>
-  </data>
 </root>

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using SchulCloud.Database;
 using SchulCloud.Database.Models;
 using SchulCloud.Server.Components;
+using SchulCloud.Server.Identity;
 using SchulCloud.Server.Options;
 using SchulCloud.Server.Utils;
 using SchulCloud.Server.Utils.Interfaces;
@@ -25,6 +26,7 @@ public class Program
             options.SignIn.RequireConfirmedEmail = true;
         })
             .AddEntityFrameworkStores<SchulCloudDbContext>()
+            .AddErrorDescriber<LocalizedErrorDescriber>()
             .AddDefaultTokenProviders();
 
         builder.Services.ConfigureApplicationCookie(options =>

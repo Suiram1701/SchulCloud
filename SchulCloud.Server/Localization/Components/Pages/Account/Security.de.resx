@@ -118,22 +118,4 @@
   <data name="methodPassword_Desc" xml:space="preserve">
     <value>Das Passwort wird zum Anmelden an diesem Konto verwendet. Um Ihr Konto zu schützen, halten Sie Ihr Passwort geheim und geben Sie es nicht an andere weiter. Verwenden Sie ein sicheres Passwort, um sich bei Ihrem Konto anzumelden. Ihr Passwort muss mindestens folgende Sicherheitsanforderungen erfüllen.</value>
   </data>
-  <data name="methodPassword_RequiredLength" xml:space="preserve">
-    <value>Das Passwort muss mindestens {0} Zeichen besitzen.</value>
-  </data>
-  <data name="methodPassword_RequireNonAlphanumeric" xml:space="preserve">
-    <value>Das Passwort muss mindestens ein nicht Alphanumerisches Zeichen enthalten. </value>
-  </data>
-  <data name="methodPassword_RequireLowercase" xml:space="preserve">
-    <value>Das Passwort muss mindestens einen Kleinbuchstaben enthalten. </value>
-  </data>
-  <data name="methodPassword_RequireUppercase" xml:space="preserve">
-    <value>Das Passwort muss mindestens einen Großbuchstaben enthalten. </value>
-  </data>
-  <data name="methodPassword_RequireDigit" xml:space="preserve">
-    <value>Das Passwort muss mindestens eine Zahl enthalten. </value>
-  </data>
-  <data name="methodPassword_RequiredUniqueChars" xml:space="preserve">
-    <value>Das Passwort muss mindestens {0} unterschiedliche Zeichen enthalten.</value>
-  </data>
 </root>
