@@ -3,31 +3,33 @@
 @using SchulCloud.Server.Components.Pages
 @using SchulCloud.Server.Options;
 
-<CascadingAuthenticationState>
-    <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
-        <Found Context="routeData">
-            <AuthorizeView>
-                <Authorized>
-                    <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layouts.MainLayout)" />
-                </Authorized>
-                <NotAuthorized>
-                    <RouteView RouteData="routeData" DefaultLayout="typeof(Layouts.AnonLayout)" />
-                </NotAuthorized>
-            </AuthorizeView>
-        </Found>
-        <NotFound>
-            <AuthorizeView>
-                <Authorized>
-                    <LayoutView Layout="typeof(Layouts.MainLayout)">
-                        <NotFound />
-                    </LayoutView>
-                </Authorized>
-                <NotAuthorized>
-                    <LayoutView Layout="typeof(Layouts.AnonLayout)">
-                        <NotFound />
-                    </LayoutView>
-                </NotAuthorized>
-            </AuthorizeView>
-        </NotFound>
-    </Router>
-</CascadingAuthenticationState>
+<ToastErrorBoundary>
+    <CascadingAuthenticationState>
+        <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
+            <Found Context="routeData">
+                <AuthorizeView>
+                    <Authorized>
+                        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layouts.MainLayout)" />
+                    </Authorized>
+                    <NotAuthorized>
+                        <RouteView RouteData="routeData" DefaultLayout="typeof(Layouts.AnonLayout)" />
+                    </NotAuthorized>
+                </AuthorizeView>
+            </Found>
+            <NotFound>
+                <AuthorizeView>
+                    <Authorized>
+                        <LayoutView Layout="typeof(Layouts.MainLayout)">
+                            <NotFound />
+                        </LayoutView>
+                    </Authorized>
+                    <NotAuthorized>
+                        <LayoutView Layout="typeof(Layouts.AnonLayout)">
+                            <NotFound />
+                        </LayoutView>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </NotFound>
+        </Router>
+    </CascadingAuthenticationState>
+</ToastErrorBoundary>
