@@ -6,6 +6,7 @@
 @using SchulCloud.Database.Models
 @using System.Text;
 @using System.Runtime.CompilerServices
+@using SchulCloud.Server.Components.Modals
 
 @page "/account/security"
 @rendermode InteractiveServer
@@ -42,7 +43,6 @@
                             </TitleTemplate>
                             <Content>
                                 @{
-                                    const string locPrefix = "methodPassword_";
                                     PasswordOptions options = _passwdOptions.Value;
 
                                     string? ShowWhenTrue(bool condition, Func<IdentityError> errorProvider)
@@ -65,6 +65,8 @@
                                     @ShowWhenTrue(options.RequireUppercase, _errorDescriber.PasswordRequiresUpper)<br />
                                     @ShowWhenTrue(options.RequireDigit, _errorDescriber.PasswordRequiresDigit)
                                 </p>
+
+                                <Button Color="ButtonColor.Primary" @onclick="PasswordChange_ClickAsync">@_localizer["methodPassword_Change"]</Button>
                             </Content>
                         </AccordionItem>
                     </Accordion>
@@ -80,5 +82,13 @@
     </div>
 </div>
 
+<PasswordChangeModal @ref="_passwordChangeModal"/>
+
 @code {
+    private PasswordChangeModal _passwordChangeModal = default!;
+
+    private async Task PasswordChange_ClickAsync()
+    {
+        await _passwordChangeModal.Modal.ShowAsync().ConfigureAwait(false);
+    }
 }

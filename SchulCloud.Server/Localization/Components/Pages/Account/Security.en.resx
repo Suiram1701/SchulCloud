@@ -118,4 +118,7 @@
   <data name="methodPassword_Desc" xml:space="preserve">
     <value>The password is used to log in to this account. To protect your account, keep your password secret and do not share it with anyone. Use a strong password to log in to your account. Your password must meet at least the following security requirements.</value>
   </data>
+  <data name="methodPassword_Change" xml:space="preserve">
+    <value>Change Password</value>
+  </data>
 </root>
