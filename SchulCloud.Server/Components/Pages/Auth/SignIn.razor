@@ -35,16 +35,20 @@
             margin-top: -1px;
         }
 
-        input[name="@($"{nameof(Model)}.{nameof(Model.User)}")"].is-invalid {
+        input[name="Model.User"].is-invalid {
             border-bottom-color: var(--bs-border-color) !important;
         }
 
-        input[name="@($"{nameof(Model)}.{nameof(Model.Password)}")"].is-invalid {
+        input[name="Model.Password"].is-invalid {
             border-top-color: var(--bs-border-color) !important;
             border-right-color: var(--bs-border-color) !important;
         }
 
-        .pwd-group span.is-invalid {
+        .pwd-group span {
+            border-top-right-radius: 0 !important;
+        }
+
+        .pwd-group.invalid span {
             border-right-color: var(--bs-form-invalid-border-color) !important;
             border-bottom-color: var(--bs-form-invalid-border-color) !important;
         }
@@ -66,33 +70,16 @@
                 <input type="hidden" name="_handler" value="signIn" />     @* I have to place this hidden field by manual because in interactive SSR Blazor doesn't place it by its own. *@
                 <AntiforgeryToken />
 
-                <div class="input-group">
-                    <div class="form-floating@(IsInvalid())">
-                        <input type="text" name="@($"{nameof(Model)}.{nameof(Model.User)}")" class="form-control rounded-bottom-0@(IsInvalid())" id="floatingUsername" @bind="Model.User" @bind:after="Input_Changed" placeholder required />
-                        <label for="floatingUsername">@Localizer["formUserPlaceholder"]</label>
-                    </div>
-                </div>
+                <FloatingTextInput Class="rounded-bottom-0" @bind-Value="Model.User" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.User)}")"
+                                   FloatingLabel="@Localizer["formUserPlaceholder"]" Placeholder="exampleUser" IsInvalid="IsInvalid()" autocomplete="user" required />
 
-                <div class="input-group pwd-group has-validation">
-                    <div class="form-floating@(IsInvalid())">
-                        @{
-                            string inputType = _passwordVisible ? "text" : "password";
-                        }
-                        <input type="@inputType" name="@($"{nameof(Model)}.{nameof(Model.Password)}")" class="form-control rounded-top-0@(IsInvalid())" id="floatingPassword" @bind="Model.Password" @bind:after="Input_Changed" placeholder autocomplete="off" required />
-                        <label for="floatingPassword">@Localizer["formPasswordPlaceholder"]</label>
-                    </div>
+                <FloatingPasswordInput OuterClass="@("pwd-group" + InvalidClass())" Class="rounded-top-0" @bind-Value="Model.Password" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Password)}")"
+                                       FloatingLabel="@Localizer["formPasswordPlaceholder"]" Placeholder="password" IsInvalid="IsInvalid()" autocomplete="off" required />
 
-                    <span class="input-group-text rounded-top-0 p-0@(IsInvalid())">
-                        <Button Class="d-flex align-items-center" @onclick="PasswordVisible_Click">
-                            @{
-                                string iconName = _passwordVisible ? "visibility" : "visibility_off";
-                            }
-                            <FontsIcon Name="@iconName" />
-                        </Button>
-                    
-                    </span>
-                    <div class="invalid-feedback">@_errorMessage</div>
-                </div>
+                @if (_errorMessage is not null)
+                {
+                    <div class="invalid-feedback d-block">@_errorMessage</div>
+                }
 
                 <div class="form-check my-3">
                     <InputCheckbox name="@($"{nameof(Model)}.{nameof(Model.RememberMe)}")" class="form-check-input" @bind-Value="Model.RememberMe" id="rememberMe" />
@@ -208,14 +195,9 @@
         _passwordVisible = !_passwordVisible;
     }
 
-    private string IsInvalid()
-    {
-        if (_errorMessage is not null)
-        {
-            return " is-invalid";
-        }
-        return string.Empty;
-    }
+    private bool IsInvalid() => _errorMessage is not null;
+
+    private string InvalidClass() => IsInvalid() ? " invalid" : string.Empty;
 
     void IDisposable.Dispose()
     {
