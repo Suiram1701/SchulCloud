@@ -6,9 +6,9 @@
 
 @attribute [Authorize]
 
-@inject IStringLocalizer<Settings> _localizer
+@inject IStringLocalizer<Settings> Localizer
 
-<SchulCloudPageTitle Title="@_localizer["title"]" />
+<SchulCloudPageTitle Title="@Localizer["title"]" />
 
 @code {
 

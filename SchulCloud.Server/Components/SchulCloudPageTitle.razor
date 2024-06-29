@@ -1,9 +1,9 @@
 ﻿@using Microsoft.Extensions.Options
 @using SchulCloud.Server.Options
 
-@inject IOptions<PresentationOptions> _presentationOptions
+@inject IOptions<PresentationOptions> PresentationOptions
 
-<PageTitle>@Title - @_presentationOptions.Value.ApplicationName</PageTitle>
+<PageTitle>@Title - @PresentationOptions.Value.ApplicationName</PageTitle>
 
 @code {
     [Parameter]

@@ -17,15 +17,13 @@
 
 @attribute [AllowAnonymous]
 
-@inject ILogger<SignIn> _logger
-@inject IStringLocalizer<SignIn> _localizer
-@inject IRequestState _state
-@inject SignInManager<User> _signInManager
-@inject UserManager<User> _userManager
-@inject NavigationManager _navigationManager
-@inject PersistentComponentState _componentState;
+@inject IStringLocalizer<SignIn> Localizer
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@inject NavigationManager NavigationManager
+@inject PersistentComponentState ComponentState
 
-<SchulCloudPageTitle Title="@_localizer["title"]" />
+<SchulCloudPageTitle Title="@Localizer["title"]" />
 
 <HeadContent>
     <style>
@@ -57,21 +55,21 @@
     <div class="row mb-2">
         <div class="col" />
         <div class="col-6">
-            <h3>@_localizer["formHeader"]</h3>
+            <h3>@Localizer["formHeader"]</h3>
         </div>
         <div class="col" />
     </div>
     <div class="row">
         <div class="col" />
         <div class="col-6">
-            <form @formname="signIn" method="post" action="@_navigationManager.Uri">
+            <form @formname="signIn" method="post" action="@NavigationManager.Uri">
                 <input type="hidden" name="_handler" value="signIn" />     @* I have to place this hidden field by manual because in interactive SSR Blazor doesn't place it by its own. *@
                 <AntiforgeryToken />
 
                 <div class="input-group">
                     <div class="form-floating@(IsInvalid())">
                         <input type="text" name="@($"{nameof(Model)}.{nameof(Model.User)}")" class="form-control rounded-bottom-0@(IsInvalid())" id="floatingUsername" @bind="Model.User" @bind:after="Input_Changed" placeholder required />
-                        <label for="floatingUsername">@_localizer["formUserPlaceholder"]</label>
+                        <label for="floatingUsername">@Localizer["formUserPlaceholder"]</label>
                     </div>
                 </div>
 
@@ -81,7 +79,7 @@
                             string inputType = _passwordVisible ? "text" : "password";
                         }
                         <input type="@inputType" name="@($"{nameof(Model)}.{nameof(Model.Password)}")" class="form-control rounded-top-0@(IsInvalid())" id="floatingPassword" @bind="Model.Password" @bind:after="Input_Changed" placeholder autocomplete="off" required />
-                        <label for="floatingPassword">@_localizer["formPasswordPlaceholder"]</label>
+                        <label for="floatingPassword">@Localizer["formPasswordPlaceholder"]</label>
                     </div>
 
                     <span class="input-group-text rounded-top-0 p-0@(IsInvalid())">
@@ -98,10 +96,10 @@
 
                 <div class="form-check my-3">
                     <InputCheckbox name="@($"{nameof(Model)}.{nameof(Model.RememberMe)}")" class="form-check-input" @bind-Value="Model.RememberMe" id="rememberMe" />
-                    <label class="form-check-label" for="rememberMe">@_localizer["formPersistent"]</label>
+                    <label class="form-check-label" for="rememberMe">@Localizer["formPersistent"]</label>
                 </div>
 
-                <Button Class="w-100" Color="ButtonColor.Primary" Type="ButtonType.Submit">@_localizer["formSubmit"]</Button>
+                <Button Class="w-100" Color="ButtonColor.Primary" Type="ButtonType.Submit">@Localizer["formSubmit"]</Button>
             </form>
         </div>
         <div class="col" />
@@ -131,15 +129,15 @@
     {
         // Make sure that every auth cookie is cleaned up if present.
         AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
-        if (_signInManager.IsSignedIn(state.User))
+        if (SignInManager.IsSignedIn(state.User))
         {
             if (HttpContext is null)
             {
-                _navigationManager.Refresh(forceReload: true);
+                NavigationManager.Refresh(forceReload: true);
                 return;
             }
 
-            await _signInManager.SignOutAsync().ConfigureAwait(false);
+            await SignInManager.SignOutAsync().ConfigureAwait(false);
         }
 
         string? method = HttpContext?.Request.Method;
@@ -147,55 +145,55 @@
         {
             await SignInAsync().ConfigureAwait(false);
 
-            _persistingSubscription = _componentState.RegisterOnPersisting(() =>
+            _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
             {
-                _componentState.PersistAsJson(nameof(Model), Model);
-                _componentState.PersistAsJson(nameof(_errorMessage), _errorMessage);
+                ComponentState.PersistAsJson(nameof(Model), Model);
+                ComponentState.PersistAsJson(nameof(_errorMessage), _errorMessage);
 
                 return Task.CompletedTask;
             });
         }
         else
         {
-            if (_componentState.TryTakeFromJson(nameof(Model), out SignInModel? persistingModel))
+            if (ComponentState.TryTakeFromJson(nameof(Model), out SignInModel? persistingModel))
             {
                 Model = persistingModel!;
             }
-            _componentState.TryTakeFromJson(nameof(_errorMessage), out _errorMessage);
+            ComponentState.TryTakeFromJson(nameof(_errorMessage), out _errorMessage);
         }
     }
 
     private async Task SignInAsync()
     {
-        User? user = await _userManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
-        user ??= await _userManager.FindByNameAsync(Model.User).ConfigureAwait(false);
+        User? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
+        user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
 
         if (user is null)
         {
-            _errorMessage = _localizer["signIn_" + SignInResult.Failed];
+            _errorMessage = Localizer["signIn_" + SignInResult.Failed];
             return;
         }
 
-        SignInResult result = await _signInManager.PasswordSignInAsync(user, Model.Password, Model.RememberMe, lockoutOnFailure: true).ConfigureAwait(false);
+        SignInResult result = await SignInManager.PasswordSignInAsync(user, Model.Password, Model.RememberMe, lockoutOnFailure: true).ConfigureAwait(false);
 
         switch (result)
         {
             case { Succeeded: true }:
-                Uri returnUri = _navigationManager.ToAbsoluteUri(ReturnUrl);
-                _navigationManager.NavigateTo(returnUri.PathAndQuery);     // prevent a redirect to another domain by using only the path and query part.
+                Uri returnUri = NavigationManager.ToAbsoluteUri(ReturnUrl);
+                NavigationManager.NavigateTo(returnUri.PathAndQuery);     // prevent a redirect to another domain by using only the path and query part.
                 break;
             case { RequiresTwoFactor: true }:
                 throw new NotImplementedException("Mfa is currently not implemented.");
                 break;
             case { IsLockedOut: true }:
-                DateTimeOffset lockOutEnd = (await _userManager.GetLockoutEndDateAsync(user).ConfigureAwait(false)).Value;
+                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(user).ConfigureAwait(false)).Value;
 
                 _errorMessage = lockOutEnd < DateTimeOffset.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
-                    ? _localizer["signIn_LockedOut", lockOutEnd.Humanize()]
-                    : _localizer["signIn_LockedOut_NotSpecified"];
+                    ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
+                    : Localizer["signIn_LockedOut_NotSpecified"];
                 break;
             default:
-                _errorMessage = _localizer["signIn_" + result];
+                _errorMessage = Localizer["signIn_" + result];
                 break;
         }
     }

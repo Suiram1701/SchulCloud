@@ -4,10 +4,10 @@
 
 @inherits ErrorBoundaryBase
 
-@inject IHostEnvironment _hostEnvironment
-@inject ILogger<ToastErrorBoundary> _logger
-@inject IStringLocalizer<ToastErrorBoundary> _localizer
-@inject ToastService _toastService
+@inject IHostEnvironment HostEnvironment
+@inject ILogger<ToastErrorBoundary> Logger
+@inject IStringLocalizer<ToastErrorBoundary> Localizer
+@inject ToastService ToastService
 
 <CascadingValue Name="Error" Value="CurrentException">
     @ChildContent
@@ -16,18 +16,18 @@
 @code {
     protected override Task OnErrorAsync(Exception exception)
     {
-        _logger.LogWarning(exception, "An unhandled exception was captured down the render tree.");
+        Logger.LogWarning(exception, "An unhandled exception was captured down the render tree.");
 
-        if (_hostEnvironment.IsDevelopment())
+        if (HostEnvironment.IsDevelopment())
         {
-            _toastService.NotifyError(exception, _localizer["toastTitleEx"]);
+            ToastService.NotifyError(exception, Localizer["toastTitleEx"]);
         }
         else
         {
             Activity? activity = Activity.Current;
             string traceId = activity?.TraceId.ToString() ?? "N/A";
             string spanId = activity?.SpanId.ToString() ?? "N/A";
-            _toastService.NotifyError(_localizer["toastTitle"], _localizer["toastProdMessage", traceId, spanId]);
+            ToastService.NotifyError(Localizer["toastTitle"], Localizer["toastProdMessage", traceId, spanId]);
         }
 
         return Task.CompletedTask;

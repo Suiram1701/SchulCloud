@@ -1,16 +1,16 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @using SchulCloud.Server.Utils.Interfaces
 
-@page "/error/404"
+@page "/error/{code:int}"
 @rendermode InteractiveServer
 
 @attribute [AllowAnonymous]
 
-@inject IRequestState _state
+<SchulCloudPageTitle Title="@Code.ToString()" />
 
-<SchulCloudPageTitle Title="Not Found" />
-
-<h3>Error: 404</h3>
+<h3>Error: @Code</h3>
 
 @code {
+    [Parameter]
+    public int Code { get; set; }
 }

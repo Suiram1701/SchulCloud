@@ -15,18 +15,18 @@
 
 @attribute [AllowAnonymous]
 
-@inject IStringLocalizer<AnonLayout> _localizer
-@inject ILocalStorageService _browserStorage
-@inject IJSRuntime _jSRuntime
-@inject IOptions<SchulCloud.Server.Options.LocalizationOptions> _localizationOptions
-@inject IOptionsSnapshot<PresentationOptions> _presentationOptions
-@inject IRequestState _state
-@inject ICookieHelper _cookieHelper
-@inject NavigationManager _navigationManager
+@inject IStringLocalizer<AnonLayout> Localizer
+@inject ILocalStorageService BrowserStorage
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IJSRuntime JSRuntime
+@inject IOptions<SchulCloud.Server.Options.LocalizationOptions> LocalizationOptionsAccessor
+@inject IOptionsSnapshot<PresentationOptions> PresentationOptionsAccessor
+@inject ICookieHelper CookieHelper
+@inject NavigationManager NavigationManager
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">@_presentationOptions.Value.ApplicationName</a>
+        <a class="navbar-brand" href="/">@PresentationOptionsAccessor.Value.ApplicationName</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -36,13 +36,13 @@
                     <li class="nav-item">
                         <NavLink class="d-flex nav-link mx-2" href="/auth/signIn">
                             <FontsIcon Name="login" />
-                            <span class="ms-2">@_localizer["signInBtn"]</span>
+                            <span class="ms-2">@Localizer["signInBtn"]</span>
                         </NavLink>
                     </li>
                     <li class="nav-item">
                         <NavLink class="d-flex nav-link mx-1" href="/auth/register">
                             <FontsIcon Name="person_add" />
-                            <span class="ms-2">@_localizer["registerBtn"]</span>
+                            <span class="ms-2">@Localizer["registerBtn"]</span>
                         </NavLink>
                     </li>
                 </ul>
@@ -53,7 +53,7 @@
                                 @if (_activeCulture is null)
                                 {
                                     <FontsIcon Name="language" />
-                                    <span class="ms-2">@_localizer["cultureAuto"]</span>
+                                    <span class="ms-2">@Localizer["cultureAuto"]</span>
                                 }
                                 else
                                 {
@@ -65,11 +65,11 @@
                             <DropdownMenu Position="DropdownMenuPosition.End">
                                 <DropdownItem Type="ButtonType.Button" Class="d-flex align-item-center" Active="_activeCulture is null" @onclick="@(() => CultureChange_ClickAsync(null))">
                                     <FontsIcon Name="language" />
-                                    <span class="mx-1">@_localizer["cultureAuto"]</span>
+                                    <span class="mx-1">@Localizer["cultureAuto"]</span>
                                 </DropdownItem>
                                 <DropdownDivider/>
                                 
-                                @foreach (CultureInfo culture in _localizationOptions.Value.SupportedCultures.Select(c => new CultureInfo(c)))
+                                @foreach (CultureInfo culture in LocalizationOptionsAccessor.Value.SupportedCultures.Select(c => new CultureInfo(c)))
                                 {
                                     <DropdownItem Type="ButtonType.Button" Active="_activeCulture?.Equals(culture) ?? false" @onclick="@(() => CultureChange_ClickAsync(culture))">
                                         <img src="/static/img/flag.@(culture.Name).svg" width="32px" />
@@ -91,7 +91,7 @@
                                     };
                                 }
                                 <FontsIcon Name="@iconName" />
-                                <span class="ms-2">@_localizer["theme" + themeName]</span>
+                                <span class="ms-2">@Localizer["theme" + themeName]</span>
                             </DropdownToggleButton>
 
                             <DropdownMenu Position="DropdownMenuPosition.End">
@@ -99,12 +99,12 @@
                                     <DropdownItem Type="ButtonType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Auto" Disabled="!_autoModeAvailable"
                                                   @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Auto))">
                                         <FontsIcon Name="contrast" />
-                                        <span class="ms-2">@_localizer["themeAuto"]</span>
+                                        <span class="ms-2">@Localizer["themeAuto"]</span>
                                     </DropdownItem>
 
                                     @if (!_autoModeAvailable)
                                     {
-                                        <Tooltip Title="@_localizer["themeAuto_NotSupported"]" Class="d-flex align-items-center me-1">
+                                        <Tooltip Title="@Localizer["themeAuto_NotSupported"]" Class="d-flex align-items-center me-1">
                                             <FontsIcon Name="help" />
                                         </Tooltip>
                                     }
@@ -113,11 +113,11 @@
 
                                 <DropdownItem Type="ButtonType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Light" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Light))">
                                     <FontsIcon Name="light_mode" />
-                                    <span class="ms-2">@_localizer["themeLight"]</span>
+                                    <span class="ms-2">@Localizer["themeLight"]</span>
                                 </DropdownItem>
                                 <DropdownItem Type="ButtonType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Dark" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Dark))">
                                     <FontsIcon Name="dark_mode" />
-                                    <span class="ms-2">@_localizer["themeDark"]</span>
+                                    <span class="ms-2">@Localizer["themeDark"]</span>
                                 </DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
@@ -140,9 +140,6 @@
 
     private const string ThemeKey = ".AspNetCore.Theme";
 
-    [Inject]
-    private IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
-
     protected override void OnInitialized()
     {
         string? cultureCookieValue = HttpContextAccessor.HttpContext?.Request.Cookies[CookieRequestCultureProvider.DefaultCookieName];
@@ -158,9 +155,9 @@
     {
         if (firstRender)
         {
-            _autoModeAvailable = await _jSRuntime.InvokeAsync<bool>("autoColorThemeAvailable");
+            _autoModeAvailable = await JSRuntime.InvokeAsync<bool>("autoColorThemeAvailable");
 
-            ColorTheme theme = await _browserStorage.GetItemAsync<ColorTheme>(ThemeKey);
+            ColorTheme theme = await BrowserStorage.GetItemAsync<ColorTheme>(ThemeKey);
             if (theme == ColorTheme.Auto && !_autoModeAvailable)
             {
                 _activeColorTheme = ColorTheme.Light;
@@ -186,16 +183,16 @@
             CookieOptions options = new() { MaxAge = TimeSpan.FromDays(400) };
 
             string cookieValue = CookieRequestCultureProvider.MakeCookieValue(new(culture));
-            await _cookieHelper.SetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, cookieValue, options);
+            await CookieHelper.SetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, cookieValue, options);
         }
         else
         {
-            await _cookieHelper.RemoveCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
+            await CookieHelper.RemoveCookieAsync(CookieRequestCultureProvider.DefaultCookieName);
         }
 
         _activeCulture = culture;
 
-        _navigationManager.Refresh(forceReload: true);
+        NavigationManager.Refresh(forceReload: true);
     }
 
     private async Task ColorThemeChange_ClickAsync(ColorTheme theme)
@@ -207,11 +204,11 @@
 
         if (theme == ColorTheme.Auto)
         {
-            await _browserStorage.RemoveItemAsync(ThemeKey);
+            await BrowserStorage.RemoveItemAsync(ThemeKey);
         }
         else
         {
-            await _browserStorage.SetItemAsync(ThemeKey, theme);
+            await BrowserStorage.SetItemAsync(ThemeKey, theme);
         }
 
         await DisplayColorThemeAsync(theme);
@@ -225,7 +222,7 @@
         }
 
         _activeColorTheme = theme;
-        await _jSRuntime.InvokeVoidAsync("setTheme", theme.ToString().ToLower());
+        await JSRuntime.InvokeVoidAsync("setTheme", theme.ToString().ToLower());
     }
 
     private string IsActiveElement(object? element, object? otherElement)
