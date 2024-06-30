@@ -41,23 +41,23 @@
                 </DropdownToggleButton>
 
                 <DropdownMenu>
-                    <DropdownItem Type="ButtonType.Link" To="/account" Active="@IsActive("/account")" Class="d-flex align-items-center">
+                    <DropdownItem Type="DropdownItemType.Link" To="/account" Active="@IsActive("/account")" Class="d-flex align-items-center">
                         <FontsIcon Name="person" />
                         <span class="ms-2">@Localizer["account"]</span>
                     </DropdownItem>
 
-                    <DropdownItem Type="ButtonType.Link" To="/account/security" Active="@IsActive("/account/security")" Class="d-flex align-items-center">
+                    <DropdownItem Type="DropdownItemType.Link" To="/account/security" Active="@IsActive("/account/security")" Class="d-flex align-items-center">
                         <FontsIcon Name="security" />
                         <span class="ms-2">@Localizer["accountSecurity"]</span>
                     </DropdownItem>
 
-                    <DropdownItem Type="ButtonType.Link" To="/account/settings" Active="@IsActive("/account/settings")" Class="d-flex align-items-center">
+                    <DropdownItem Type="DropdownItemType.Link" To="/account/settings" Active="@IsActive("/account/settings")" Class="d-flex align-items-center">
                         <FontsIcon Name="settings" />
                         <span class="ms-2">@Localizer["accountSettings"]</span>
                     </DropdownItem>
 
                     <DropdownDivider />
-                    <DropdownItem Type="ButtonType.Link" To="/auth/signOut" Class="d-flex align-items-center">
+                    <DropdownItem Type="DropdownItemType.Link" To="/auth/signOut" Class="d-flex align-items-center">
                         <FontsIcon Name="logout" />
                         <span class="ms-2">@Localizer["accountSignOut"]</span>
                      </DropdownItem>

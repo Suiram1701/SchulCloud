@@ -11,8 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="8.0.1" />
-    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="8.0.1" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="8.0.2" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="8.0.2" />
+    <PackageReference Include="Blazor.Bootstrap" Version="3.0.0-preview.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -63,7 +63,7 @@
                             </DropdownToggleButton>
 
                             <DropdownMenu Position="DropdownMenuPosition.End">
-                                <DropdownItem Type="ButtonType.Button" Class="d-flex align-item-center" Active="_activeCulture is null" @onclick="@(() => CultureChange_ClickAsync(null))">
+                                <DropdownItem Type="DropdownItemType.Button" Class="d-flex align-item-center" Active="_activeCulture is null" @onclick="@(() => CultureChange_ClickAsync(null))">
                                     <FontsIcon Name="language" />
                                     <span class="mx-1">@Localizer["cultureAuto"]</span>
                                 </DropdownItem>
@@ -71,7 +71,7 @@
                                 
                                 @foreach (CultureInfo culture in LocalizationOptionsAccessor.Value.SupportedCultures.Select(c => new CultureInfo(c)))
                                 {
-                                    <DropdownItem Type="ButtonType.Button" Active="_activeCulture?.Equals(culture) ?? false" @onclick="@(() => CultureChange_ClickAsync(culture))">
+                                    <DropdownItem Type="DropdownItemType.Button" Active="_activeCulture?.Equals(culture) ?? false" @onclick="@(() => CultureChange_ClickAsync(culture))">
                                         <img src="/static/img/flag.@(culture.Name).svg" width="32px" />
                                         <span class="ms-2">@culture.DisplayName</span>
                                     </DropdownItem>
@@ -96,7 +96,7 @@
 
                             <DropdownMenu Position="DropdownMenuPosition.End">
                                 <div class="d-flex align-items-center">
-                                    <DropdownItem Type="ButtonType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Auto" Disabled="!_autoModeAvailable"
+                                    <DropdownItem Type="DropdownItemType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Auto" Disabled="!_autoModeAvailable"
                                                   @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Auto))">
                                         <FontsIcon Name="contrast" />
                                         <span class="ms-2">@Localizer["themeAuto"]</span>
@@ -111,11 +111,11 @@
                                 </div>
                                 <DropdownDivider />
 
-                                <DropdownItem Type="ButtonType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Light" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Light))">
+                                <DropdownItem Type="DropdownItemType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Light" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Light))">
                                     <FontsIcon Name="light_mode" />
                                     <span class="ms-2">@Localizer["themeLight"]</span>
                                 </DropdownItem>
-                                <DropdownItem Type="ButtonType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Dark" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Dark))">
+                                <DropdownItem Type="DropdownItemType.Button" Class="d-flex align-items-center" Active="_activeColorTheme == ColorTheme.Dark" @onclick="@(() => ColorThemeChange_ClickAsync(ColorTheme.Dark))">
                                     <FontsIcon Name="dark_mode" />
                                     <span class="ms-2">@Localizer["themeDark"]</span>
                                 </DropdownItem>
