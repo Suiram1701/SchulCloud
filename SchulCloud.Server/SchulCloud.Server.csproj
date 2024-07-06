@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -27,11 +27,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\img\" />
+    <None Include="bundleconfig.json" />
   </ItemGroup>
 
+  <Target Name="CopyIsolatedCss" AfterTargets="Build">
+    <Copy SourceFiles="$(IntermediateOutputPath)scopedcss\projectbundle\$(PackageId).bundle.scp.css" DestinationFiles="wwwroot\css\$(PackageId).bundle.scp.css" />
+  </Target>
+	
   <ItemGroup>
-    <None Include="bundleconfig.json" />
+	<Content Update="wwwroot\**\*">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+  </ItemGroup>
+	
+  <ItemGroup>
+    <Folder Include="wwwroot\css\" />
   </ItemGroup>
 
 </Project>

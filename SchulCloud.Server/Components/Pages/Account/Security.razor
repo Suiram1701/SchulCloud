@@ -1,21 +1,6 @@
 ﻿@using Humanizer
-@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.Extensions.Localization;
-@using Microsoft.Extensions.Options
-@using SchulCloud.Database.Models
-@using System.Text;
-@using System.Runtime.CompilerServices
 @using SchulCloud.Server.Components.Modals
-
-@page "/account/security"
-@rendermode InteractiveServer
-
-@attribute [Authorize]
-
-@inject IStringLocalizer<Security> Localizer
-@inject IOptions<PasswordOptions> PasswordOptionsAccessor
-@inject IdentityErrorDescriber ErrorDescriber
 
 <SchulCloudPageTitle Title="@Localizer["title"]" />
 
@@ -82,13 +67,4 @@
     </div>
 </div>
 
-<PasswordChangeModal @ref="_passwordChangeModal"/>
-
-@code {
-    private PasswordChangeModal _passwordChangeModal = default!;
-
-    private async Task PasswordChange_ClickAsync()
-    {
-        await _passwordChangeModal.Modal.ShowAsync().ConfigureAwait(false);
-    }
-}
+<PasswordChangeModal @ref="_passwordChangeModal" />

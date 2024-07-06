@@ -1,22 +1,4 @@
-﻿@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
-@using System.Security.Claims
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore
-@using Microsoft.Extensions.Localization
-@using Microsoft.Extensions.Options
-@using SchulCloud.Database.Models
-@using SchulCloud.Server.Options
-
-@inherits LayoutComponentBase
-
-@attribute [Authorize]
-
-@inject IStringLocalizer<MainLayout> Localizer
-@inject IOptionsSnapshot<PresentationOptions> PresentationOptions
-@inject UserManager<User> UserManager
-@inject RoleManager<Role> RoleManager
-@inject NavigationManager NavigationManager
+﻿@inherits LayoutComponentBase
 
 <div class="container-fluid h-100">
     <div class="row flex-nowrap h-100">
@@ -72,22 +54,3 @@
         </div>
     </div>
 </div>
-
-@code {
-    private ClaimsPrincipal _user = default!;
-
-    [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
-
-    protected override async Task OnInitializedAsync()
-    {
-        AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
-        _user = state.User;
-    }
-
-    private bool IsActive(string path)
-    {
-        Uri uri = new(NavigationManager.Uri);
-        return uri.AbsolutePath.Equals(path);
-    }
-}

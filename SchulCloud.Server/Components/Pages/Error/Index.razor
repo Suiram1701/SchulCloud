@@ -1,16 +1,3 @@
-﻿@using Microsoft.AspNetCore.Authorization
-@using SchulCloud.Server.Utils.Interfaces
-
-@page "/error/{code:int}"
-@rendermode InteractiveServer
-
-@attribute [AllowAnonymous]
-
-<SchulCloudPageTitle Title="@Code.ToString()" />
+﻿<SchulCloudPageTitle Title="@Code.ToString()" />
 
 <h3>Error: @Code</h3>
-
-@code {
-    [Parameter]
-    public int Code { get; set; }
-}

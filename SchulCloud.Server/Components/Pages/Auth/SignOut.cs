@@ -8,7 +8,7 @@ namespace SchulCloud.Server.Components.Pages.Auth;
 
 [AllowAnonymous]
 [Route("/auth/signOut")]
-public class SignOut : ComponentBase
+public sealed class SignOut : ComponentBase
 {
     [Inject]
     private ILogger<SignOut> Logger { get; set; } = default!;
@@ -48,6 +48,4 @@ public class SignOut : ComponentBase
 
         NavigationManager.NavigateTo("/auth/signIn");
     }
-
-    protected override bool ShouldRender() => false;
 }

@@ -1,11 +1,1 @@
-﻿@using Microsoft.Extensions.Options
-@using SchulCloud.Server.Options
-
-@inject IOptions<PresentationOptions> PresentationOptions
-
-<PageTitle>@Title - @PresentationOptions.Value.ApplicationName</PageTitle>
-
-@code {
-    [Parameter]
-    public required string Title { get; set; }
-}
+﻿<PageTitle>@Title - @PresentationOptionsAccessor.Value.ApplicationName</PageTitle>

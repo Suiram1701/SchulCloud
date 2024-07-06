@@ -1,35 +1,5 @@
-﻿@using Microsoft.Extensions.Localization
-@using SchulCloud.Server.Extensions
-@using System.Diagnostics
-
-@inherits ErrorBoundaryBase
-
-@inject IHostEnvironment HostEnvironment
-@inject ILogger<ToastErrorBoundary> Logger
-@inject IStringLocalizer<ToastErrorBoundary> Localizer
-@inject ToastService ToastService
+﻿@inherits ErrorBoundaryBase
 
 <CascadingValue Name="Error" Value="CurrentException">
     @ChildContent
 </CascadingValue>
-
-@code {
-    protected override Task OnErrorAsync(Exception exception)
-    {
-        Logger.LogWarning(exception, "An unhandled exception was captured down the render tree.");
-
-        if (HostEnvironment.IsDevelopment())
-        {
-            ToastService.NotifyError(exception, Localizer["toastTitleEx"]);
-        }
-        else
-        {
-            Activity? activity = Activity.Current;
-            string traceId = activity?.TraceId.ToString() ?? "N/A";
-            string spanId = activity?.SpanId.ToString() ?? "N/A";
-            ToastService.NotifyError(Localizer["toastTitle"], Localizer["toastProdMessage", traceId, spanId]);
-        }
-
-        return Task.CompletedTask;
-    }
-}

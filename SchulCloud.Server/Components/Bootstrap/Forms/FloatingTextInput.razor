@@ -9,11 +9,3 @@
         <BsValidationFeedback Identifier="_fieldIdentifier" />
     }
 </div>
-
-@code {
-    protected async Task OnChangeAsync(ChangeEventArgs e)
-    {
-        Value = e.Value?.ToString() ?? string.Empty;
-        await ValueChangedAsync();
-    }
-}

@@ -70,10 +70,21 @@ public class Program
             app.UseHsts();
         }
 
+        app.UseStaticFiles("/static");
+        app.Use((context, next) =>
+        {
+            if (context.Request.Path.StartsWithSegments("/static"))
+            {
+                // The request is aborted here because /static contains only static files and at this point it couldn't be a static file.
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                return Task.CompletedTask;
+            }
+
+            return next(context);
+        });
+
         app.UseHttpsRedirection();
         app.UseStatusCodePagesWithReExecute("/error/{0}");
-
-        app.UseStaticFiles("/static");
 
         app.UseAuthentication();
         app.UseAntiforgery();
