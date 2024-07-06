@@ -1,0 +1,15 @@
+﻿@inherits BlazorBootstrapComponentBase
+
+<span class="@ClassNames" style="@StyleNames">
+    @ChildContent
+</span>
+
+@code {
+    /// <summary>
+    /// The content that should be rendered into this component
+    /// </summary>
+    [Parameter]
+    public required RenderFragment ChildContent { get; set; }
+
+    protected override string ClassNames => BuildClassNames(Class, (ExtendedBootstrapClass.InputGroupText, true));
+}

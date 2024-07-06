@@ -24,7 +24,7 @@ public class EditFormValidator<TValue> : ComponentBase, IDisposable
     /// The return value is the list of validation errors.
     /// </remarks>
     [Parameter]
-    public required Func<Task<IEnumerable<string>>> ValidateAsync { get; set; }
+    public required Func<EditContext, FieldIdentifier, Task<IEnumerable<string>>> ValidateAsync { get; set; }
 
     [CascadingParameter]
     private EditContext EditContext { get; set; } = default!;
@@ -33,7 +33,7 @@ public class EditFormValidator<TValue> : ComponentBase, IDisposable
     {
         if (EditContext == null)
         {
-            throw new InvalidOperationException($"{nameof(EditFormValidationFeedback<TValue>)} have to be placed inside of an {nameof(EditContext)}.");
+            throw new InvalidOperationException($"{nameof(EditFormValidator<TValue>)} have to be placed inside of an {nameof(EditContext)}.");
         }
 
         ArgumentNullException.ThrowIfNull(ValidateAsync, nameof(ValidateAsync));
@@ -52,7 +52,7 @@ public class EditFormValidator<TValue> : ComponentBase, IDisposable
     {
         _messageStore.Clear(_fieldIdentifier);
 
-        IEnumerable<string> validationErrors = await ValidateAsync();
+        IEnumerable<string> validationErrors = await ValidateAsync(EditContext, _fieldIdentifier);
         if (validationErrors.Any())
         {
             _messageStore.Add(_fieldIdentifier, validationErrors);
@@ -70,6 +70,7 @@ public class EditFormValidator<TValue> : ComponentBase, IDisposable
             {
                 EditContext.OnValidationRequested -= OnValidationRequestedAsync;
             }
+
             _disposedValue = true;
         }
     }

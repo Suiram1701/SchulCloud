@@ -27,30 +27,38 @@
 
 <HeadContent>
     <style>
-        input.is-invalid {
-            background-image: none !important;
+        div.usr-group input {
+            border-bottom-left-radius: 0px !important;
+            border-bottom-right-radius: 0px !important;
         }
 
-        div.input-group.pwd-group {
-            margin-top: -1px;
+        div.pwd-group input {
+            border-top-left-radius: 0px !important;
+            border-top-right-radius: 0px !important;
         }
 
-        input[name="Model.User"].is-invalid {
-            border-bottom-color: var(--bs-border-color) !important;
+        div.pwd-group span {
+            border-top-right-radius: 0px !important;
         }
 
-        input[name="Model.Password"].is-invalid {
-            border-top-color: var(--bs-border-color) !important;
-            border-right-color: var(--bs-border-color) !important;
+        form.form-invalid div.usr-group input {
+            border-top-color: var(--bs-form-invalid-border-color) !important;
+            border-left-color: var(--bs-form-invalid-border-color) !important;
+            border-right-color: var(--bs-form-invalid-border-color) !important;
         }
 
-        .pwd-group span {
-            border-top-right-radius: 0 !important;
+        form.form-invalid div.pwd-group input {
+            border-left-color: var(--bs-form-invalid-border-color) !important;
+            border-bottom-color: var(--bs-form-invalid-border-color) !important;
         }
 
-        .pwd-group.invalid span {
+        form.form-invalid div.pwd-group span {
             border-right-color: var(--bs-form-invalid-border-color) !important;
             border-bottom-color: var(--bs-form-invalid-border-color) !important;
+        }
+
+        div.pwd-group {
+            margin-top: -1px;
         }
     </style>
 </HeadContent>
@@ -66,25 +74,22 @@
     <div class="row">
         <div class="col" />
         <div class="col-6">
-            <form @formname="signIn" method="post" action="@NavigationManager.Uri">
+            <form @formname="signIn" class="@InvalidClass()" method="post" action="@NavigationManager.Uri">
                 <input type="hidden" name="_handler" value="signIn" />     @* I have to place this hidden field by manual because in interactive SSR Blazor doesn't place it by its own. *@
                 <AntiforgeryToken />
 
-                <FloatingTextInput Class="rounded-bottom-0" @bind-Value="Model.User" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.User)}")"
-                                   FloatingLabel="@Localizer["formUserPlaceholder"]" Placeholder="exampleUser" IsInvalid="IsInvalid()" autocomplete="user" required />
+                <FloatingTextInput Class="usr-group" @bind-Value="Model.User" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.User)}")"
+                                   FloatingLabel="@Localizer["formUserPlaceholder"]" Placeholder="exampleUser" autocomplete="username" required />
 
-                <FloatingPasswordInput OuterClass="@("pwd-group" + InvalidClass())" Class="rounded-top-0" @bind-Value="Model.Password" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Password)}")"
-                                       FloatingLabel="@Localizer["formPasswordPlaceholder"]" Placeholder="password" IsInvalid="IsInvalid()" autocomplete="off" required />
+                <FloatingPasswordInput Class="pwd-group" @bind-Value="Model.Password" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Password)}")"
+                                       FloatingLabel="@Localizer["formPasswordPlaceholder"]" Placeholder="password" autocomplete="current-password" required />
 
-                @if (_errorMessage is not null)
+                @if (IsInvalid())
                 {
                     <div class="invalid-feedback d-block">@_errorMessage</div>
                 }
 
-                <div class="form-check my-3">
-                    <InputCheckbox name="@($"{nameof(Model)}.{nameof(Model.RememberMe)}")" class="form-check-input" @bind-Value="Model.RememberMe" id="rememberMe" />
-                    <label class="form-check-label" for="rememberMe">@Localizer["formPersistent"]</label>
-                </div>
+                <CheckBoxInput Class="my-3" @bind-Value="Model.RememberMe" name="@($"{nameof(Model)}.{nameof(Model.RememberMe)}")" Label="@Localizer["formPersistent"]" />
 
                 <Button Class="w-100" Color="ButtonColor.Primary" Type="ButtonType.Submit">@Localizer["formSubmit"]</Button>
             </form>
@@ -94,8 +99,6 @@
 </div>
 
 @code {
-    private bool _passwordVisible = false;
-
     private string? _errorMessage;
 
     private PersistingComponentStateSubscription? _persistingSubscription;
@@ -190,14 +193,9 @@
         _errorMessage = null;
     }
 
-    private void PasswordVisible_Click()
-    {
-        _passwordVisible = !_passwordVisible;
-    }
-
     private bool IsInvalid() => _errorMessage is not null;
 
-    private string InvalidClass() => IsInvalid() ? " invalid" : string.Empty;
+    private string InvalidClass() => IsInvalid() ? "form-invalid" : string.Empty;
 
     void IDisposable.Dispose()
     {
