@@ -4,8 +4,10 @@ using System.Linq.Expressions;
 
 namespace SchulCloud.Server.Components.Bootstrap.Validation;
 
-public partial class BsValidationFeedback : ComponentBase
+public partial class BsValidationFeedback : ComponentBase, IDisposable
 {
+    private bool _disposedValue;
+
     [CascadingParameter]
     private EditContext EditContext { get; set; } = default!;
 
@@ -20,6 +22,11 @@ public partial class BsValidationFeedback : ComponentBase
     /// </summary>
     [Parameter]
     public FieldIdentifier? Identifier { get; set; }
+
+    protected override void OnInitialized()
+    {
+        EditContext.OnValidationStateChanged += OnValidationStateChanged;
+    }
 
     protected override void OnParametersSet()
     {
@@ -36,5 +43,29 @@ public partial class BsValidationFeedback : ComponentBase
         {
             throw new InvalidOperationException($"{nameof(BsValidationFeedback)} have to be placed inside of an {nameof(EditContext)}.");
         }
+    }
+
+    private void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposedValue)
+        {
+            if (disposing)
+            {
+                EditContext.OnValidationStateChanged -= OnValidationStateChanged;
+            }
+
+            _disposedValue = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

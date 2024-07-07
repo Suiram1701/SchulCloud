@@ -44,8 +44,13 @@ public class InputBase<TValue> : BlazorBootstrapComponentBase
     {
         base.OnInitialized();
         AdditionalAttributes ??= [];
-        _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
 
+        if (EditContext is not null)
+        {
+            EditContext.OnValidationStateChanged += OnValidationStateChanged;
+        }
+
+        _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
         _oldValue = Value;
     }
 
@@ -67,5 +72,18 @@ public class InputBase<TValue> : BlazorBootstrapComponentBase
         EditContext?.NotifyFieldChanged(_fieldIdentifier);
 
         _oldValue = Value;
+    }
+
+    private void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing && EditContext is not null)
+        {
+            EditContext.OnValidationStateChanged += OnValidationStateChanged;
+        }
     }
 }
