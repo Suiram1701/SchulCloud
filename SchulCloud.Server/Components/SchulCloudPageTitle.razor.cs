@@ -16,5 +16,4 @@ public partial class SchulCloudPageTitle : ComponentBase
 
     [Parameter]
     public required string Title { get; set; }
-
 }

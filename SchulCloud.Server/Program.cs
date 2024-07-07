@@ -5,7 +5,9 @@ using Microsoft.Extensions.Options;
 using SchulCloud.Database;
 using SchulCloud.Database.Models;
 using SchulCloud.Server.Components;
+using SchulCloud.Server.Extensions;
 using SchulCloud.Server.Identity;
+using SchulCloud.Server.Identity.EmailSenders;
 using SchulCloud.Server.Options;
 using SchulCloud.Server.Utils;
 using SchulCloud.Server.Utils.Interfaces;
@@ -20,7 +22,8 @@ public class Program
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.AddServiceDefaults();
         builder.AddNpgsqlDbContext<SchulCloudDbContext>("schulcloud-db");
-        builder.Services.AddIdentity<User, Role>(options =>
+
+        IdentityBuilder identityBuilder = builder.Services.AddIdentity<User, Role>(options =>
         {
             options.User.RequireUniqueEmail = true;
             options.SignIn.RequireConfirmedEmail = true;
@@ -28,6 +31,11 @@ public class Program
             .AddEntityFrameworkStores<SchulCloudDbContext>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
             .AddDefaultTokenProviders();
+
+        if (builder.Environment.IsDevelopment())
+        {
+            identityBuilder.AddEmailSender<DevEmailSender>();
+        }
 
         builder.Services.ConfigureApplicationCookie(options =>
         {
