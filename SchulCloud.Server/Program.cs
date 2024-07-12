@@ -1,6 +1,7 @@
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SchulCloud.Database;
 using SchulCloud.Database.Models;
@@ -21,7 +22,21 @@ public class Program
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.AddServiceDefaults();
-        builder.AddNpgsqlDbContext<SchulCloudDbContext>("schulcloud-db");
+
+        builder.Services.AddDbContext<SchulCloudDbContext>(options =>
+        {
+            string connectionString = builder.Configuration.GetConnectionString("schulcloud-db")
+                ?? throw new InvalidOperationException("A connection string to the database have to be provided.");
+
+            options.UseNpgsql(connectionString);
+
+            if (builder.Environment.IsDevelopment())
+            {
+                options.EnableDetailedErrors();
+                options.EnableSensitiveDataLogging();
+            }
+        });
+        builder.EnrichNpgsqlDbContext<SchulCloudDbContext>();
 
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<User, Role>(options =>
         {

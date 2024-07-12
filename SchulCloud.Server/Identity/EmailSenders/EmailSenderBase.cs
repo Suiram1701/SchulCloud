@@ -67,6 +67,7 @@ public abstract class EmailSenderBase(ILogger logger) : IEmailSender<User>
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error happened while sending the email.");
+            throw;
         }
     }
 }

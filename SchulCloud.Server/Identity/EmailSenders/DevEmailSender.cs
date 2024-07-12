@@ -44,7 +44,7 @@ public partial class DevEmailSender(IHostEnvironment environment, ILogger<DevEma
     {
         if (!_environment.IsDevelopment())
         {
-            _logger.LogWarning("{type} designed to handle emails only in the {devEnv}. Current environment: {env}.", typeof(DevEmailSender), Environments.Development, _environment.EnvironmentName);
+            _logger.LogWarning("{type} is designed to handle emails only in the {devEnv} environment. Current environment: {env}.", typeof(DevEmailSender), Environments.Development, _environment.EnvironmentName);
         }
     }
 
@@ -56,6 +56,6 @@ public partial class DevEmailSender(IHostEnvironment environment, ILogger<DevEma
         return Task.FromResult(IdentityResult.Success);
     }
 
-    [LoggerMessage(LogLevel.Trace, "Email to {email} issued by {userName} ({userId}): {purpose}")]
+    [LoggerMessage(LogLevel.Information, "Email to {email} issued by {userName} ({userId}): {purpose}")]
     private static partial void LogSentEmail(ILogger logger, string userName, string userId, string email, string purpose);
 }
