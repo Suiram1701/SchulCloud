@@ -127,4 +127,7 @@
   <data name="signIn_LockedOut_NotSpecified" xml:space="preserve">
     <value>Der Benutzer ist auf unbestimmte Zeit gesperrt.</value>
   </data>
+  <data name="formPasswordForgot" xml:space="preserve">
+    <value>Passwort vergessen?</value>
+  </data>
 </root>

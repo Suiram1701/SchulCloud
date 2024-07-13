@@ -1,4 +1,6 @@
-﻿@implements IDisposable
+﻿@using SchulCloud.Server.Constants
+
+@implements IDisposable
 
 <SchulCloudPageTitle Title="@Localizer["title"]" />
 
@@ -25,12 +27,15 @@
 
                 @if (IsInvalid())
                 {
-                    <div class="invalid-feedback d-block">@_errorMessage</div>
+                    <div class="@ExtendedBootstrapClass.InvalidFeedback d-block">@_errorMessage</div>
                 }
 
                 <CheckBoxInput Class="my-3" @bind-Value="Model.RememberMe" name="@($"{nameof(Model)}.{nameof(Model.RememberMe)}")" Label="@Localizer["formPersistent"]" />
 
-                <Button Class="w-100" Color="ButtonColor.Primary" Type="ButtonType.Submit">@Localizer["formSubmit"]</Button>
+                <div class="@BootstrapClass.Flex @BootstrapClass.FlexColumn">
+                    <Button Class="mb-2" Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["formSubmit"]</Button>
+                    <Button Color="ButtonColor.Danger" Type="ButtonType.Button" @onclick="ForgotPasswordAsync_ClickAsync">@Localizer["formPasswordForgot"]</Button>
+                </div>
             </form>
         </div>
         <div class="col" />

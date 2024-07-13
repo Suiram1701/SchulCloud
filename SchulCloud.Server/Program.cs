@@ -10,6 +10,7 @@ using SchulCloud.Server.Extensions;
 using SchulCloud.Server.Identity;
 using SchulCloud.Server.Identity.EmailSenders;
 using SchulCloud.Server.Options;
+using SchulCloud.Server.Services;
 using SchulCloud.Server.Utils;
 using SchulCloud.Server.Utils.Interfaces;
 using SchulCloud.ServiceDefaults;
@@ -22,6 +23,8 @@ public class Program
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.AddServiceDefaults();
+
+        builder.Services.AddMemoryCache();
 
         builder.Services.AddDbContext<SchulCloudDbContext>(options =>
         {
@@ -45,7 +48,10 @@ public class Program
         })
             .AddEntityFrameworkStores<SchulCloudDbContext>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
+            .AddPasswordResetLimiter<CachedPasswordResetLimiter<User>>()
             .AddDefaultTokenProviders();
+
+        builder.Services.Configure<PasswordResetLimiterOptions>(builder.Configuration.GetSection("Identity").GetSection("PasswordReset"));
 
         if (builder.Environment.IsDevelopment())
         {

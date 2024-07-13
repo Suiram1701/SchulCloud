@@ -84,6 +84,19 @@ public sealed partial class SignIn : ComponentBase, IDisposable
         }
     }
 
+    private async Task ForgotPasswordAsync_ClickAsync()
+    {
+        User? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
+        user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
+
+        string resetUrl = NavigationManager.GetUriWithQueryParameters("/auth/resetPassword", new Dictionary<string, object?>
+        {
+            ["userId"] = user?.Id,
+            ["returnUrl"] = NavigationManager.ToBaseRelativePath(NavigationManager.Uri),
+        });
+        NavigationManager.NavigateTo(resetUrl);
+    }
+
     private async Task SignInAsync()
     {
         User? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);

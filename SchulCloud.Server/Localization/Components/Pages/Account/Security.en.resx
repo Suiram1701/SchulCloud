@@ -121,4 +121,7 @@
   <data name="methodPassword_Change" xml:space="preserve">
     <value>Change Password</value>
   </data>
+  <data name="methodPassword_Reset" xml:space="preserve">
+    <value>Forgot Password?</value>
+  </data>
 </root>

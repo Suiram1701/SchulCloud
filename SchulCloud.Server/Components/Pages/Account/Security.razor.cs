@@ -19,6 +19,9 @@ public sealed partial class Security : ComponentBase
     private IOptions<PasswordOptions> PasswordOptionsAccessor { get; set; } = default!;
 
     [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    [Inject]
     private IdentityErrorDescriber ErrorDescriber { get; set; } = default!;
     #endregion
 
@@ -27,5 +30,14 @@ public sealed partial class Security : ComponentBase
     private async Task PasswordChange_ClickAsync()
     {
         await _passwordChangeModal.Modal.ShowAsync().ConfigureAwait(false);
+    }
+
+    private void PasswordReset_Click()
+    {
+        string resetUrl = NavigationManager.GetUriWithQueryParameters("/auth/resetPassword", new Dictionary<string, object?>
+        {
+            ["returnUrl"] = NavigationManager.ToBaseRelativePath(NavigationManager.Uri)
+        });
+        NavigationManager.NavigateTo(resetUrl);
     }
 }
