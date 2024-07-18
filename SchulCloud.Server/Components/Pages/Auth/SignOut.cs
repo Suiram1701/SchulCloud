@@ -46,6 +46,6 @@ public sealed class SignOut : ComponentBase
             Logger.LogDebug("User {id} signed out.", userId);
         }
 
-        NavigationManager.NavigateTo("/auth/signIn");
+        NavigationManager.NavigateToSignIn();
     }
 }

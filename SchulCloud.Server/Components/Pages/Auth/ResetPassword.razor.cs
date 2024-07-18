@@ -93,14 +93,9 @@ public sealed partial class ResetPassword : ComponentBase
         }
 
         string resetToken = await UserManager.GeneratePasswordResetTokenAsync(_user).ConfigureAwait(false);
-        string resetUrl = NavigationManager.GetUriWithQueryParameters(new Dictionary<string, object?>
-        {
-            ["userId"] = UserId,
-            ["token"] = Uri.EscapeDataString(resetToken),
-            ["returnUrl"] = ReturnUrl
-        });
+        string resetUri = Server.Routes.ResetPassword(userId: UserId, token: resetToken, returnUrl: ReturnUrl);
 
-        await EmailSender.SendPasswordResetLinkAsync(_user, _user.Email!, resetUrl).ConfigureAwait(false);
+        await EmailSender.SendPasswordResetLinkAsync(_user, _user.Email!, resetUri).ConfigureAwait(false);
 
         string blurredAddress = _user.GetAnonymizedEmail();
         ToastService.Notify(new(ToastType.Info, Localizer["sentToastTitle"], Localizer["sentToastMessage", blurredAddress])
@@ -172,7 +167,7 @@ public sealed partial class ResetPassword : ComponentBase
         {
             await InvokeAsync(() => ToastService.NotifySuccess(Localizer["toastTitle"], Localizer["successToastMessage"]));
 
-            Uri returnUri = NavigationManager.ToAbsoluteUri(ReturnUrl ?? "/auth/signIn");
+            Uri returnUri = NavigationManager.ToAbsoluteUri(ReturnUrl ?? Server.Routes.SignIn());
             NavigationManager.NavigateTo(returnUri.PathAndQuery);
         }
     }

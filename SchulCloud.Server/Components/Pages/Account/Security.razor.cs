@@ -34,10 +34,6 @@ public sealed partial class Security : ComponentBase
 
     private void PasswordReset_Click()
     {
-        string resetUrl = NavigationManager.GetUriWithQueryParameters("/auth/resetPassword", new Dictionary<string, object?>
-        {
-            ["returnUrl"] = NavigationManager.ToBaseRelativePath(NavigationManager.Uri)
-        });
-        NavigationManager.NavigateTo(resetUrl);
+        NavigationManager.NavigateToResetPassword(returnUrl: NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
     }
 }
