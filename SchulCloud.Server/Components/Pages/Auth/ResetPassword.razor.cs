@@ -23,9 +23,6 @@ public sealed partial class ResetPassword : ComponentBase
     private IStringLocalizer<ResetPassword> Localizer { get; set; } = default!;
 
     [Inject]
-    private IJSRuntime JSRuntime { get; set; } = default!;
-
-    [Inject]
     private IEmailSender<User> EmailSender { get; set; } = default!;
 
     [Inject]
@@ -93,9 +90,9 @@ public sealed partial class ResetPassword : ComponentBase
         }
 
         string resetToken = await UserManager.GeneratePasswordResetTokenAsync(_user).ConfigureAwait(false);
-        string resetUri = Server.Routes.ResetPassword(userId: UserId, token: resetToken, returnUrl: ReturnUrl);
+        Uri resetUri = NavigationManager.ToAbsoluteUri(Server.Routes.ResetPassword(userId: UserId, token: resetToken, returnUrl: ReturnUrl));
 
-        await EmailSender.SendPasswordResetLinkAsync(_user, _user.Email!, resetUri).ConfigureAwait(false);
+        await EmailSender.SendPasswordResetLinkAsync(_user, _user.Email!, resetUri.AbsoluteUri).ConfigureAwait(false);
 
         string blurredAddress = _user.GetAnonymizedEmail();
         ToastService.Notify(new(ToastType.Info, Localizer["sentToastTitle"], Localizer["sentToastMessage", blurredAddress])
@@ -115,11 +112,8 @@ public sealed partial class ResetPassword : ComponentBase
         }
 
         UserId = _user.Id;
+        NavigationManager.NavigateToResetPassword(userId: _user.Id, returnUrl: ReturnUrl, replace: true);
 
-        string newUri = NavigationManager.GetUriWithQueryParameter("userId", _user.Id);
-        await JSRuntime.InvokeVoidAsync("history.replaceState", null, null, newUri);
-
-        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
         return [];
     }
 
