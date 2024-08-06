@@ -1,6 +1,6 @@
 ﻿@using Humanizer
 @using Microsoft.AspNetCore.Identity
-@using SchulCloud.Server.Components.Modals
+@using SchulCloud.Server.Extensions
 
 <SchulCloudPageTitle Title="@Localizer["title"]" />
 
@@ -51,8 +51,8 @@
                                     @ShowWhenTrue(options.RequireDigit, ErrorDescriber.PasswordRequiresDigit)
                                 </p>
 
-                                <Button Color="ButtonColor.Primary" @onclick="PasswordChange_ClickAsync">@Localizer["methodPassword_Change"]</Button>
-                                <Button Class="ms-2" Color="ButtonColor.Danger" @onclick="PasswordReset_Click">@Localizer["methodPassword_Reset"]</Button>
+                                <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.ChangePassword()">@Localizer["methodPassword_Change"]</Button>
+                                <Button Class="ms-2" Color="ButtonColor.Danger" Type="ButtonType.Link" To="@Routes.ResetPassword(returnUrl: NavigationManager.GetRelativeUri())">@Localizer["methodPassword_Reset"]</Button>
                             </Content>
                         </AccordionItem>
                     </Accordion>
@@ -67,5 +67,3 @@
         </Tabs>
     </div>
 </div>
-
-<PasswordChangeModal @ref="_passwordChangeModal" />

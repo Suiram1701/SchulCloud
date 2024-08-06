@@ -1,26 +1,30 @@
 ﻿using BlazorBootstrap;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using SchulCloud.Database.Models;
-using SchulCloud.Server.Extensions;
 using SchulCloud.Server.Models;
+using SchulCloud.Server.Extensions;
 
-namespace SchulCloud.Server.Components.Modals;
+namespace SchulCloud.Server.Components.Pages.Account.Security;
 
-public sealed partial class PasswordChangeModal : ComponentBase, IAsyncDisposable
+[Route("/account/security/changePassword")]
+public sealed partial class ChangePassword : ComponentBase
 {
     #region Injections
     [Inject]
-    private IStringLocalizer<PasswordChangeModal> Localizer { get; set; } = default!;
+    private IStringLocalizer<ChangePassword> Localizer { get; set; } = default!;
 
     [Inject]
     private IPasswordValidator<User> PasswordValidator { get; set; } = default!;
 
     [Inject]
     private UserManager<User> UserManager { get; set; } = default!;
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject]
     private IdentityErrorDescriber ErrorDescriber { get; set; } = default!;
@@ -32,8 +36,6 @@ public sealed partial class PasswordChangeModal : ComponentBase, IAsyncDisposabl
     private EditContext _editContext = default!;
 
     private User _user = default!;
-
-    public Modal Modal { get; set; } = default!;
 
     public PasswordChangeModel Model { get; set; } = new();
 
@@ -82,11 +84,6 @@ public sealed partial class PasswordChangeModal : ComponentBase, IAsyncDisposabl
         return Task.FromResult<IEnumerable<string>>([]);
     }
 
-    private async Task CloseModal_ClickAsync()
-    {
-        await Modal.HideAsync().ConfigureAwait(false);
-    }
-
     private async Task ChangePassword_ClickAsync()
     {
         if (!_editContext.Validate())
@@ -100,16 +97,11 @@ public sealed partial class PasswordChangeModal : ComponentBase, IAsyncDisposabl
             Model = new();
 
             ToastService.NotifySuccess(Localizer["successToast_Title"], Localizer["successToast_Message"]);
-            await Modal.HideAsync().ConfigureAwait(false);
+            NavigationManager.NavigateToSecurityIndex();
         }
         else
         {
             ToastService.NotifyError(result.Errors, Localizer["errorToast_Title"]);
         }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await Modal.DisposeAsync().ConfigureAwait(false);
     }
 }
