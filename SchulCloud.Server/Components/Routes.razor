@@ -6,28 +6,23 @@
 <ToastErrorBoundary>
     <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
         <Found Context="routeData">
-            <AuthorizeView>
-                <Authorized>
-                    <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layouts.MainLayout)" />
-                </Authorized>
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="LayoutType">
                 <NotAuthorized>
-                    <RouteView RouteData="routeData" DefaultLayout="typeof(Layouts.AnonLayout)" />
+                    @if (_isAuthenticated)
+                    {
+                        <Index Code="@StatusCodes.Status403Forbidden" />     @* The general purpose error page. *@
+                    }
+                    else
+                    {
+                        <RedirectToSignIn />
+                    }
                 </NotAuthorized>
-            </AuthorizeView>
+            </AuthorizeRouteView>
         </Found>
         <NotFound>
-            <AuthorizeView>
-                <Authorized>
-                    <LayoutView Layout="typeof(Layouts.MainLayout)">
-                        <NotFound />
-                    </LayoutView>
-                </Authorized>
-                <NotAuthorized>
-                    <LayoutView Layout="typeof(Layouts.AnonLayout)">
-                        <NotFound />
-                    </LayoutView>
-                </NotAuthorized>
-            </AuthorizeView>
+            <LayoutView Layout="LayoutType">
+                <NotFound />
+            </LayoutView>
         </NotFound>
     </Router>
 </ToastErrorBoundary>
