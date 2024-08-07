@@ -1,9 +1,12 @@
 ﻿using Humanizer;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using SchulCloud.Database.Models;
 using SchulCloud.Server.Models;
 
@@ -16,6 +19,9 @@ public sealed partial class SignIn : ComponentBase, IDisposable
     #region Injections
     [Inject]
     private IStringLocalizer<SignIn> Localizer { get; set; } = default!;
+
+    [Inject]
+    private AntiforgeryStateProvider AntiforgeryStateProvider { get; set; } = default!;
 
     [Inject]
     private SignInManager<User> SignInManager { get; set; } = default!;
@@ -48,6 +54,12 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
+        // Make sure that a valid antiforgery token is available.
+        if (AntiforgeryStateProvider.GetAntiforgeryToken() is null)
+        {
+            NavigationManager.Refresh(forceReload: true);
+        }
+
         // Make sure that every auth cookie is cleaned up if present.
         AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
         if (SignInManager.IsSignedIn(state.User))
