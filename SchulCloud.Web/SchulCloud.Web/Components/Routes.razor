@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Options;
+@using SchulCloud.Web.Components.Pages.Error
+@using SchulCloud.Web.Options;
+
+<ToastErrorBoundary>
+    <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="LayoutType">
+                <NotAuthorized>
+                    @if (_isAuthenticated)
+                    {
+                        <Index Code="@StatusCodes.Status403Forbidden" />     @* The general purpose error page. *@
+                    }
+                    else
+                    {
+                        <RedirectToSignIn />
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <LayoutView Layout="LayoutType">
+                <NotFound />
+            </LayoutView>
+        </NotFound>
+    </Router>
+</ToastErrorBoundary>

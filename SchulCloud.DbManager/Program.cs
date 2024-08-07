@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using SchulCloud.Database;
+﻿using SchulCloud.Database;
 using SchulCloud.Database.Models;
 using SchulCloud.DbManager.HealthChecks;
 using SchulCloud.DbManager.Options;
@@ -32,7 +31,7 @@ internal class Program
 
         builder.Services.AddHealthChecks()
             .AddCheck<DbInitializerCheck>($"{nameof(DbInitializer)} health check")
-            .AddCheck<DbCleanerCheck>($"{nameof(DbCleaner)} health check", tags: [ "live" ]);
+            .AddCheck<DbCleanerCheck>($"{nameof(DbCleaner)} health check", tags: ["live"]);
 
         IConfigurationSection initializerSection = builder.Configuration.GetSection("DbInitializer");
         builder.Services.AddOptionsWithValidateOnStart<DefaultUserOptions, DefaultUserValidator>()

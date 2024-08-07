@@ -6,7 +6,6 @@ using SchulCloud.Database;
 using SchulCloud.Database.Models;
 using SchulCloud.DbManager.Options;
 using System.Diagnostics;
-using System.Drawing;
 
 namespace SchulCloud.DbManager;
 

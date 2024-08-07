@@ -1,0 +1,148 @@
+using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using SchulCloud.Database;
+using SchulCloud.Database.Models;
+using SchulCloud.Server.Identity.EmailSenders;
+using SchulCloud.ServiceDefaults;
+using SchulCloud.Web.Components;
+using SchulCloud.Web.Extensions;
+using SchulCloud.Web.Identity;
+using SchulCloud.Web.Options;
+using SchulCloud.Web.Services;
+using SchulCloud.Web.Utils;
+using SchulCloud.Web.Utils.Interfaces;
+
+namespace SchulCloud.Web;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+        builder.AddServiceDefaults();
+
+        builder.Services.AddMemoryCache();
+
+        builder.Services.AddDbContext<SchulCloudDbContext>(options =>
+        {
+            string connectionString = builder.Configuration.GetConnectionString("schulcloud-db")
+                ?? throw new InvalidOperationException("A connection string to the database have to be provided.");
+
+            options.UseNpgsql(connectionString);
+
+            if (builder.Environment.IsDevelopment())
+            {
+                options.EnableDetailedErrors();
+                options.EnableSensitiveDataLogging();
+            }
+        });
+        builder.EnrichNpgsqlDbContext<SchulCloudDbContext>();
+
+        IdentityBuilder identityBuilder = builder.Services.AddIdentity<User, Role>(options =>
+        {
+            options.User.RequireUniqueEmail = true;
+            options.SignIn.RequireConfirmedEmail = true;
+        })
+            .AddEntityFrameworkStores<SchulCloudDbContext>()
+            .AddErrorDescriber<LocalizedErrorDescriber>()
+            .AddPasswordResetLimiter<CachedPasswordResetLimiter<User>>()
+            .AddDefaultTokenProviders();
+
+        builder.Services.Configure<PasswordResetLimiterOptions>(builder.Configuration.GetSection("Identity").GetSection("PasswordReset"));
+
+        if (builder.Environment.IsDevelopment())
+        {
+            identityBuilder.AddEmailSender<DevEmailSender>();
+        }
+
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            options.LoginPath = Routes.SignIn();
+            options.LogoutPath = Routes.SignOut();
+            options.AccessDeniedPath = Routes.ErrorIndex(StatusCodes.Status403Forbidden);
+
+            options.ReturnUrlParameter = "returnUrl";
+
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+            options.SlidingExpiration = true;
+        });
+
+        builder.Services.Configure<PresentationOptions>(builder.Configuration.GetSection("Presentation"));
+        builder.Services.Configure<LocalizationOptions>(builder.Configuration.GetSection("Localization"));
+        builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
+
+        builder.Services.AddRazorComponents()
+            .AddInteractiveServerComponents()
+            .AddInteractiveWebAssemblyComponents();
+        builder.Services.AddCascadingAuthenticationState();
+
+        builder.Services
+            .AddBlazorBootstrap()
+            .AddBlazoredLocalStorage()
+            .AddScoped<IRequestState, RequestState>()
+            .AddScoped<ICookieHelper, CookieHelper>();
+
+        WebApplication app = builder.Build();
+        app.MapDefaultEndpoints();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+            app.UseWebAssemblyDebugging();
+        }
+        else
+        {
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
+        }
+
+        app.UseStaticFiles("/static");
+        app.Use((context, next) =>
+        {
+            if (context.Request.Path.StartsWithSegments("/static"))
+            {
+                // The request is aborted here because /static contains only static files and at this point it couldn't be a static file.
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                return Task.CompletedTask;
+            }
+
+            return next(context);
+        });
+
+        app.UseHttpsRedirection();
+        app.UseStatusCodePagesWithReExecute("/error/{0}");
+
+        app.UseAuthentication();
+        app.UseAntiforgery();
+        app.UseAuthorization();
+
+        app.UseRequestLocalization(options =>
+        {
+            LocalizationOptions localizationOptions = app.Services.GetRequiredService<IOptions<LocalizationOptions>>().Value;
+
+            options.SetDefaultCulture("en");
+            options.AddSupportedCultures(localizationOptions.SupportedCultures.ToArray());
+            options.AddSupportedUICultures(localizationOptions.SupportedCultures.ToArray());
+
+            options.FallBackToParentCultures = localizationOptions.FallbackToParentCulture;
+            options.FallBackToParentUICultures = localizationOptions.FallbackToParentCulture;
+
+            options.ApplyCurrentCultureToResponseHeaders = localizationOptions.ApplyToHeader;
+
+            options.RequestCultureProviders = [
+                new CookieRequestCultureProvider(),
+                new AcceptLanguageHeaderRequestCultureProvider()
+                ];
+        });
+
+        app.MapRazorComponents<App>()
+            .AddInteractiveServerRenderMode()
+            .AddInteractiveWebAssemblyRenderMode()
+            .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
+
+        app.Run();
+    }
+}

@@ -1,0 +1,34 @@
+/* _content/SchulCloud.Web/Components/Pages/Auth/SignIn.razor.rz.scp.css */
+[b-irdx1pnwn3] div.usr-group input {
+    border-bottom-left-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
+}
+
+[b-irdx1pnwn3] div.pwd-group input {
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+}
+
+[b-irdx1pnwn3] .pwd-group span {
+    border-top-right-radius: 0px !important;
+}
+
+[b-irdx1pnwn3] form.form-invalid div.usr-group input {
+    border-top-color: var(--bs-form-invalid-border-color) !important;
+    border-left-color: var(--bs-form-invalid-border-color) !important;
+    border-right-color: var(--bs-form-invalid-border-color) !important;
+}
+
+[b-irdx1pnwn3] form.form-invalid div.pwd-group input {
+    border-left-color: var(--bs-form-invalid-border-color) !important;
+    border-bottom-color: var(--bs-form-invalid-border-color) !important;
+}
+
+[b-irdx1pnwn3] form.form-invalid div.pwd-group span {
+    border-right-color: var(--bs-form-invalid-border-color) !important;
+    border-bottom-color: var(--bs-form-invalid-border-color) !important;
+}
+
+[b-irdx1pnwn3] div.pwd-group {
+    margin-top: -1px;
+}

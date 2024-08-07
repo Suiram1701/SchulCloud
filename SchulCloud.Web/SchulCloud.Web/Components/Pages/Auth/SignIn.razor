@@ -1,0 +1,43 @@
+﻿@using SchulCloud.Web.Constants
+
+@implements IDisposable
+
+<SchulCloudPageTitle Title="@Localizer["title"]" />
+
+<div class="container py-5 my-5">
+    <div class="row mb-2">
+        <div class="col" />
+        <div class="col-6">
+            <h3>@Localizer["formHeader"]</h3>
+        </div>
+        <div class="col" />
+    </div>
+    <div class="row">
+        <div class="col" />
+        <div class="col-6">
+            <form @formname="signIn" class="@InvalidClass()" method="post" action="@Routes.SignIn(returnUrl: ReturnUrl)">
+                <input type="hidden" name="_handler" value="signIn" />     @* I have to place this hidden field by manual because in interactive SSR Blazor doesn't place it by its own. *@
+                <AntiforgeryToken />
+
+                <FloatingTextInput Class="usr-group" @bind-Value="Model.User" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.User)}")"
+                                   FloatingLabel="@Localizer["formUserPlaceholder"]" Placeholder="exampleUser" autocomplete="username" required />
+
+                <FloatingPasswordInput Class="pwd-group" @bind-Value="Model.Password" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Password)}")"
+                                       FloatingLabel="@Localizer["formPasswordPlaceholder"]" Placeholder="password" autocomplete="current-password" required />
+
+                @if (IsInvalid())
+                {
+                    <div class="@ExtendedBootstrapClass.InvalidFeedback d-block">@_errorMessage</div>
+                }
+
+                <CheckBoxInput Class="my-3" @bind-Value="Model.RememberMe" name="@($"{nameof(Model)}.{nameof(Model.RememberMe)}")" Label="@Localizer["formPersistent"]" />
+
+                <div class="@BootstrapClass.Flex @BootstrapClass.FlexColumn">
+                    <Button Class="mb-2" Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["formSubmit"]</Button>
+                    <Button Color="ButtonColor.Danger" Type="ButtonType.Button" @onclick="ForgotPasswordAsync_ClickAsync">@Localizer["formPasswordForgot"]</Button>
+                </div>
+            </form>
+        </div>
+        <div class="col" />
+    </div>
+</div>

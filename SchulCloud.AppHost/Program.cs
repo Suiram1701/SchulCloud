@@ -11,7 +11,7 @@ public class Program
         builder.AddProject<Projects.SchulCloud_DbManager>("schulcloud-dbmanager")
             .WithReference(postgresdb);
 
-        builder.AddProject<Projects.SchulCloud_Server>("schulcloud-server")
+        builder.AddProject<Projects.SchulCloud_Web>("schulcloud-web")
             .WithReference(postgresdb);
 
         builder.Build().Run();
