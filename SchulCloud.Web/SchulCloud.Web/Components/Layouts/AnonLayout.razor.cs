@@ -6,6 +6,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using SchulCloud.Web.Enums;
+using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Options;
 using SchulCloud.Web.Utils.Interfaces;
 using System.Globalization;
@@ -64,9 +65,9 @@ public partial class AnonLayout : LayoutComponentBase
     {
         if (firstRender)
         {
-            _autoModeAvailable = await JSRuntime.InvokeAsync<bool>("autoColorThemeAvailable");
-
+            _autoModeAvailable = await JSRuntime.IsColorAutoColorThemeAvailableAsync();
             ColorTheme theme = await BrowserStorage.GetItemAsync<ColorTheme>(_themeKey);
+
             if (theme == ColorTheme.Auto && !_autoModeAvailable)
             {
                 _activeColorTheme = ColorTheme.Light;
@@ -75,6 +76,8 @@ public partial class AnonLayout : LayoutComponentBase
             {
                 _activeColorTheme = theme;
             }
+
+            StateHasChanged();
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -131,6 +134,6 @@ public partial class AnonLayout : LayoutComponentBase
         }
 
         _activeColorTheme = theme;
-        await JSRuntime.InvokeVoidAsync("setTheme", theme.ToString().ToLower());
+        await JSRuntime.SetColorThemeAsync(theme);
     }
 }

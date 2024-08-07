@@ -15,7 +15,15 @@
     <link rel="stylesheet" href="/static/_content/Blazor.Bootstrap/Blazor.Bootstrap.bundle.scp.css" />
 
     <HeadOutlet @rendermode="InteractiveServer" />
-    <script src="/static/js/bundle.min.js"></script>
+
+    @{
+        string scriptName = "schulcloud.web";
+        if (!Environment.IsDevelopment())
+        {
+            scriptName += ".min";
+        }
+    }
+    <script src="/static/dist/@(scriptName).js"></script>
 </head>
 
 <body class="h-100">

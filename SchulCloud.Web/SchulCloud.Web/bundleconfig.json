@@ -1,9 +1,0 @@
-[
-  {
-    "outputFileName": "wwwroot/js/bundle.min.js",
-    "inputFiles": [
-      "wwwroot/js/blazorBootstrap-extensions.js",
-      "wwwroot/js/main.js"
-    ]
-  }
-]

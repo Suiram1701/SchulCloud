@@ -53,7 +53,7 @@ public partial class CheckBoxInput : InputBase<bool>
     {
         if (Indeterminate != _oldIndeterminate)
         {
-            await JSRuntime.InvokeVoidAsync("window.blazorBootstrapExtensions.checkBox.setIndeterminate", Id, Indeterminate);
+            await JSRuntime.InvokeVoidAsync($"{JSNames.BlazorBootstrapCheckBox}.setIndeterminate", Id, Indeterminate);
             _oldIndeterminate = Indeterminate;
         }
 

@@ -5,11 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Remove="bundleconfig.json" />
-  </ItemGroup>
-
+	
   <ItemGroup>
     <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.1.0" />
     <PackageReference Include="Blazor.Bootstrap" Version="3.0.0-preview.3" />
@@ -27,22 +23,14 @@
     <ProjectReference Include="..\..\SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="bundleconfig.json" />
-  </ItemGroup>
-
   <Target Name="CopyIsolatedCss" AfterTargets="Build">
     <Copy SourceFiles="$(IntermediateOutputPath)scopedcss\projectbundle\$(PackageId).bundle.scp.css" DestinationFiles="wwwroot\css\$(PackageId).bundle.scp.css" />
   </Target>
-	
+    
   <ItemGroup>
-	<Content Update="wwwroot\**\*">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</Content>
+    <Content Update="wwwroot\**\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
-	
-  <ItemGroup>
-    <Folder Include="wwwroot\css\" />
-  </ItemGroup>
-	
+    
 </Project>

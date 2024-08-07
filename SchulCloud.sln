@@ -1,0 +1,59 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# 17
+VisualStudioVersion = 17.11.35201.85
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.AppHost", "SchulCloud.AppHost\SchulCloud.AppHost.csproj", "{3809B640-DCC5-FF48-29DF-5C5FC8AE18EA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.Database", "SchulCloud.Database\SchulCloud.Database.csproj", "{A1367CCA-CBBF-22B0-70A3-D7798F064FA4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.DbManager", "SchulCloud.DbManager\SchulCloud.DbManager.csproj", "{B0EB4DF1-E528-CFA7-CA90-A84034244079}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.ServiceDefaults", "SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj", "{343F3D5F-3780-9E38-C4B1-7AF1FA0C75B1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.Web.Client", "SchulCloud.Web\SchulCloud.Web.Client\SchulCloud.Web.Client.csproj", "{7C9A48FB-1B12-B737-DD6D-3ED994C1C5C9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.Web", "SchulCloud.Web\SchulCloud.Web\SchulCloud.Web.csproj", "{1F51F7CF-E9A4-5382-F687-A46F5E397344}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "SchulCloud.Web.JS", "SchulCloud.Web\SchulCloud.Web.JS\SchulCloud.Web.JS.esproj", "{A4133110-037A-41C8-87F7-ECE0577B2D1D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3809B640-DCC5-FF48-29DF-5C5FC8AE18EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3809B640-DCC5-FF48-29DF-5C5FC8AE18EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3809B640-DCC5-FF48-29DF-5C5FC8AE18EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3809B640-DCC5-FF48-29DF-5C5FC8AE18EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1367CCA-CBBF-22B0-70A3-D7798F064FA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1367CCA-CBBF-22B0-70A3-D7798F064FA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1367CCA-CBBF-22B0-70A3-D7798F064FA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1367CCA-CBBF-22B0-70A3-D7798F064FA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0EB4DF1-E528-CFA7-CA90-A84034244079}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0EB4DF1-E528-CFA7-CA90-A84034244079}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0EB4DF1-E528-CFA7-CA90-A84034244079}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0EB4DF1-E528-CFA7-CA90-A84034244079}.Release|Any CPU.Build.0 = Release|Any CPU
+		{343F3D5F-3780-9E38-C4B1-7AF1FA0C75B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{343F3D5F-3780-9E38-C4B1-7AF1FA0C75B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{343F3D5F-3780-9E38-C4B1-7AF1FA0C75B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{343F3D5F-3780-9E38-C4B1-7AF1FA0C75B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C9A48FB-1B12-B737-DD6D-3ED994C1C5C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C9A48FB-1B12-B737-DD6D-3ED994C1C5C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C9A48FB-1B12-B737-DD6D-3ED994C1C5C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C9A48FB-1B12-B737-DD6D-3ED994C1C5C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F51F7CF-E9A4-5382-F687-A46F5E397344}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F51F7CF-E9A4-5382-F687-A46F5E397344}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F51F7CF-E9A4-5382-F687-A46F5E397344}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F51F7CF-E9A4-5382-F687-A46F5E397344}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4133110-037A-41C8-87F7-ECE0577B2D1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4133110-037A-41C8-87F7-ECE0577B2D1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4133110-037A-41C8-87F7-ECE0577B2D1D}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{A4133110-037A-41C8-87F7-ECE0577B2D1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4133110-037A-41C8-87F7-ECE0577B2D1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4133110-037A-41C8-87F7-ECE0577B2D1D}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
