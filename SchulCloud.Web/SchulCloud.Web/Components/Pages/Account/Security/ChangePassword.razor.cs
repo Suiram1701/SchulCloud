@@ -91,17 +91,17 @@ public sealed partial class ChangePassword : ComponentBase
             return;
         }
 
-        IdentityResult result = await UserManager.ChangePasswordAsync(_user, Model.CurrentPassword, Model.NewPassword).ConfigureAwait(true);     // The original context is required here because the ToastService needs a synchronized context.
+        IdentityResult result = await UserManager.ChangePasswordAsync(_user, Model.CurrentPassword, Model.NewPassword).ConfigureAwait(false);
         if (result.Succeeded)
         {
             Model = new();
 
-            ToastService.NotifySuccess(Localizer["successToast_Title"], Localizer["successToast_Message"]);
+            await InvokeAsync(() => ToastService.NotifySuccess(Localizer["successToast_Title"], Localizer["successToast_Message"])).ConfigureAwait(false);
             NavigationManager.NavigateToSecurityIndex();
         }
         else
         {
-            ToastService.NotifyError(result.Errors, Localizer["errorToast_Title"]);
+            await InvokeAsync(() => ToastService.NotifyError(result.Errors, Localizer["errorToast_Title"])).ConfigureAwait(false);
         }
     }
 }

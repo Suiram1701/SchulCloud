@@ -9,6 +9,9 @@ public static class IdentityBuilderExtensions
     /// <summary>
     /// Adds an email sender to the identity infrastructure.
     /// </summary>
+    /// <remarks>
+    /// The <typeparamref name="TSender"/> have to implement <see cref="Identity.EmailSenders.IEmailSender{TUser}"/>.
+    /// </remarks>
     /// <typeparam name="TSender">The type of the email sender.</typeparam>
     /// <param name="builder">The identity builder.</param>
     /// <returns>The identity builder pipeline.</returns>
@@ -17,7 +20,7 @@ public static class IdentityBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
-        Type emailSenderType = typeof(IEmailSender<>).MakeGenericType(builder.UserType);
+        Type emailSenderType = typeof(Identity.EmailSenders.IEmailSender<>).MakeGenericType(builder.UserType);
         if (!typeof(TSender).IsAssignableTo(emailSenderType))
         {
             throw new InvalidOperationException($"{typeof(TSender)} have to implement {emailSenderType}.");
@@ -30,6 +33,9 @@ public static class IdentityBuilderExtensions
     /// <summary>
     /// Adds a password reset limiter to the service collection.
     /// </summary>
+    /// <remarks>
+    /// The <typeparamref name="TLimiter"/> have to implement <see cref="IPasswordResetLimiter{TUser}"/>.
+    /// </remarks>
     /// <typeparam name="TLimiter">The type of the reset limiter.</typeparam>
     /// <param name="builder">The identity builder.</param>
     /// <returns>The identity builder pipeline.</returns>

@@ -1,15 +1,16 @@
 using Blazored.LocalStorage;
+using MailKit.Client;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SchulCloud.Database;
 using SchulCloud.Database.Models;
-using SchulCloud.Server.Identity.EmailSenders;
 using SchulCloud.ServiceDefaults;
 using SchulCloud.Web.Components;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Identity;
+using SchulCloud.Web.Identity.EmailSenders;
 using SchulCloud.Web.Options;
 using SchulCloud.Web.Services;
 using SchulCloud.Web.Utils;
@@ -41,22 +42,22 @@ public class Program
         });
         builder.EnrichNpgsqlDbContext<SchulCloudDbContext>();
 
+        builder.AddMailKitClient("maildev");
+        builder.Services.AddOptions<EmailSenderOptions>()
+            .BindConfiguration("Identity:EmailSender");
+
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<User, Role>(options =>
         {
             options.User.RequireUniqueEmail = true;
             options.SignIn.RequireConfirmedEmail = true;
         })
             .AddEntityFrameworkStores<SchulCloudDbContext>()
+            .AddEmailSender<MailKitEmailSender>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
             .AddPasswordResetLimiter<CachedPasswordResetLimiter<User>>()
             .AddDefaultTokenProviders();
 
         builder.Services.Configure<PasswordResetLimiterOptions>(builder.Configuration.GetSection("Identity").GetSection("PasswordReset"));
-
-        if (builder.Environment.IsDevelopment())
-        {
-            identityBuilder.AddEmailSender<DevEmailSender>();
-        }
 
         builder.Services.ConfigureApplicationCookie(options =>
         {
