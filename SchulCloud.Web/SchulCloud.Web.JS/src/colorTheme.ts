@@ -6,7 +6,7 @@ export namespace colorTheme {
     }
 
     export function retrieveFromLocalStorage(): void {
-        let themeId: string | null = localStorage.getItem('.AspNetCore.Theme')
+        const themeId: string | null = localStorage.getItem('.AspNetCore.Theme')
         switch (themeId) {
             case null:
             case '0':
