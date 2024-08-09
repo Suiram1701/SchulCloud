@@ -18,9 +18,6 @@ public sealed partial class ChangePassword : ComponentBase
     private IStringLocalizer<ChangePassword> Localizer { get; set; } = default!;
 
     [Inject]
-    private IPasswordValidator<User> PasswordValidator { get; set; } = default!;
-
-    [Inject]
     private UserManager<User> UserManager { get; set; } = default!;
 
     [Inject]
@@ -33,19 +30,11 @@ public sealed partial class ChangePassword : ComponentBase
     private ToastService ToastService { get; set; } = default!;
     #endregion
 
-    private EditContext _editContext = default!;
-
     private User _user = default!;
-
-    public PasswordChangeModel Model { get; set; } = new();
+    private PasswordChangeModel _model = new();
 
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationState { get; set; } = default!;
-
-    protected override void OnInitialized()
-    {
-        _editContext = new(Model);
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -55,7 +44,7 @@ public sealed partial class ChangePassword : ComponentBase
 
     private async Task<IEnumerable<string>> ValidateCurrentPasswordAsync(EditContext context, FieldIdentifier identifier)
     {
-        if (!await UserManager.CheckPasswordAsync(_user, Model.CurrentPassword).ConfigureAwait(false))
+        if (!await UserManager.CheckPasswordAsync(_user, _model.CurrentPassword).ConfigureAwait(false))
         {
             return [ErrorDescriber.PasswordMismatch().Description];
         }
@@ -63,38 +52,12 @@ public sealed partial class ChangePassword : ComponentBase
         return [];
     }
 
-    private async Task<IEnumerable<string>> ValidateNewPasswordAsync(EditContext context, FieldIdentifier identifier)
+    private async Task OnValidSubmitAsync()
     {
-        IdentityResult result = await PasswordValidator.ValidateAsync(UserManager, _user, Model.NewPassword).ConfigureAwait(false);
-        if (!result.Succeeded)
-        {
-            return result.Errors.Select(err => err.Description);
-        }
-
-        return [];
-    }
-
-    private Task<IEnumerable<string>> ValidateConfirmedPasswordAsync(EditContext context, FieldIdentifier identifier)
-    {
-        if (!Model.NewPassword.Equals(Model.ConfirmedPassword))
-        {
-            return Task.FromResult<IEnumerable<string>>([Localizer["confirmedPassword_DoesNotMatch"].Value]);
-        }
-
-        return Task.FromResult<IEnumerable<string>>([]);
-    }
-
-    private async Task ChangePassword_ClickAsync()
-    {
-        if (!_editContext.Validate())
-        {
-            return;
-        }
-
-        IdentityResult result = await UserManager.ChangePasswordAsync(_user, Model.CurrentPassword, Model.NewPassword).ConfigureAwait(false);
+        IdentityResult result = await UserManager.ChangePasswordAsync(_user, _model.CurrentPassword, _model.NewPassword).ConfigureAwait(false);
         if (result.Succeeded)
         {
-            Model = new();
+            _model = new();
 
             await InvokeAsync(() => ToastService.NotifySuccess(Localizer["successToast_Title"], Localizer["successToast_Message"])).ConfigureAwait(false);
             NavigationManager.NavigateToSecurityIndex();

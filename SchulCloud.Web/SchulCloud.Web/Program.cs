@@ -1,4 +1,5 @@
 using Blazored.LocalStorage;
+using FluentValidation;
 using MailKit.Client;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ public class Program
     public static void Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddValidatorsFromAssemblyContaining<IWeb>();
         builder
             .AddServiceDefaults()
             .ConfigureOptions();

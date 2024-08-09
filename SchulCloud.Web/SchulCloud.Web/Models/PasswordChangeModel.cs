@@ -1,18 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Identity;
+using SchulCloud.Database.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchulCloud.Web.Models;
 
-public class PasswordChangeModel
+/// <summary>
+/// The model for the <see cref="Components.Pages.Account.Security.ChangePassword"/> page.
+/// </summary>
+public class PasswordChangeModel : PasswordResetModel
 {
-    [Required]
-    [DataType(DataType.Password)]
+    /// <summary>
+    /// The current password of the user.
+    /// </summary>
     public string CurrentPassword { get; set; } = string.Empty;
-
-    [Required]
-    [DataType(DataType.Password)]
-    public string NewPassword { get; set; } = string.Empty;
-
-    [Required]
-    [DataType(DataType.Password)]
-    public string ConfirmedPassword { get; set; } = string.Empty;
 }

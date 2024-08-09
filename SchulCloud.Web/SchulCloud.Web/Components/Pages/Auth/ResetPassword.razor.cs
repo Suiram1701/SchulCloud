@@ -41,7 +41,7 @@ public sealed partial class ResetPassword : ComponentBase
     #endregion
 
     private User? _user;
-
+    private readonly PasswordResetUserModel _userModel = new();
     private readonly PasswordResetModel _model = new();
 
     [CascadingParameter]
@@ -105,8 +105,8 @@ public sealed partial class ResetPassword : ComponentBase
 
     private async Task<IEnumerable<string>> ValidateUserAsync(EditContext context, FieldIdentifier identifier)
     {
-        _user = await UserManager.FindByEmailAsync(_model.User).ConfigureAwait(false);
-        _user ??= await UserManager.FindByNameAsync(_model.User).ConfigureAwait(false);
+        _user = await UserManager.FindByEmailAsync(_userModel.User).ConfigureAwait(false);
+        _user ??= await UserManager.FindByNameAsync(_userModel.User).ConfigureAwait(false);
 
         if (_user is null)
         {
@@ -117,32 +117,6 @@ public sealed partial class ResetPassword : ComponentBase
         NavigationManager.NavigateToResetPassword(userId: _user.Id, returnUrl: ReturnUrl, replace: true);
 
         return [];
-    }
-
-    private async Task<IEnumerable<string>> ValidateNewPasswordAsync(EditContext context, FieldIdentifier identifier)
-    {
-        IEnumerable<Task<IdentityResult>> validationTasks = UserManager.PasswordValidators.Select(validator => validator.ValidateAsync(UserManager, _user!, _model.NewPassword));
-        IEnumerable<IdentityResult> results = await Task.WhenAll(validationTasks).ConfigureAwait(false);
-
-        if (results.Any(result => !result.Succeeded))
-        {
-            return results
-                .SelectMany(result => result.Errors)
-                .DistinctBy(error => error.Code)
-                .Select(error => error.Description);
-        }
-
-        return [];
-    }
-
-    private Task<IEnumerable<string>> ValidateConfirmedPasswordAsync(EditContext context, FieldIdentifier identifier)
-    {
-        if (!_model.NewPassword.Equals(_model.ConfirmedPassword))
-        {
-            return Task.FromResult<IEnumerable<string>>([Localizer["confirmedPassword_DoesNotMatch"].Value]);
-        }
-
-        return Task.FromResult<IEnumerable<string>>([]);
     }
 
     private async Task ResetPasswordAsync()
