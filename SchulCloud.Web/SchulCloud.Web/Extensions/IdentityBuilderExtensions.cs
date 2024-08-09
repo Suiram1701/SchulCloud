@@ -52,6 +52,7 @@ public static class IdentityBuilderExtensions
 
         builder.Services.Configure(optionsAction ?? (o => { }));
 
+        builder.Services.AddMemoryCache();
         builder.Services.AddSingleton(limiterType, typeof(TLimiter));
         return builder;
     }

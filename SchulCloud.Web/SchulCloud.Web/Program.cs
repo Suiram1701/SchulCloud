@@ -1,9 +1,7 @@
 using Blazored.LocalStorage;
 using MailKit.Client;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using SchulCloud.Database;
 using SchulCloud.Database.Models;
 using SchulCloud.ServiceDefaults;
@@ -11,7 +9,6 @@ using SchulCloud.Web.Components;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Identity;
 using SchulCloud.Web.Identity.EmailSenders;
-using SchulCloud.Web.Options;
 using SchulCloud.Web.Services;
 using SchulCloud.Web.Utils;
 using SchulCloud.Web.Utils.Interfaces;
@@ -23,9 +20,9 @@ public class Program
     public static void Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-        builder.AddServiceDefaults();
-
-        builder.Services.AddMemoryCache();
+        builder
+            .AddServiceDefaults()
+            .ConfigureOptions();
 
         builder.Services.AddDbContext<SchulCloudDbContext>(options =>
         {
@@ -43,21 +40,13 @@ public class Program
         builder.EnrichNpgsqlDbContext<SchulCloudDbContext>();
 
         builder.AddMailKitClient("maildev");
-        builder.Services.AddOptions<EmailSenderOptions>()
-            .BindConfiguration("Identity:EmailSender");
 
-        IdentityBuilder identityBuilder = builder.Services.AddIdentity<User, Role>(options =>
-        {
-            options.User.RequireUniqueEmail = true;
-            options.SignIn.RequireConfirmedEmail = true;
-        })
+        IdentityBuilder identityBuilder = builder.Services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<SchulCloudDbContext>()
             .AddEmailSender<MailKitEmailSender>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
             .AddPasswordResetLimiter<CachedPasswordResetLimiter<User>>()
             .AddDefaultTokenProviders();
-
-        builder.Services.Configure<PasswordResetLimiterOptions>(builder.Configuration.GetSection("Identity").GetSection("PasswordReset"));
 
         builder.Services.ConfigureApplicationCookie(options =>
         {
@@ -71,8 +60,6 @@ public class Program
             options.SlidingExpiration = true;
         });
 
-        builder.Services.Configure<PresentationOptions>(builder.Configuration.GetSection("Presentation"));
-        builder.Services.Configure<LocalizationOptions>(builder.Configuration.GetSection("Localization"));
         builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
         builder.Services.AddRazorComponents()
@@ -83,7 +70,6 @@ public class Program
         builder.Services
             .AddBlazorBootstrap()
             .AddBlazoredLocalStorage()
-            .AddScoped<IRequestState, RequestState>()
             .AddScoped<ICookieHelper, CookieHelper>();
 
         WebApplication app = builder.Build();
@@ -100,18 +86,7 @@ public class Program
             app.UseHsts();
         }
 
-        app.UseStaticFiles("/static");
-        app.Use((context, next) =>
-        {
-            if (context.Request.Path.StartsWithSegments("/static"))
-            {
-                // The request is aborted here because /static contains only static files and at this point it couldn't be a static file.
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                return Task.CompletedTask;
-            }
-
-            return next(context);
-        });
+        app.UseStaticFileServer();
 
         app.UseHttpsRedirection();
         app.UseStatusCodePagesWithReExecute("/error/{0}");
@@ -120,24 +95,7 @@ public class Program
         app.UseAntiforgery();
         app.UseAuthorization();
 
-        app.UseRequestLocalization(options =>
-        {
-            LocalizationOptions localizationOptions = app.Services.GetRequiredService<IOptions<LocalizationOptions>>().Value;
-
-            options.SetDefaultCulture("en");
-            options.AddSupportedCultures(localizationOptions.SupportedCultures.ToArray());
-            options.AddSupportedUICultures(localizationOptions.SupportedCultures.ToArray());
-
-            options.FallBackToParentCultures = localizationOptions.FallbackToParentCulture;
-            options.FallBackToParentUICultures = localizationOptions.FallbackToParentCulture;
-
-            options.ApplyCurrentCultureToResponseHeaders = localizationOptions.ApplyToHeader;
-
-            options.RequestCultureProviders = [
-                new CookieRequestCultureProvider(),
-                new AcceptLanguageHeaderRequestCultureProvider()
-                ];
-        });
+        app.UseRequestLocalization();
 
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()

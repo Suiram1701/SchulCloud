@@ -36,7 +36,7 @@
                                 }
                                 else
                                 {
-                                    <img src="/static/img/flag.@(_activeCulture).svg" width="32px" />
+                                    <img src="/_static/img/flag.@(_activeCulture).svg" width="32px" />
                                     <span class="ms-2">@_activeCulture.DisplayName</span>
                                 }
                             </DropdownToggleButton>
@@ -48,10 +48,10 @@
                                 </DropdownItem>
                                 <DropdownDivider/>
                                 
-                                @foreach (CultureInfo culture in LocalizationOptionsAccessor.Value.SupportedCultures.Select(c => new CultureInfo(c)))
+                                @foreach (CultureInfo culture in RequestLocalizationOptionsAccessor.Value.SupportedUICultures ?? [])
                                 {
                                     <DropdownItem Type="DropdownItemType.Button" Active="_activeCulture?.Equals(culture) ?? false" @onclick="@(() => CultureChange_ClickAsync(culture))">
-                                        <img src="/static/img/flag.@(culture.Name).svg" width="32px" />
+                                        <img src="/_static/img/flag.@(culture.Name).svg" width="32px" />
                                         <span class="ms-2">@culture.DisplayName</span>
                                     </DropdownItem>
                                 }

@@ -2,14 +2,14 @@ using Aspire.Hosting.MailDev;
 
 namespace SchulCloud.AppHost;
 
-public static class Program
+public class Program
 {
     public static void Main(string[] args)
     {
         IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
-        
-        IResourceBuilder<PostgresDatabaseResource> postgresDb = builder.AddPostgresDatabase();
-        IResourceBuilder<MailDevResource> mailDev = builder.AddMailDev();
+
+        IResourceBuilder<PostgresDatabaseResource> postgresDb = AddPostgresDatabase(builder);
+        IResourceBuilder<MailDevResource> mailDev = AddMailDev(builder);
 
         builder.AddProject<Projects.SchulCloud_DbManager>("schulcloud-dbmanager")
             .WithReference(postgresDb);
@@ -21,7 +21,7 @@ public static class Program
         builder.Build().Run();
     }
 
-    private static IResourceBuilder<PostgresDatabaseResource> AddPostgresDatabase(this IDistributedApplicationBuilder builder)
+    private static IResourceBuilder<PostgresDatabaseResource> AddPostgresDatabase(IDistributedApplicationBuilder builder)
     {
         IResourceBuilder<ParameterResource> username = builder.AddParameter("postgresUsername");
         IResourceBuilder<ParameterResource> password = builder.AddParameter("postgresPassword");
@@ -31,7 +31,7 @@ public static class Program
             .AddDatabase("schulcloud-db");
     }
 
-    private static IResourceBuilder<MailDevResource> AddMailDev(this IDistributedApplicationBuilder builder)
+    private static IResourceBuilder<MailDevResource> AddMailDev(IDistributedApplicationBuilder builder)
     {
         IResourceBuilder<ParameterResource> username = builder.AddParameter("maildevUsername");
         IResourceBuilder<ParameterResource> password = builder.AddParameter("maildevPassword");

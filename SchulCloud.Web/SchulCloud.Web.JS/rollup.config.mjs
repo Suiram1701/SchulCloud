@@ -12,13 +12,6 @@ export default {
             dir: outputPath,
             format: 'iife',
             name: '__schulCloudJS',
-            entryFileNames: '[name].js',
-            sourcemap: true
-        },
-        {
-            dir: outputPath,
-            format: 'iife',
-            name: '__schulCloudJS',
             entryFileNames: '[name].min.js',
             plugins: [terser()],
             sourcemap: true

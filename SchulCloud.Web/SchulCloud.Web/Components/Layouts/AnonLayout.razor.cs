@@ -30,10 +30,10 @@ public partial class AnonLayout : LayoutComponentBase
     private IJSRuntime JSRuntime { get; set; } = default!;
 
     [Inject]
-    private IOptions<Options.LocalizationOptions> LocalizationOptionsAccessor { get; set; } = default!;
+    private IOptions<RequestLocalizationOptions> RequestLocalizationOptionsAccessor { get; set; } = default!;
 
     [Inject]
-    private IOptionsSnapshot<PresentationOptions> PresentationOptionsAccessor { get; set; } = default!;
+    private IOptions<PresentationOptions> PresentationOptionsAccessor { get; set; } = default!;
 
     [Inject]
     private ICookieHelper CookieHelper { get; set; } = default!;
