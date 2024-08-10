@@ -39,7 +39,7 @@ public static class IdentityBuilderExtensions
     /// <typeparam name="TLimiter">The type of the reset limiter.</typeparam>
     /// <param name="builder">The identity builder.</param>
     /// <returns>The identity builder pipeline.</returns>
-    public static IdentityBuilder AddPasswordResetLimiter<TLimiter>(this IdentityBuilder builder, Action<PasswordResetLimiterOptions>? optionsAction = null)
+    public static IdentityBuilder AddPasswordResetLimiter<TLimiter>(this IdentityBuilder builder, Action<PasswordResetOptions>? optionsAction = null)
         where TLimiter : class
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));

@@ -149,7 +149,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
     private bool IsInvalid() => _errorMessage is not null;
 
-    private string InvalidClass() => IsInvalid() ? "form-invalid" : string.Empty;
+    private string InvalidClass => IsInvalid() ? "form-invalid" : string.Empty;
 
     void IDisposable.Dispose()
     {

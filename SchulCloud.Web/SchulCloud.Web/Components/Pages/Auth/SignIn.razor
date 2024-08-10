@@ -15,7 +15,7 @@
     <div class="row">
         <div class="col" />
         <div class="col-6">
-            <form @formname="signIn" class="@InvalidClass()" method="post" action="@Routes.SignIn(returnUrl: ReturnUrl)">
+            <form @formname="signIn" class="@InvalidClass" method="post" action="@Routes.SignIn(returnUrl: ReturnUrl)">
                 <input type="hidden" name="_handler" value="signIn" />     @* I have to place this hidden field by manual because in interactive SSR Blazor doesn't place it by its own. *@
                 <AntiforgeryToken />
 

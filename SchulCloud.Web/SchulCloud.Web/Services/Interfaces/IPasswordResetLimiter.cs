@@ -13,7 +13,7 @@ public interface IPasswordResetLimiter<TUser>
     /// <summary>
     /// The options of the limiter.
     /// </summary>
-    public PasswordResetLimiterOptions Options { get; }
+    public PasswordResetOptions Options { get; }
 
     /// <summary>
     /// Indicates whether the user is allowed to request a password reset.

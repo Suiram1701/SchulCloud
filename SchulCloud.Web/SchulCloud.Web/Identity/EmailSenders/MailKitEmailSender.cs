@@ -9,18 +9,20 @@ using System.Net.Mail;
 
 namespace SchulCloud.Web.Identity.EmailSenders;
 
-public class MailKitEmailSender(ILogger<MailKitEmailSender> logger, IOptionsSnapshot<EmailSenderOptions> optionsSnapshot, MailKitClientFactory clientFactory) : EmailSenderBase(logger)
+/// <summary>
+/// An <see cref="EmailSenderBase"/> implementation that uses MailKit.Client to send emails.
+/// </summary>
+public class MailKitEmailSender(ILogger<MailKitEmailSender> logger, IOptions<EmailSenderOptions> optionsAccessor, IServiceProvider serviceProvider, MailKitClientFactory clientFactory)
+    : EmailSenderBase(logger, serviceProvider)
 {
-    private readonly IOptionsSnapshot<EmailSenderOptions> _optionsSnapshot = optionsSnapshot;
+    private readonly EmailSenderOptions _options = optionsAccessor.Value;
     private readonly MailKitClientFactory _clientFactory = clientFactory;
 
     protected override async Task<IdentityResult> ExecuteAsync(User user, string email, string subject, string content)
     {
-        EmailSenderOptions options = _optionsSnapshot.Value;
-
         using MailMessage mailMessage = new()
         {
-            From = new(options.Email, options.DisplayedName),
+            From = new(_options.Email, _options.DisplayedName),
             Subject = subject,
             Body = content
         };

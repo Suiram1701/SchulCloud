@@ -12,13 +12,13 @@ namespace SchulCloud.Web.Services;
 /// <typeparam name="TUser">The type of the user.</typeparam>
 /// <param name="cache">The cache to use.</param>
 /// <param name="optionsAccessor">The options accessor.</param>
-public class CachedPasswordResetLimiter<TUser>(IMemoryCache cache, IOptions<PasswordResetLimiterOptions> optionsAccessor) : IPasswordResetLimiter<TUser>
+public class CachedPasswordResetLimiter<TUser>(IMemoryCache cache, IOptions<PasswordResetOptions> optionsAccessor) : IPasswordResetLimiter<TUser>
     where TUser : IdentityUser
 {
     private readonly IMemoryCache _cache = cache;
-    private readonly IOptions<PasswordResetLimiterOptions> _optionsAccessor = optionsAccessor;
+    private readonly IOptions<PasswordResetOptions> _optionsAccessor = optionsAccessor;
 
-    public PasswordResetLimiterOptions Options => _optionsAccessor.Value;
+    public PasswordResetOptions Options => _optionsAccessor.Value;
 
     public bool CanRequestPasswordReset(TUser user)
     {

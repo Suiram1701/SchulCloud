@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Humanizer;
+using Microsoft.Extensions.Options;
 using SchulCloud.Database.Models;
+using SchulCloud.Web.Options;
+using System.Globalization;
 using System.Text;
 
 namespace SchulCloud.Web.Identity.EmailSenders;
@@ -7,14 +10,23 @@ namespace SchulCloud.Web.Identity.EmailSenders;
 /// <summary>
 /// Provides a email sender that generates a localized UI for the sendet emails
 /// </summary>
-public abstract class EmailSenderBase(ILogger logger) : IEmailSender<User>
+public abstract class EmailSenderBase(ILogger logger, IServiceProvider serviceProvider) : IEmailSender<User>
 {
-    protected ILogger _logger = logger;
+    protected readonly ILogger _logger = logger;
+    private readonly PasswordResetOptions? _passwordResetOptions = serviceProvider.GetService<IOptions<PasswordResetOptions>>()?.Value;
 
     // A real UI and localization will be implemented later.
     public virtual async Task SendPasswordResetLinkAsync(User user, string email, string resetLink)
     {
-        await ExecuteInternalAsync(user, email, "Reset account password requested", $"A reset of the account password of this account was requested. Go on {resetLink} to reset the password. If you didn't requested this ignore this Email.");
+        StringBuilder contentBuilder = new();
+        contentBuilder.AppendFormat("A reset of the account password of this account was requested. Go on {0} to reset the password. ", resetLink);
+        if (_passwordResetOptions?.DisplayedTokenLifespan is not null)
+        {
+            contentBuilder.AppendFormat("This link will expire in {0}.", _passwordResetOptions.DisplayedTokenLifespan.Value.Humanize(culture: CultureInfo.InvariantCulture));
+        }
+        contentBuilder.Append("If you didn't requested this ignore this Email. ");
+
+        await ExecuteInternalAsync(user, email, "Reset account password requested", contentBuilder.ToString());
     }
 
     private async Task ExecuteInternalAsync(User user, string email, string subject, string content)
