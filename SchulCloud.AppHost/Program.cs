@@ -1,4 +1,5 @@
 using Aspire.Hosting.MailDev;
+using Microsoft.Extensions.Hosting;
 
 namespace SchulCloud.AppHost;
 
@@ -26,9 +27,16 @@ public class Program
         IResourceBuilder<ParameterResource> username = builder.AddParameter("postgresUsername");
         IResourceBuilder<ParameterResource> password = builder.AddParameter("postgresPassword");
 
-        return builder.AddPostgres("postgres-server", username, password)
-            .WithDataVolume()
-            .AddDatabase("schulcloud-db");
+        IResourceBuilder<PostgresServerResource> postgreServer = builder
+            .AddPostgres("postgres-server", username, password)
+            .WithDataVolume();
+
+        if (builder.Environment.IsDevelopment())
+        {
+            postgreServer.WithPgAdmin();
+        }
+
+        return postgreServer.AddDatabase("schulcloud-db");
     }
 
     private static IResourceBuilder<MailDevResource> AddMailDev(IDistributedApplicationBuilder builder)

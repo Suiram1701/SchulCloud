@@ -103,25 +103,61 @@
   <data name="tabHeader" xml:space="preserve">
     <value>Konto Sicherheit</value>
   </data>
-  <data name="tabMethods" xml:space="preserve">
-    <value>Anmeldemethoden</value>
+  <data name="tabSignIn" xml:space="preserve">
+    <value>Anmeldung</value>
   </data>
-  <data name="tabMfa" xml:space="preserve">
-    <value>2-Faktor-Authentifizierung (2FA)</value>
-  </data>
-  <data name="methodPassword" xml:space="preserve">
+  <data name="signIn_Password" xml:space="preserve">
     <value>Passwort</value>
   </data>
-  <data name="method_LastSignIn" xml:space="preserve">
+  <data name="signIn_Last" xml:space="preserve">
     <value>Letzte Anmeldung: {0}</value>
   </data>
-  <data name="methodPassword_Desc" xml:space="preserve">
+  <data name="password_Desc" xml:space="preserve">
     <value>Das Passwort wird zum Anmelden an diesem Konto verwendet. Um Ihr Konto zu schützen, halten Sie Ihr Passwort geheim und geben Sie es nicht an andere weiter. Verwenden Sie ein sicheres Passwort, um sich bei Ihrem Konto anzumelden. Ihr Passwort muss mindestens folgende Sicherheitsanforderungen erfüllen.</value>
   </data>
-  <data name="methodPassword_Change" xml:space="preserve">
+  <data name="password_Change" xml:space="preserve">
     <value>Passwort ändern</value>
   </data>
-  <data name="methodPassword_Reset" xml:space="preserve">
+  <data name="password_Reset" xml:space="preserve">
     <value>Passwort vergessen?</value>
+  </data>
+  <data name="mfaMethods" xml:space="preserve">
+    <value>2-Faktor-Authentifizierung (2FA)</value>
+  </data>
+  <data name="signInMethods" xml:space="preserve">
+    <value>Anmeldemethoden</value>
+  </data>
+  <data name="mfa_Authenticator" xml:space="preserve">
+    <value>Authentifizierungs-App</value>
+  </data>
+  <data name="authenticator_Activate" xml:space="preserve">
+    <value>Authentifizierungs-App aktivieren</value>
+  </data>
+  <data name="authenticator_Desc" xml:space="preserve">
+    <value>Die 2FA-Authentifizierungs mittels einer Authentifizierungs-App nutzt eine App auf Ihrem Mobilgerät, um bei jeder Anmeldung einen temporären, einmalig gültigen Code zu generieren.</value>
+  </data>
+  <data name="authenticator_Deactivate" xml:space="preserve">
+    <value>Authentifizierungs-App deaktivieren</value>
+  </data>
+  <data name="authenticator_DeactivateModal_Message" xml:space="preserve">
+    <value>Sie sind dabei die 2FA Authentifizierung zu deaktivieren. Dies sorgt dafür, dass Codes der Authenticator-App und die Backup-Codes ungültig werden. Wollen Sie trotzdem fortfahren?</value>
+  </data>
+  <data name="authenticator_DeactivateModal_AbortBtn" xml:space="preserve">
+    <value>Abrechen</value>
+  </data>
+  <data name="authenticator_DeactivateModal_ExecuteBtn" xml:space="preserve">
+    <value>Deaktivieren</value>
+  </data>
+  <data name="authenticator_Deactivate_ErrorTitle" xml:space="preserve">
+    <value>Bei der Deaktivierung ist ein Fehler aufgetreten.</value>
+  </data>
+  <data name="mfa_Desc" xml:space="preserve">
+    <value>Eine Zwei-Faktor Authentifizierungs (2FA) bietet eine zusätzliche Sicherheitsebene für Ihr Konto. Nach der Aktivierung benötigen Sie neben Ihrem Passwort auch einen weiteren Faktor zur Anmeldung. Diese Methode stellt sicher, dass nur Sie, selbst wenn Ihr Passwort kompromittiert ist, Zugang zu Ihrem Konto haben.</value>
+  </data>
+  <data name="authenticator_DeactivateSuccess_Title" xml:space="preserve">
+    <value>Die 2FA-Authentifizierung wurde deaktiviert</value>
+  </data>
+  <data name="authenticator_DeactivateSuccess_Message" xml:space="preserve">
+    <value>Die zusätzliche Kontosicherheit durch die 2FA-Authentifizierung nicht mehr verfügbar.</value>
   </data>
 </root>

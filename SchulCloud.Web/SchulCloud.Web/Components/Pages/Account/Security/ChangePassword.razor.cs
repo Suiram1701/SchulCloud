@@ -1,4 +1,5 @@
 ﻿using BlazorBootstrap;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -10,6 +11,7 @@ using SchulCloud.Web.Models;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security;
 
+[Authorize]
 [Route("/account/security/changePassword")]
 public sealed partial class ChangePassword : ComponentBase
 {
@@ -31,10 +33,10 @@ public sealed partial class ChangePassword : ComponentBase
     #endregion
 
     private User _user = default!;
-    private PasswordChangeModel _model = new();
+    private readonly PasswordChangeModel _model = new();
 
     [CascadingParameter]
-    public Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,8 +59,6 @@ public sealed partial class ChangePassword : ComponentBase
         IdentityResult result = await UserManager.ChangePasswordAsync(_user, _model.CurrentPassword, _model.NewPassword).ConfigureAwait(false);
         if (result.Succeeded)
         {
-            _model = new();
-
             await InvokeAsync(() => ToastService.NotifySuccess(Localizer["successToast_Title"], Localizer["successToast_Message"])).ConfigureAwait(false);
             NavigationManager.NavigateToSecurityIndex();
         }

@@ -1,0 +1,41 @@
+﻿@using QRCoder
+
+<SchulCloudPageTitle Title="@Localizer["title"]" />
+
+<div class="container mt-4">
+    <h3 class="row justify-content-center text-center">@Localizer["activateHeadline"]</h3>
+    <div class="row mt-4">
+        <div class="col d-flex flex-column align-items-center justify-content-center">
+            @if (_authenticatorInfo is not null)
+            {
+                @((MarkupString)_authenticatorInfo.Value.SvgRenderedQrCode)
+                <b class="text-center mt-2">@_authenticatorInfo.Value.Base32Secret</b>
+            }
+        </div>
+        <div class="col d-flex align-items-center">
+            <ol class="list-group list-group-flush list-group-numbered">
+                <li class="list-group-item">@Localizer["activationGuide_0"]</li>
+                <li class="list-group-item">@Localizer["activationGuide_1"]</li>
+                <li class="list-group-item">@Localizer["activationGuide_2", 6]</li>     @* Retrieve it in future from options. *@
+            </ol>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col" />
+        <div class="col-6">
+            <EditForm Model="_model">
+                <BsFieldCssProvider ShowValidState="false" />
+
+                <div class="@BootstrapClass.Flex @BootstrapClass.FlexColumn">
+
+                    <EditFormValidator For="() => _model.Code" ValidateAsync="ValidateCodeAsync" />
+                    <FloatingTextInput @bind-Value="_model.Code" FloatingLabel="@Localizer["form_Code_Placeholder"]"
+                                       Placeholder="@string.Concat(Enumerable.Repeat('X', 6))" required />     @* Retrieve it in future from options. *@
+
+                    <Button Class="mt-3" Color="ButtonColor.Primary" Type="ButtonType.Submit">@Localizer["form_Submit"]</Button>
+                </div>
+            </EditForm>
+        </div>
+        <div class="col" />
+    </div>
+</div>
