@@ -1,0 +1,35 @@
+﻿@using SchulCloud.Web.Constants
+@using SchulCloud.Web.Enums
+
+<SchulCloudPageTitle Title="@Localizer["title"]" />
+
+<div class="container py-5 my-5">
+    <div class="row text-center mb-2">
+        <h3 class="mb-3">@Localizer["title"]</h3>
+        <p>@Localizer["desc"]</p>
+        <p>@Localizer["desc_" + Model.Method]</p>
+    </div>
+    <div class="row mt-3">
+        <div class="col" />
+        <div class="col-6">
+            <form @formname="@_formName" class="d-flex flex-column" method="post" action="@Routes.Verify2fa(persistent: Persistent, returnUrl: ReturnUrl)">
+                <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive SSR Blazor doesn't place it by its own. *@
+                <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.Method)}")" value="@Model.Method" />
+                <AntiforgeryToken />
+
+                <FloatingTextInput InnerClass="@IsInvalidInputClass" @bind-Value="@Model.Code" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Code)}")"
+                                   FloatingLabel="@Localizer[$"form_{Model.Method}Code_Placeholder"]" Placeholder="code" autocomplete="off" required />
+
+                @if (IsInvalid())
+                {
+                    <div class="@ExtendedBootstrapClass.InvalidFeedback d-block">@_errorMessage</div>
+                }
+
+                <CheckBoxInput Class="my-3" @bind-Value="Model.RememberClient" name="@($"{nameof(Model)}.{nameof(Model.RememberClient)}")" Label="@Localizer["form_Persistent"]" />
+
+                <Button Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["form_Submit"]</Button>
+            </form>
+        </div>
+        <div class="col" />
+    </div>
+</div>

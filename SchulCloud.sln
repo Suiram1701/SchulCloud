@@ -18,7 +18,7 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "SchulCloud.Web.JS", "SchulC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aspire.Hosting.MailDev", "Aspire.Hosting.MailDev\Aspire.Hosting.MailDev.csproj", "{42EAE53C-0CB6-4C45-B68A-48D45BDB7C97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailKit.Client", "MailKit.Client\MailKit.Client.csproj", "{CFB8D5D4-4F1F-4AAB-B420-38923D371464}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailKit.Client", "MailKit.Client\MailKit.Client.csproj", "{CFB8D5D4-4F1F-4AAB-B420-38923D371464}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

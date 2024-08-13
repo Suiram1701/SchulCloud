@@ -26,5 +26,5 @@ public class SignInModel
     /// <summary>
     /// Indicates whether the client should be remembered.
     /// </summary>
-    public bool RememberMe { get; set; } = false;
+    public bool Persistent { get; set; } = false;
 }

@@ -17,4 +17,8 @@ public static class ExtendedBootstrapClass
     public const string HasValidation = "has-validation";
 
     public const string InvalidFeedback = "invalid-feedback";
+
+    public const string IsInvalid = "is-invalid";
+
+    public const string IsValid = "is-valid";
 }

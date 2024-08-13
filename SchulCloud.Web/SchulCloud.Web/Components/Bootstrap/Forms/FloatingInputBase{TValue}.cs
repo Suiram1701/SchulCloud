@@ -25,11 +25,15 @@ public abstract class FloatingInputBase<TValue> : InputBase<TValue>
     [Parameter]
     public bool SuppressValidationFeedback { get; set; }
 
-    protected override string? ClassNames =>
-        BuildClassNames(
-            Class,
-            (ExtendedBootstrapClass.FormFloating, true),
-            (FieldCssClass, true));
+    /// <summary>
+    /// Css classes applied to the input element.
+    /// </summary>
+    [Parameter]
+    public string? InnerClass { get; set; }
+
+    protected override string FieldCssClass => BuildClassNames(InnerClass, (base.FieldCssClass, true));
+
+    protected override string? ClassNames => BuildClassNames(Class, (ExtendedBootstrapClass.FormFloating, true));
 
     protected override void OnParametersSet()
     {

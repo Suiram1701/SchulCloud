@@ -38,7 +38,7 @@ public class InputBase<TValue> : BlazorBootstrapComponentBase
     [CascadingParameter]
     protected EditContext? EditContext { get; set; }
 
-    protected string FieldCssClass => EditContext?.FieldCssClass(_fieldIdentifier) ?? string.Empty;
+    protected virtual string FieldCssClass => EditContext?.FieldCssClass(_fieldIdentifier) ?? string.Empty;
 
     protected override void OnInitialized()
     {

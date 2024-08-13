@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using SchulCloud.Web.Constants;
 
 namespace SchulCloud.Web.Components.Bootstrap.Validation;
 
@@ -9,20 +10,20 @@ public class BsFieldCssProvider : ComponentBase, IDisposable
     private readonly CssProvider _cssProvider = new();
 
     /// <summary>
-    /// Indicates whether the valid state should be displayed
+    /// Indicates whether the valid state should be disabled.
     /// </summary>
     /// <remarks>
-    /// This is by default <c>true</c>.
+    /// This is by default <c>false</c>.
     /// </remarks>
     [Parameter]
-    public bool ShowValidState { get; set; } = true;
+    public bool DisableValidState { get; set; }
 
     [CascadingParameter]
     private EditContext EditContext { get; set; } = default!;
 
     protected override void OnParametersSet()
     {
-        _cssProvider.ShowValidState = ShowValidState;
+        _cssProvider.DisableValidState = DisableValidState;
     }
 
     protected override void OnInitialized()
@@ -67,7 +68,7 @@ public class BsFieldCssProvider : ComponentBase, IDisposable
     {
         public bool FirstValidated { get; set; }
 
-        public bool ShowValidState { get; set; }
+        public bool DisableValidState { get; set; }
 
         public override string GetFieldCssClass(EditContext editContext, in FieldIdentifier fieldIdentifier)
         {
@@ -77,11 +78,13 @@ public class BsFieldCssProvider : ComponentBase, IDisposable
             }
             else if (editContext.IsValid(fieldIdentifier))
             {
-                return ShowValidState ? "is-valid" : string.Empty;
+                return DisableValidState
+                    ? ExtendedBootstrapClass.IsValid
+                    : string.Empty;
             }
             else
             {
-                return "is-invalid";
+                return ExtendedBootstrapClass.IsInvalid;
             }
         }
     }

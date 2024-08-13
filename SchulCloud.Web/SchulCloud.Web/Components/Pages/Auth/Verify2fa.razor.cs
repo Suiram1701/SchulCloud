@@ -1,24 +1,22 @@
 ﻿using Humanizer;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using SchulCloud.Database.Models;
 using SchulCloud.Web.Constants;
+using SchulCloud.Web.Enums;
 using SchulCloud.Web.Models;
 
 namespace SchulCloud.Web.Components.Pages.Auth;
 
-[AllowAnonymous]
-[Route("/auth/signIn")]
-public sealed partial class SignIn : ComponentBase, IDisposable
+[Route("/auth/verify2fa")]
+public sealed partial class Verify2fa : ComponentBase, IDisposable
 {
     #region Injections
     [Inject]
-    private IStringLocalizer<SignIn> Localizer { get; set; } = default!;
+    private IStringLocalizer<Verify2fa> Localizer { get; set; } = default!;
 
     [Inject]
     private AntiforgeryStateProvider AntiforgeryStateProvider { get; set; } = default!;
@@ -36,43 +34,59 @@ public sealed partial class SignIn : ComponentBase, IDisposable
     private PersistentComponentState ComponentState { get; set; } = default!;
     #endregion
 
-    private const string _formName = "signIn";
+    private const string _formName = "verify2fa";
 
+    private User _user = default!;
     private string? _errorMessage;
     private PersistingComponentStateSubscription? _persistingSubscription;
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
-    [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
-
     [SupplyParameterFromQuery(Name = "returnUrl")]
     public string? ReturnUrl { get; set; }
 
+    [SupplyParameterFromQuery(Name = "persistent")]
+    public bool Persistent { get; set; }
+
     [SupplyParameterFromForm(FormName = _formName)]
-    public SignInModel Model { get; set; } = new();
+    public Verify2faModel Model { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        // Make sure that a valid antiforgery token is available. 
+        // Make sure that a valid antiforgery token is available.
         if (AntiforgeryStateProvider.GetAntiforgeryToken() is null)
         {
             NavigationManager.Refresh(forceReload: true);
         }
 
+        if (ComponentState.TryTakeFromJson(nameof(_user), out User? user))
+        {
+            _user = user!;
+        }
+
         if (HttpContext is not null)
         {
-            // Make sure that every auth cookie is cleaned up if present.
-            AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
-            if (SignInManager.IsSignedIn(state.User) || (await HttpContext.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme).ConfigureAwait(false)).Principal is not null)
+            user ??= await SignInManager.GetTwoFactorAuthenticationUserAsync().ConfigureAwait(false);
+            if (user is not null)
             {
-                await SignInManager.SignOutAsync().ConfigureAwait(false);
+                _user = user!;
+
+                ComponentState.RegisterOnPersisting(() =>
+                {
+                    ComponentState.PersistAsJson(nameof(_user), _user);
+                    return Task.CompletedTask;
+                }, RenderMode.InteractiveServer);
+            }
+            else
+            {
+                NavigationManager.NavigateToSignIn(returnUrl: ReturnUrl, forceLoad: true);
+                return;
             }
 
             if (HttpMethods.IsPost(HttpContext.Request.Method))
             {
-                await SignInAsync().ConfigureAwait(false);
+                await Verify2faAsync().ConfigureAwait(false);
 
                 _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
                 {
@@ -80,12 +94,13 @@ public sealed partial class SignIn : ComponentBase, IDisposable
                     ComponentState.PersistAsJson(nameof(_errorMessage), _errorMessage);
 
                     return Task.CompletedTask;
-                });
+
+                }, RenderMode.InteractiveServer);
             }
         }
         else
         {
-            if (ComponentState.TryTakeFromJson(nameof(Model), out SignInModel? persistedModel))
+            if (ComponentState.TryTakeFromJson(nameof(Model), out Verify2faModel? persistedModel))
             {
                 Model = persistedModel!;
             }
@@ -93,38 +108,22 @@ public sealed partial class SignIn : ComponentBase, IDisposable
         }
     }
 
-    private async Task ForgotPasswordAsync_ClickAsync()
+    private async Task Verify2faAsync()
     {
-        User? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
-        user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
-
-        string resetUrl = Web.Routes.ResetPassword(userId: user?.Id, returnUrl: ReturnUrl);
-        NavigationManager.NavigateTo(resetUrl);
-    }
-
-    private async Task SignInAsync()
-    {
-        User? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
-        user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
-
-        if (user is null)
+        SignInResult result = await (Model.Method switch
         {
-            _errorMessage = Localizer["signIn_" + SignInResult.Failed];
-            return;
-        }
+            MfaMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
+            _ => Task.FromResult(SignInResult.Failed)
+        }).ConfigureAwait(false);
 
-        SignInResult result = await SignInManager.PasswordSignInAsync(user, Model.Password, Model.Persistent, lockoutOnFailure: true).ConfigureAwait(false);
         switch (result)
         {
             case { Succeeded: true }:
                 Uri returnUri = NavigationManager.ToAbsoluteUri(ReturnUrl);
                 NavigationManager.NavigateTo(returnUri.PathAndQuery);     // prevent a redirect to another domain by using only the path and query part.
                 break;
-            case { RequiresTwoFactor: true }:
-                NavigationManager.NavigateToVerify2fa(persistent: Model.Persistent, returnUrl: ReturnUrl, forceLoad: true);
-                break;
             case { IsLockedOut: true }:
-                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(user).ConfigureAwait(false)).Value;
+                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(_user).ConfigureAwait(false)).Value;
 
                 _errorMessage = lockOutEnd < DateTimeOffset.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
                     ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
@@ -143,11 +142,9 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
     private bool IsInvalid() => _errorMessage is not null;
 
-    private string IsInvalidFormClass => IsInvalid() ? "form-invalid" : string.Empty;
-
     private string IsInvalidInputClass => IsInvalid() ? ExtendedBootstrapClass.IsInvalid : string.Empty;
 
-    void IDisposable.Dispose()
+    public void Dispose()
     {
         _persistingSubscription?.Dispose();
     }
