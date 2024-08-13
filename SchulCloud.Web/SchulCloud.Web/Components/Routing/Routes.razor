@@ -3,7 +3,7 @@
 @using SchulCloud.Web.Components.Pages.Error
 @using SchulCloud.Web.Options;
 
-<ToastErrorBoundary>
+<GlobalErrorBoundary>
     <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="routeData" DefaultLayout="LayoutType">
@@ -25,4 +25,4 @@
             </LayoutView>
         </NotFound>
     </Router>
-</ToastErrorBoundary>
+</GlobalErrorBoundary>

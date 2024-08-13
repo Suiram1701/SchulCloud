@@ -88,7 +88,7 @@ public sealed partial class ActivateAuthenticator : ComponentBase
     private async Task<IEnumerable<string>> ValidateCodeAsync(EditContext context, FieldIdentifier identifier)
     {
         string tokenProvider = UserManager.Options.Tokens.AuthenticatorTokenProvider;
-        if (string.IsNullOrWhiteSpace(_model.Code) || !await UserManager.VerifyTwoFactorTokenAsync(_user, tokenProvider, _model.Code.Replace(" ", "")).ConfigureAwait(false))
+        if (string.IsNullOrWhiteSpace(_model.Code) || !await UserManager.VerifyTwoFactorTokenAsync(_user, tokenProvider, _model.TrimmedCode).ConfigureAwait(false))
         {
             return [Localizer["form_CodeInvalid"]];
         }

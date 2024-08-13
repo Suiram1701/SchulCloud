@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace SchulCloud.Web.Components;
+namespace SchulCloud.Web.Components.Google;
 
 /// <summary>
 /// A Google Fonts Icon symbol.

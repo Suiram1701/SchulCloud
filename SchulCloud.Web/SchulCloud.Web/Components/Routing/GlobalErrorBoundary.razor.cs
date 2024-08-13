@@ -4,7 +4,7 @@ using Microsoft.Extensions.Localization;
 using SchulCloud.Web.Extensions;
 using System.Diagnostics;
 
-namespace SchulCloud.Web.Components;
+namespace SchulCloud.Web.Components.Routing;
 
 /// <summary>
 /// An error boundary that captures exceptions log them and display the details in a toast to the user.
@@ -12,17 +12,17 @@ namespace SchulCloud.Web.Components;
 /// <remarks>
 /// Exception details are only displayed in development environment in every else environment are only trace and span id displayed.
 /// </remarks>
-public partial class ToastErrorBoundary : ErrorBoundaryBase
+public partial class GlobalErrorBoundary : ErrorBoundaryBase
 {
     #region Injections
     [Inject]
     private IHostEnvironment HostEnvironment { get; set; } = default!;
 
     [Inject]
-    private ILogger<ToastErrorBoundary> Logger { get; set; } = default!;
+    private ILogger<GlobalErrorBoundary> Logger { get; set; } = default!;
 
     [Inject]
-    private IStringLocalizer<ToastErrorBoundary> Localizer { get; set; } = default!;
+    private IStringLocalizer<GlobalErrorBoundary> Localizer { get; set; } = default!;
 
     [Inject]
     private ToastService ToastService { get; set; } = default!;

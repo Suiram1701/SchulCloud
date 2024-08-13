@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using SchulCloud.Database.Models;
 
-namespace SchulCloud.Web.Components;
+namespace SchulCloud.Web.Components.Routing;
 
 public sealed partial class Routes : ComponentBase
 {

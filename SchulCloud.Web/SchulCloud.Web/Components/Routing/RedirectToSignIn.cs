@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SchulCloud.Web.Extensions;
 
-namespace SchulCloud.Web.Components;
+namespace SchulCloud.Web.Components.Routing;
 
 public class RedirectToSignIn : ComponentBase
 {

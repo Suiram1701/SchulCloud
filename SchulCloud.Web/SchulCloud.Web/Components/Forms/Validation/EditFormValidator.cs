@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components.Forms;
 using System.Linq.Expressions;
 
-namespace SchulCloud.Web.Components;
+namespace SchulCloud.Web.Components.Forms.Validation;
 
 public class EditFormValidator<TValue> : ComponentBase, IDisposable
 {
