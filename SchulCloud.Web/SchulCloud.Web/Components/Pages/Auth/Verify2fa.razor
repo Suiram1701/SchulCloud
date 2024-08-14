@@ -16,7 +16,7 @@
                 <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive SSR Blazor doesn't place it by its own. *@
                 <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.Method)}")" value="@Model.Method" />
                 <AntiforgeryToken />
-
+                
                 <FloatingTextInput InnerClass="@IsInvalidInputClass" @bind-Value="@Model.Code" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Code)}")"
                                    FloatingLabel="@Localizer[$"form_{Model.Method}Code_Placeholder"]" Placeholder="code" autocomplete="off" required />
 
@@ -25,9 +25,39 @@
                     <div class="@ExtendedBootstrapClass.InvalidFeedback d-block">@_errorMessage</div>
                 }
 
-                <CheckBoxInput Class="my-3" @bind-Value="Model.RememberClient" name="@($"{nameof(Model)}.{nameof(Model.RememberClient)}")" Label="@Localizer["form_Persistent"]" />
+                @if (Model.Method != MfaMethod.Recovery)
+                {
+                    <CheckBoxInput Class="mt-2" @bind-Value="Model.RememberClient" name="@($"{nameof(Model)}.{nameof(Model.RememberClient)}")" Label="@Localizer["form_Persistent"]" />
+                }
 
-                <Button Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["form_Submit"]</Button>
+                <Dropdown Class="mt-3" Color="DropdownColor.Secondary">
+                    @{
+                        string GetIconName(MfaMethod method) => method switch
+                        {
+                            MfaMethod.Authenticator => "qr_code_scanner",
+                            MfaMethod.Recovery => "pin",
+                            _ => throw new NotImplementedException()
+                        };
+                    }
+                    <DropdownToggleButton Class="d-flex align-items-center">
+                        <FontsIcon Name="@GetIconName(Model.Method)" />
+                        <span class="ms-2">@Localizer["method_" + Model.Method]</span>
+                    </DropdownToggleButton>
+
+                    <DropdownMenu>
+                        <DropdownHeader>@Localizer["methods"]</DropdownHeader>
+
+                        @foreach (MfaMethod method in Enum.GetValues<MfaMethod>())
+                        {
+                            <DropdownItem Type="DropdownItemType.Button" Class="d-flex align-items-center" Active="Model.Method.Equals(method)" @onclick="() => Model.Method = method">
+                                <FontsIcon Name="@GetIconName(method)" />
+                                <span class="ms-2">@Localizer["method_" + method]</span>
+                            </DropdownItem>
+                        }
+                    </DropdownMenu>
+                </Dropdown>
+
+                <Button Class="mt-2" Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["form_Submit"]</Button>
             </form>
         </div>
         <div class="col" />

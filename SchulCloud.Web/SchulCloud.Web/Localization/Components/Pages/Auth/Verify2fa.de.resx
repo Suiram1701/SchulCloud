@@ -127,4 +127,19 @@
   <data name="signIn_Failed" xml:space="preserve">
     <value>Der eingegebene Code ist nicht gültig.</value>
   </data>
+  <data name="form_RecoveryCode_Placeholder" xml:space="preserve">
+    <value>Wiederherstellungscode</value>
+  </data>
+  <data name="desc_Recovery" xml:space="preserve">
+    <value>Geben Sie einen gültigen Wiederherstellungscodes des Benutzers ein um die Authentifizierung Abzuschließen. Die Funktionen "Angemeldet bleiben" und "Dieses Gerät merken" sind hierbei nicht verfügbar.</value>
+  </data>
+  <data name="method_Authenticator" xml:space="preserve">
+    <value>App-Authentifizierung</value>
+  </data>
+  <data name="method_Recovery" xml:space="preserve">
+    <value>Wiederherstellungscodes</value>
+  </data>
+  <data name="methods" xml:space="preserve">
+    <value>Authentifizierungsmethoden</value>
+  </data>
 </root>

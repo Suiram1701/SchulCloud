@@ -113,6 +113,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
         SignInResult result = await (Model.Method switch
         {
             MfaMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
+            MfaMethod.Recovery => SignInManager.TwoFactorRecoveryCodeSignInAsync(Model.TrimmedCode),
             _ => Task.FromResult(SignInResult.Failed)
         }).ConfigureAwait(false);
 

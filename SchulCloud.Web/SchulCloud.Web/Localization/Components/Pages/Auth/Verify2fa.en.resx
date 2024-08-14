@@ -127,4 +127,19 @@
   <data name="signIn_Failed" xml:space="preserve">
     <value>The code entered is not valid.</value>
   </data>
+  <data name="methods" xml:space="preserve">
+    <value>Authentication methods</value>
+  </data>
+  <data name="method_Authenticator" xml:space="preserve">
+    <value>App authentication</value>
+  </data>
+  <data name="method_Recovery" xml:space="preserve">
+    <value>Recovery codes</value>
+  </data>
+  <data name="form_RecoveryCode_Placeholder" xml:space="preserve">
+    <value>Recovery code</value>
+  </data>
+  <data name="desc_Recovery" xml:space="preserve">
+    <value>Enter a valid user recovery code to complete the authentication. The "remain signed in" and "Remember this device" functions are not available here.</value>
+  </data>
 </root>

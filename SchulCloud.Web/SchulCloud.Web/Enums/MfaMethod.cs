@@ -8,5 +8,10 @@ public enum MfaMethod
     /// <summary>
     /// The authenticator app.
     /// </summary>
-    Authenticator
+    Authenticator,
+
+    /// <summary>
+    /// A recovery code.
+    /// </summary>
+    Recovery
 }
