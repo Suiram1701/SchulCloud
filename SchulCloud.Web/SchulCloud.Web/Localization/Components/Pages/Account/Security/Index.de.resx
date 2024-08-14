@@ -160,4 +160,19 @@
   <data name="authenticator_DeactivateSuccess_Message" xml:space="preserve">
     <value>Die zusätzliche Kontosicherheit durch die 2FA-Authentifizierung nicht mehr verfügbar.</value>
   </data>
+  <data name="recovery_Desc" xml:space="preserve">
+    <value>2FA-Wiederherstellungscodes sind ein einmalig gültige Codes, der es ermöglicht, den Zugang zu Ihrem Konto wiederherzustellen, falls alle anderen 2FA-Authentifizierungsmethoden nicht verfügbar ist. Bewahre diese Codes sicher auf, da er eine wichtige Backup-Option darstellt, um den Zugriff auf das Konto zu gewährleisten.</value>
+  </data>
+  <data name="recovery_ValidCodes" xml:space="preserve">
+    <value>{0} Codes sind Gültig</value>
+  </data>
+  <data name="recovery_GenerateNew" xml:space="preserve">
+    <value>Wiederherstellungscodes generieren</value>
+  </data>
+  <data name="recovery_Renew" xml:space="preserve">
+    <value>Neue Wiederherstellungscodes generieren</value>
+  </data>
+  <data name="mfa_Recovery" xml:space="preserve">
+    <value>Wiederherstellungscodes</value>
+  </data>
 </root>

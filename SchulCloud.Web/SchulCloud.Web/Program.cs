@@ -10,6 +10,7 @@ using SchulCloud.Web.Components;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Identity;
 using SchulCloud.Web.Identity.EmailSenders;
+using SchulCloud.Web.Identity.Managers;
 using SchulCloud.Web.Services;
 using SchulCloud.Web.Utils;
 using SchulCloud.Web.Utils.Interfaces;
@@ -45,8 +46,9 @@ public class Program
 
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<SchulCloudDbContext>()
-            .AddEmailSender<MailKitEmailSender>()
+            .AddUserManager<SchulCloudUserManager>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
+            .AddEmailSender<MailKitEmailSender>()
             .AddPasswordResetLimiter<CachedPasswordResetLimiter<User>>()
             .AddDefaultTokenProviders();
 

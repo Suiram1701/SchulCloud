@@ -36,6 +36,7 @@ public sealed partial class Index : ComponentBase
 
     private User _user = default!;
     private bool _mfaEnabled;
+    private int _remainingRecoveryCodes;
 
     private Modal? AuthenticatorDeactivateModal { get; set; }
 
@@ -48,19 +49,10 @@ public sealed partial class Index : ComponentBase
         _user = (await UserManager.GetUserAsync(authenticationState.User).ConfigureAwait(false))!;
 
         _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user).ConfigureAwait(false);
+        _remainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user).ConfigureAwait(false);
     }
 
     private async Task AuthenticatorDeactivate_ClickAsync()
-    {
-        await AuthenticatorDeactivateModal!.ShowAsync().ConfigureAwait(false);
-    }
-
-    private async Task AuthenticatorModalAbort_ClickAsync()
-    {
-        await AuthenticatorDeactivateModal!.HideAsync().ConfigureAwait(false);
-    }
-
-    private async Task AuthenticatorModalExecute_ClickAsync()
     {
         IdentityResult result = await UserManager.SetTwoFactorEnabledAsync(_user, false).ConfigureAwait(false);
         await InvokeAsync(() =>

@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# 17
+# Visual Studio Version 17
 VisualStudioVersion = 17.11.35201.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.AppHost", "SchulCloud.AppHost\SchulCloud.AppHost.csproj", "{3809B640-DCC5-FF48-29DF-5C5FC8AE18EA}"

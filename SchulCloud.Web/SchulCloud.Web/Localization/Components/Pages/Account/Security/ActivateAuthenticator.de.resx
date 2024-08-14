@@ -109,9 +109,6 @@
   <data name="activationGuide_2" xml:space="preserve">
     <value>Die Authentifizierungs-App generiert nun einen {0}-stelligen Code. Geben Sie diesen Code in das entsprechende Bestätigugnsfeld ein und klicken Sie auf „Aktivieren“. Sollte der Code korrekt sein, wird die Zwei-Faktor-Authentifizierung aktiviert.</value>
   </data>
-  <data name="activateHeadline" xml:space="preserve">
-    <value>Authentifizierungs-App aktivieren</value>
-  </data>
   <data name="form_Code_Placeholder" xml:space="preserve">
     <value>Authentifizierungscode</value>
   </data>

@@ -84,14 +84,44 @@
                                 }
                                 else
                                 {
-                                    <Button Color="ButtonColor.Danger" @onclick="AuthenticatorDeactivate_ClickAsync">@Localizer["authenticator_Deactivate"]</Button>
+                                    <Button Color="ButtonColor.Danger" @onclick="@(async () => await AuthenticatorDeactivateModal!.ShowAsync())">@Localizer["authenticator_Deactivate"]</Button>
                                     <Modal @ref="AuthenticatorDeactivateModal" Title="@Localizer["authenticator_Deactivate"]" Message="@Localizer["authenticator_DeactivateModal_Message"]">
                                         <FooterTemplate>
-                                            <Button Color="ButtonColor.Secondary" @onclick="AuthenticatorModalAbort_ClickAsync">@Localizer["authenticator_DeactivateModal_AbortBtn"]</Button>
-                                            <Button Color="ButtonColor.Danger" @onclick="AuthenticatorModalExecute_ClickAsync">@Localizer["authenticator_DeactivateModal_ExecuteBtn"]</Button>
+                                            <Button Color="ButtonColor.Secondary" @onclick="@(async () => await AuthenticatorDeactivateModal!.HideAsync())">@Localizer["authenticator_DeactivateModal_AbortBtn"]</Button>
+                                            <Button Color="ButtonColor.Danger" @onclick="AuthenticatorDeactivate_ClickAsync">@Localizer["authenticator_DeactivateModal_ExecuteBtn"]</Button>
                                         </FooterTemplate>
                                     </Modal>
                                 }
+                            </Content>
+                        </AccordionItem>
+                        <AccordionItem>
+                            <TitleTemplate>
+                                <div class="d-flex justify-content-between align-items-center flex-fill">
+                                    <div class="d-flex align-items-center">
+                                        <FontsIcon Name="pin" />
+                                        <span class="ms-3">@Localizer["mfa_Recovery"]</span>
+                                    </div>
+
+                                    @{
+                                        DateTimeOffset lastSignIn = DateTimeOffset.Now.AddHours(-1);     @* This value is only a placeholder for the further implementation. *@
+                                    }
+                                    <span class="mx-2">@Localizer["signIn_Last", lastSignIn.Humanize()]</span>
+                                </div>
+                            </TitleTemplate>
+                            <Content>
+                                <p>@Localizer["recovery_Desc"]</p>
+
+                                @if (_remainingRecoveryCodes > 0)
+                                {
+                                    <p>@Localizer["recovery_ValidCodes", _remainingRecoveryCodes]</p>
+                                }
+
+                                @{
+                                    string btnLabelKey = _remainingRecoveryCodes == 0
+                                        ? "recovery_GenerateNew"
+                                        : "recovery_Renew";
+                                }
+                                <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.GenerateRecoveryCodes()">@Localizer[btnLabelKey]</Button>
                             </Content>
                         </AccordionItem>
                     </Accordion>

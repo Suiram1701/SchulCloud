@@ -121,9 +121,6 @@
   <data name="form_Submit" xml:space="preserve">
     <value>Activate</value>
   </data>
-  <data name="activateHeadline" xml:space="preserve">
-    <value>Enable authentication app</value>
-  </data>
   <data name="activationSuccess_Title" xml:space="preserve">
     <value>2FA authentication enabled</value>
   </data>
