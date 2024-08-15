@@ -18,7 +18,7 @@ public static class IdentityBuilderExtensions
     public static IdentityBuilder AddEmailSender<TSender>(this IdentityBuilder builder)
         where TSender : class
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
 
         Type emailSenderType = typeof(Identity.EmailSenders.IEmailSender<>).MakeGenericType(builder.UserType);
         if (!typeof(TSender).IsAssignableTo(emailSenderType))
@@ -34,23 +34,26 @@ public static class IdentityBuilderExtensions
     /// Adds a password reset limiter to the service collection.
     /// </summary>
     /// <remarks>
-    /// The <typeparamref name="TLimiter"/> have to implement <see cref="IPasswordResetLimiter{TUser}"/>.
+    /// The <typeparamref name="TLimiter"/> have to implement <see cref="IRequestLimiter{TUser}"/>.
     /// </remarks>
     /// <typeparam name="TLimiter">The type of the reset limiter.</typeparam>
     /// <param name="builder">The identity builder.</param>
     /// <returns>The identity builder pipeline.</returns>
-    public static IdentityBuilder AddPasswordResetLimiter<TLimiter>(this IdentityBuilder builder, Action<PasswordResetOptions>? optionsAction = null)
+    public static IdentityBuilder AddPasswordResetLimiter<TLimiter>(this IdentityBuilder builder, Action<RequestLimiterOptions>? optionsAction = null)
         where TLimiter : class
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
 
-        Type limiterType = typeof(IPasswordResetLimiter<>).MakeGenericType(builder.UserType);
+        Type limiterType = typeof(IRequestLimiter<>).MakeGenericType(builder.UserType);
         if (!typeof(TLimiter).IsAssignableTo(limiterType))
         {
             throw new InvalidOperationException($"{typeof(TLimiter)} have to implement {limiterType}.");
         }
 
         builder.Services.Configure(optionsAction ?? (o => { }));
+        builder.Services.AddScoped(limiterType, typeof(TLimiter));
+        return builder;
+    }
 
         builder.Services.AddMemoryCache();
         builder.Services.AddSingleton(limiterType, typeof(TLimiter));

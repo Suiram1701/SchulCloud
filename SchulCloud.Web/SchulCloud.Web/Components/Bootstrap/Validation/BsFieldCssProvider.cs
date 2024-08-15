@@ -78,7 +78,7 @@ public class BsFieldCssProvider : ComponentBase, IDisposable
             }
             else if (editContext.IsValid(fieldIdentifier))
             {
-                return DisableValidState
+                return !DisableValidState
                     ? ExtendedBootstrapClass.IsValid
                     : string.Empty;
             }

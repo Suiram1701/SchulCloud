@@ -27,6 +27,8 @@ public class Program
             .AddServiceDefaults()
             .ConfigureOptions();
 
+        builder.Services.AddMemoryCache();
+
         builder.Services.AddDbContext<SchulCloudDbContext>(options =>
         {
             string connectionString = builder.Configuration.GetConnectionString("schulcloud-db")
@@ -49,7 +51,7 @@ public class Program
             .AddUserManager<SchulCloudUserManager>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
             .AddEmailSender<MailKitEmailSender>()
-            .AddPasswordResetLimiter<CachedPasswordResetLimiter<User>>()
+            .AddPasswordResetLimiter<CachedRequestLimiter<User>>()
             .AddDefaultTokenProviders();
 
         builder.Services.ConfigureApplicationCookie(options =>

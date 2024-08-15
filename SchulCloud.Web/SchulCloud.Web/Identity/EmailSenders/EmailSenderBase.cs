@@ -1,9 +1,10 @@
 ﻿using Humanizer;
 using Microsoft.Extensions.Options;
 using SchulCloud.Database.Models;
+using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Options;
+using SchulCloud.Web.Services.Interfaces;
 using System.Globalization;
-using System.Text;
 
 namespace SchulCloud.Web.Identity.EmailSenders;
 
@@ -13,20 +14,17 @@ namespace SchulCloud.Web.Identity.EmailSenders;
 public abstract class EmailSenderBase(ILogger logger, IServiceProvider serviceProvider) : IEmailSender<User>
 {
     protected readonly ILogger _logger = logger;
-    private readonly PasswordResetOptions? _passwordResetOptions = serviceProvider.GetService<IOptions<PasswordResetOptions>>()?.Value;
+    private readonly PasswordResetOptions _passwordResetOptions = serviceProvider.GetRequiredService<IOptions<PasswordResetOptions>>().Value;
 
     // A real UI and localization will be implemented later.
     public virtual async Task SendPasswordResetLinkAsync(User user, string email, string resetLink)
     {
-        StringBuilder contentBuilder = new();
-        contentBuilder.AppendFormat("A reset of the account password of this account was requested. Go on {0} to reset the password. ", resetLink);
-        if (_passwordResetOptions?.DisplayedTokenLifespan is not null)
-        {
-            contentBuilder.AppendFormat("This link will expire in {0}.", _passwordResetOptions.DisplayedTokenLifespan.Value.Humanize(culture: CultureInfo.InvariantCulture));
-        }
-        contentBuilder.Append("If you didn't requested this ignore this Email. ");
-
-        await ExecuteInternalAsync(user, email, "Reset account password requested", contentBuilder.ToString());
+        string content = string.Format(
+            "A reset of the account password of this account was requested. " +
+            "Go on {0} to reset the password. This link will expire in {1}. " +
+            "If you didn't requested this ignore this Email.",
+            resetLink, _passwordResetOptions.DisplayedTokenLifespan.Humanize(culture: CultureInfo.InvariantCulture));
+        await ExecuteInternalAsync(user, email, "Reset account password requested", content);
     }
 
     private async Task ExecuteInternalAsync(User user, string email, string subject, string content)

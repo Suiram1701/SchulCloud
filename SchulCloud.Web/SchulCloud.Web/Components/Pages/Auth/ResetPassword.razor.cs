@@ -25,7 +25,7 @@ public sealed partial class ResetPassword : ComponentBase
     private Identity.EmailSenders.IEmailSender<User> EmailSender { get; set; } = default!;
 
     [Inject]
-    private IPasswordResetLimiter<User> ResetLimiter { get; set; } = default!;
+    private IRequestLimiter<User> ResetLimiter { get; set; } = default!;
 
     [Inject]
     private SignInManager<User> SignInManager { get; set; } = default!;
@@ -77,9 +77,9 @@ public sealed partial class ResetPassword : ComponentBase
             return;
         }
 
-        if (!ResetLimiter.CanRequestPasswordReset(_user))
+        if (!await ResetLimiter.CanRequestPasswordResetAsync(_user).ConfigureAwait(false))
         {
-            DateTimeOffset expiration = ResetLimiter.GetExpirationTime(_user);
+            DateTimeOffset? expiration = await ResetLimiter.GetPasswordResetExpirationTimeAsync(_user).ConfigureAwait(false);
             ToastService.Notify(new(ToastType.Info, Localizer["sentToastTitle_Timeout"], Localizer["sentToastMessage_Timeout", expiration.Humanize()])
             {
                 AutoHide = true,

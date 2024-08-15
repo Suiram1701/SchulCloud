@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.ResponseCaching;
-using Microsoft.AspNetCore.ResponseCompression;
 using SchulCloud.Web.Options;
 
 namespace SchulCloud.Web.Extensions;
@@ -37,6 +35,9 @@ public static class ApplicationBuilderExtensions
                 ];
             })
             .Configure<RequestLocalizationOptions>(builder.Configuration.GetSection("RequestLocalization"));
+
+        // Other
+        builder.Services.Configure<RequestLimiterOptions>(builder.Configuration.GetSection("RequestLimiter"));
 
         return builder;
     }
