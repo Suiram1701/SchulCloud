@@ -10,7 +10,7 @@ namespace SchulCloud.Database.Enums;
 /// Flags that represents different 2fa methods.
 /// </summary>
 [Flags]
-internal enum TwoFactorMethod
+public enum TwoFactorMethod
 {
     /// <summary>
     /// General and Authenticator app.

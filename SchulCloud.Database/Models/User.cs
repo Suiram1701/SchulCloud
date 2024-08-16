@@ -8,12 +8,12 @@ public class User : IdentityUser
 {
     public override bool TwoFactorEnabled
     {
-        get => throw new NotImplementedException();
-        set => throw new NotImplementedException();
+        get => false;
+        set { }
     }
 
     /// <summary>
     /// Flags that indicates which 2fa methods are enabled.
     /// </summary>
-    internal TwoFactorMethod TwoFactorEnabledFlags { get; set; }
+    public TwoFactorMethod TwoFactorEnabledFlags { get; set; }
 }

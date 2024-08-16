@@ -142,4 +142,28 @@
   <data name="methods" xml:space="preserve">
     <value>Authentifizierungsmethoden</value>
   </data>
+  <data name="form_EmailCode_Placeholder" xml:space="preserve">
+    <value>Bestätigungscode</value>
+  </data>
+  <data name="desc_Email" xml:space="preserve">
+    <value>Klicken Sie auf „Code senden“, um eine Bestätigung Anfrage an die E-Mail-Adresse des Kontos zu senden. Geben Sie den erhaltenen Code ein, um die Authentifizierung abzuschließen.</value>
+  </data>
+  <data name="method_Email" xml:space="preserve">
+    <value>E-Mail Authentifizierung</value>
+  </data>
+  <data name="form_SendEmailCode" xml:space="preserve">
+    <value>Code senden</value>
+  </data>
+  <data name="emailConfirmation_Timeout" xml:space="preserve">
+    <value>Bestätigungscode kann nicht gesendet werden.</value>
+  </data>
+  <data name="emailConfirmation_TimeoutMessage" xml:space="preserve">
+    <value>An diesen Benutzer wurde bereits ein Bestätigungscode gesendet. Versuchen Sie es in {0} noch einmal.</value>
+  </data>
+  <data name="emailConfirmation" xml:space="preserve">
+    <value>Bestätigungscode gesendet</value>
+  </data>
+  <data name="emailConfirmationMessage" xml:space="preserve">
+    <value>Der Bestätigungscode wurde an {0} gesendet.</value>
+  </data>
 </root>

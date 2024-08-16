@@ -142,4 +142,28 @@
   <data name="desc_Recovery" xml:space="preserve">
     <value>Enter a valid user recovery code to complete the authentication. The "remain signed in" and "Remember this device" functions are not available here.</value>
   </data>
+  <data name="desc_Email" xml:space="preserve">
+    <value>Click "Send Code" to send a confirmation request to the account email address. Enter the received code to complete the authentication.</value>
+  </data>
+  <data name="method_Email" xml:space="preserve">
+    <value>Email authentication</value>
+  </data>
+  <data name="form_SendEmailCode" xml:space="preserve">
+    <value>Send code</value>
+  </data>
+  <data name="form_EmailCode_Placeholder" xml:space="preserve">
+    <value>Confirmation code</value>
+  </data>
+  <data name="emailConfirmation_TimeoutMessage" xml:space="preserve">
+    <value>A verification code has already been sent to this user. Please try again in {0}.</value>
+  </data>
+  <data name="emailConfirmation_Timeout" xml:space="preserve">
+    <value>Confirmation code cannot be sent.</value>
+  </data>
+  <data name="emailConfirmation" xml:space="preserve">
+    <value>Confirmation code sent</value>
+  </data>
+  <data name="emailConfirmationMessage" xml:space="preserve">
+    <value>The verification code was sent to {0}.</value>
+  </data>
 </root>

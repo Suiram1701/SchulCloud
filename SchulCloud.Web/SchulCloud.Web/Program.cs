@@ -5,12 +5,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SchulCloud.Database;
 using SchulCloud.Database.Models;
+using SchulCloud.Database.Stores;
 using SchulCloud.ServiceDefaults;
 using SchulCloud.Web.Components;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Identity;
 using SchulCloud.Web.Identity.EmailSenders;
 using SchulCloud.Web.Identity.Managers;
+using SchulCloud.Web.Identity.TokenProviders;
 using SchulCloud.Web.Services;
 using SchulCloud.Web.Utils;
 using SchulCloud.Web.Utils.Interfaces;
@@ -50,10 +52,12 @@ public class Program
             .AddUserStore<SchulCloudUserStore>()
             .AddEntityFrameworkStores<SchulCloudDbContext>()
             .AddUserManager<SchulCloudUserManager>()
+            .AddSignInManager<SchulCloudSignInManager>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
             .AddEmailSender<MailKitEmailSender>()
             .AddPasswordResetLimiter<CachedRequestLimiter<User>>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddTokenProviders();
 
         builder.Services.ConfigureApplicationCookie(options =>
         {

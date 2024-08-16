@@ -12,15 +12,15 @@ using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Options;
 using System.Text;
 
-namespace SchulCloud.Web.Components.Pages.Account.Security;
+namespace SchulCloud.Web.Components.Pages.Account.Security.TwoFactor;
 
 [Authorize]
-[Route("/account/security/generateRecoveryCodes")]
-public sealed partial class GenerateRecoveryCodes : ComponentBase, IDisposable
+[Route("/account/security/2fa/recoveryCodes")]
+public sealed partial class RecoveryCodes : ComponentBase, IDisposable
 {
     #region Injections
     [Inject]
-    private IStringLocalizer<GenerateRecoveryCodes> Localizer { get; set; } = default!;
+    private IStringLocalizer<RecoveryCodes> Localizer { get; set; } = default!;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;

@@ -11,10 +11,10 @@ namespace SchulCloud.Web.Identity.EmailSenders;
 /// <summary>
 /// Provides a email sender that generates a localized UI for the sendet emails
 /// </summary>
-public abstract class EmailSenderBase(ILogger logger, IServiceProvider serviceProvider) : IEmailSender<User>
+public abstract class EmailSenderBase(ILogger logger, IOptions<EmailSenderOptions> optionsAccessor) : IEmailSender<User>
 {
     protected readonly ILogger _logger = logger;
-    private readonly PasswordResetOptions _passwordResetOptions = serviceProvider.GetRequiredService<IOptions<PasswordResetOptions>>().Value;
+    private readonly EmailSenderOptions _options = optionsAccessor.Value;
 
     // A real UI and localization will be implemented later.
     public virtual async Task SendPasswordResetLinkAsync(User user, string email, string resetLink)
@@ -23,8 +23,18 @@ public abstract class EmailSenderBase(ILogger logger, IServiceProvider servicePr
             "A reset of the account password of this account was requested. " +
             "Go on {0} to reset the password. This link will expire in {1}. " +
             "If you didn't requested this ignore this Email.",
-            resetLink, _passwordResetOptions.DisplayedTokenLifespan.Humanize(culture: CultureInfo.InvariantCulture));
-        await ExecuteInternalAsync(user, email, "Reset account password requested", content);
+            resetLink, _options.TokensLifeSpan.PasswordResetTokenLifeSpan.Humanize(culture: CultureInfo.InvariantCulture));
+        await ExecuteInternalAsync(user, email, "Reset account password", content).ConfigureAwait(false);
+    }
+
+    public virtual async Task Send2faEmailCodeAsync(User user, string email, string code)
+    {
+        string content = string.Format(
+            "A 2fa authentication via email was requested for this account. " +
+            "The authentication code is {0}. This code will expire in {1}. " +
+            "If you didn't requested this your password may compromised and you should change it.",
+            code, _options.TokensLifeSpan.TwoFactorEmailTokenLifeSpan.Humanize(culture: CultureInfo.InvariantCulture));
+        await ExecuteInternalAsync(user, email, "2FA Email confirmation", content).ConfigureAwait(false);
     }
 
     private async Task ExecuteInternalAsync(User user, string email, string subject, string content)

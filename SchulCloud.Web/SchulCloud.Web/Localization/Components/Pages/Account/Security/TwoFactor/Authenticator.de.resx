@@ -100,13 +100,13 @@
   <data name="title" xml:space="preserve">
     <value>2FA Authentifizierungs-App aktivieren</value>
   </data>
-  <data name="activationGuide_0" xml:space="preserve">
+  <data name="enableGuide_0" xml:space="preserve">
     <value>Laden Sie eine Authentifizierungs-App auf Ihrem Mobilgerät herunter, falls solch eine noch nicht installiert ist. Empfohlene Apps: Google Authenticator, Microsoft Authenticator, Authy.</value>
   </data>
-  <data name="activationGuide_1" xml:space="preserve">
+  <data name="enableGuide_1" xml:space="preserve">
     <value>Öffnen Sie die Authentifizierungs-App auf Ihrem Mobilgerät. Wählen Sie „Konto hinzufügen“ oder das entsprechende Symbol aus, um einen neuen Code zu erstellen. Scannen Sie den angezeigten QR-Code auf Ihrem Bildschirm mit der App oder geben Sie den Code darunter manuell ein.</value>
   </data>
-  <data name="activationGuide_2" xml:space="preserve">
+  <data name="enableGuide_2" xml:space="preserve">
     <value>Die Authentifizierungs-App generiert nun einen {0}-stelligen Code. Geben Sie diesen Code in das entsprechende Bestätigugnsfeld ein und klicken Sie auf „Aktivieren“. Sollte der Code korrekt sein, wird die Zwei-Faktor-Authentifizierung aktiviert.</value>
   </data>
   <data name="form_Code_Placeholder" xml:space="preserve">
@@ -121,13 +121,13 @@
   <data name="form_CodeInvalid" xml:space="preserve">
     <value>Der Code ist ungültig.</value>
   </data>
-  <data name="activationSuccess_Title" xml:space="preserve">
+  <data name="enableSuccess_Title" xml:space="preserve">
     <value>2FA-Authentifizierung aktiviert</value>
   </data>
-  <data name="activationSuccess_Message" xml:space="preserve">
+  <data name="enableSuccess_Message" xml:space="preserve">
     <value>Die Authentifizierungs-App kann nun als 2FA Authentifizierungs-Methode genutzt werden.</value>
   </data>
-  <data name="activationError_Title" xml:space="preserve">
+  <data name="enableError_Title" xml:space="preserve">
     <value>Bei der Aktivierung der 2FA ist ein Fehler aufgetreten.</value>
   </data>
 </root>

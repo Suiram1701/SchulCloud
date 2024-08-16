@@ -14,4 +14,9 @@ public class EmailSenderOptions
     /// The email address of the sender.
     /// </summary>
     public string Email { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Displayed life spans of tokens sent via email.
+    /// </summary>
+    public EmailTokensLifeSpanOptions TokensLifeSpan { get; set; } = new();
 }

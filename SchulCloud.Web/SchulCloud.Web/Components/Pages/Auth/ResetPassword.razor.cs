@@ -84,23 +84,23 @@ public sealed partial class ResetPassword : ComponentBase
             {
                 AutoHide = true,
             });
-
-            return;
         }
-
-        string resetToken = await UserManager.GeneratePasswordResetTokenAsync(_user).ConfigureAwait(false);
-
-        // Show the Toast before the email is sent for better user experience (sending the mail is time expensive).
-        await InvokeAsync(() =>
+        else
         {
-            ToastService.Notify(new(ToastType.Info, Localizer["sentToastTitle"], Localizer["sentToastMessage", _user.GetAnonymizedEmail()])
-            {
-                AutoHide = true
-            });
-        }).ConfigureAwait(false);
+            string resetToken = await UserManager.GeneratePasswordResetTokenAsync(_user).ConfigureAwait(false);
 
-        Uri resetUri = NavigationManager.ToAbsoluteUri(Web.Routes.ResetPassword(userId: UserId, token: resetToken, returnUrl: ReturnUrl));
-        await EmailSender.SendPasswordResetLinkAsync(_user, _user.Email!, resetUri.AbsoluteUri).ConfigureAwait(false);
+            // Show the Toast before the email is sent for better user experience (sending the mail is time expensive).
+            await InvokeAsync(() =>
+            {
+                ToastService.Notify(new(ToastType.Info, Localizer["sentToastTitle"], Localizer["sentToastMessage", _user.GetAnonymizedEmail()])
+                {
+                    AutoHide = true
+                });
+            }).ConfigureAwait(false);
+
+            Uri resetUri = NavigationManager.ToAbsoluteUri(Routes.ResetPassword(userId: UserId, token: resetToken, returnUrl: ReturnUrl));
+            await EmailSender.SendPasswordResetLinkAsync(_user, _user.Email!, resetUri.AbsoluteUri).ConfigureAwait(false); 
+        }
     }
 
     private async Task<IEnumerable<string>> ValidateUserAsync(EditContext context, FieldIdentifier identifier)

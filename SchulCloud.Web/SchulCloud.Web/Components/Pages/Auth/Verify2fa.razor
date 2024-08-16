@@ -17,25 +17,33 @@
                 <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.Method)}")" value="@Model.Method" />
                 <AntiforgeryToken />
                 
-                <FloatingTextInput InnerClass="@IsInvalidInputClass" @bind-Value="@Model.Code" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Code)}")"
-                                   FloatingLabel="@Localizer[$"form_{Model.Method}Code_Placeholder"]" Placeholder="code" autocomplete="off" required />
+                <InputGroup>
+                    <FloatingTextInput InnerClass="@IsInvalidInputClass" @bind-Value="@Model.Code" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Code)}")"
+                                       FloatingLabel="@Localizer[$"form_{Model.Method}Code_Placeholder"]" Placeholder="code" autocomplete="off" required />
+
+                    @if (Model.Method == TwoFactorMethod.Email)
+                    {
+                        <Button Color="ButtonColor.Secondary" Outline @onclick="SendEmailAuthenticationCode_ClickAsync">@Localizer["form_SendEmailCode"]</Button>
+                    }
+                </InputGroup>
 
                 @if (IsInvalid())
                 {
                     <div class="@ExtendedBootstrapClass.InvalidFeedback d-block">@_errorMessage</div>
                 }
 
-                @if (Model.Method != MfaMethod.Recovery)
+                @if (Model.Method != TwoFactorMethod.Recovery)
                 {
                     <CheckBoxInput Class="mt-2" @bind-Value="Model.RememberClient" name="@($"{nameof(Model)}.{nameof(Model.RememberClient)}")" Label="@Localizer["form_Persistent"]" />
                 }
 
                 <Dropdown Class="mt-3" Color="DropdownColor.Secondary">
                     @{
-                        string GetIconName(MfaMethod method) => method switch
+                        string GetIconName(TwoFactorMethod method) => method switch
                         {
-                            MfaMethod.Authenticator => "qr_code_scanner",
-                            MfaMethod.Recovery => "pin",
+                            TwoFactorMethod.Authenticator => "qr_code_scanner",
+                            TwoFactorMethod.Email => "mail",
+                            TwoFactorMethod.Recovery => "pin",
                             _ => throw new NotImplementedException()
                         };
                     }
@@ -47,8 +55,13 @@
                     <DropdownMenu>
                         <DropdownHeader>@Localizer["methods"]</DropdownHeader>
 
-                        @foreach (MfaMethod method in Enum.GetValues<MfaMethod>())
+                        @foreach (TwoFactorMethod method in Enum.GetValues<TwoFactorMethod>())
                         {
+                            if (method == TwoFactorMethod.Email && !_mfaEmailEnabled)
+                            {
+                                continue;
+                            }
+
                             <DropdownItem Type="DropdownItemType.Button" Class="d-flex align-items-center" Active="Model.Method.Equals(method)" @onclick="() => Model.Method = method">
                                 <FontsIcon Name="@GetIconName(method)" />
                                 <span class="ms-2">@Localizer["method_" + method]</span>

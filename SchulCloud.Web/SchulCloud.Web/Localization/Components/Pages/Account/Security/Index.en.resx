@@ -130,22 +130,16 @@
   <data name="mfa_Authenticator" xml:space="preserve">
     <value>Authentication app</value>
   </data>
-  <data name="authenticator_Activate" xml:space="preserve">
+  <data name="authenticator_Enable" xml:space="preserve">
     <value>Enable authentication app</value>
   </data>
-  <data name="authenticator_DeactivateModal_Message" xml:space="preserve">
+  <data name="authenticator_DisableMessage" xml:space="preserve">
     <value>You are about to disable 2FA authentication. This will invalidate the authenticator app codes and backup codes. Do you still want to continue?</value>
   </data>
-  <data name="authenticator_DeactivateModal_ExecuteBtn" xml:space="preserve">
+  <data name="authenticator_DisableExecuteBtn" xml:space="preserve">
     <value>Deactivate</value>
   </data>
-  <data name="authenticator_DeactivateModal_AbortBtn" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
-  <data name="authenticator_Deactivate_ErrorTitle" xml:space="preserve">
-    <value>An error occurred during deactivation.</value>
-  </data>
-  <data name="authenticator_Deactivate" xml:space="preserve">
+  <data name="authenticator_Disable" xml:space="preserve">
     <value>Disable authentication app</value>
   </data>
   <data name="mfa_Desc" xml:space="preserve">
@@ -154,10 +148,10 @@
   <data name="authenticator_Desc" xml:space="preserve">
     <value>2FA authentication using an authentication app uses an app on your mobile device to generate a temporary, one-time code each time you log in.</value>
   </data>
-  <data name="authenticator_DeactivateSuccess_Title" xml:space="preserve">
+  <data name="authenticator_Disable_Success" xml:space="preserve">
     <value>2FA authentication has been disabled</value>
   </data>
-  <data name="authenticator_DeactivateSuccess_Message" xml:space="preserve">
+  <data name="authenticator_Disable_SuccessMessage" xml:space="preserve">
     <value>The additional account security provided by 2FA authentication is no longer available.</value>
   </data>
   <data name="recovery_Desc" xml:space="preserve">
@@ -174,5 +168,35 @@
   </data>
   <data name="mfa_Recovery" xml:space="preserve">
     <value>Wiederherstellungscodes</value>
+  </data>
+  <data name="email_Enable" xml:space="preserve">
+    <value>Enable email authentication</value>
+  </data>
+  <data name="enable_Error" xml:space="preserve">
+    <value>An error occurred during activation.</value>
+  </data>
+  <data name="disable_Error" xml:space="preserve">
+    <value>An error occurred during deactivation.</value>
+  </data>
+  <data name="email_Enable_Success" xml:space="preserve">
+    <value>Email authentication enabled</value>
+  </data>
+  <data name="email_Enable_SuccessMessage" xml:space="preserve">
+    <value>Email authentication can now be used as a 2FA authentication method.</value>
+  </data>
+  <data name="email_Disable" xml:space="preserve">
+    <value>Disable email authentication</value>
+  </data>
+  <data name="email_Disable_Success" xml:space="preserve">
+    <value>Email authentication disabled.</value>
+  </data>
+  <data name="mfa_Email" xml:space="preserve">
+    <value>Email authentication</value>
+  </data>
+  <data name="email_Desc" xml:space="preserve">
+    <value>With 2FA authentication via email, you will receive a one-time code to the email address of your account.</value>
+  </data>
+  <data name="email_Disable_SuccessMessage" xml:space="preserve">
+    <value>Email 2FA authentication is no longer available for this account.</value>
   </data>
 </root>

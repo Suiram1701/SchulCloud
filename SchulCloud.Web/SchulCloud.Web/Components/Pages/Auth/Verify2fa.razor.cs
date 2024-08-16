@@ -1,4 +1,5 @@
-﻿using Humanizer;
+﻿using BlazorBootstrap;
+using Humanizer;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
@@ -7,7 +8,11 @@ using Microsoft.Extensions.Localization;
 using SchulCloud.Database.Models;
 using SchulCloud.Web.Constants;
 using SchulCloud.Web.Enums;
+using SchulCloud.Web.Extensions;
+using SchulCloud.Web.Identity.EmailSenders;
+using SchulCloud.Web.Identity.Managers;
 using SchulCloud.Web.Models;
+using SchulCloud.Web.Services.Interfaces;
 
 namespace SchulCloud.Web.Components.Pages.Auth;
 
@@ -19,16 +24,25 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
     private IStringLocalizer<Verify2fa> Localizer { get; set; } = default!;
 
     [Inject]
+    private Identity.EmailSenders.IEmailSender<User> EmailSender { get; set; } = default!;
+
+    [Inject]
+    private IRequestLimiter<User> Limiter { get; set; } = default!;
+
+    [Inject]
     private AntiforgeryStateProvider AntiforgeryStateProvider { get; set; } = default!;
 
     [Inject]
-    private SignInManager<User> SignInManager { get; set; } = default!;
+    private SchulCloudSignInManager SignInManager { get; set; } = default!;
 
     [Inject]
-    private UserManager<User> UserManager { get; set; } = default!;
+    private SchulCloudUserManager UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
+
+    [Inject]
+    private ToastService ToastService { get; set; } = default!;
 
     [Inject]
     private PersistentComponentState ComponentState { get; set; } = default!;
@@ -37,6 +51,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
     private const string _formName = "verify2fa";
 
     private User _user = default!;
+    private bool _mfaEmailEnabled;
     private string? _errorMessage;
     private PersistingComponentStateSubscription? _persistingSubscription;
 
@@ -64,6 +79,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
         {
             _user = user!;
         }
+        ComponentState.TryTakeFromJson(nameof(_mfaEmailEnabled), out _mfaEmailEnabled);
 
         if (HttpContext is not null)
         {
@@ -71,10 +87,13 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
             if (user is not null)
             {
                 _user = user!;
+                _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user).ConfigureAwait(false);
 
                 ComponentState.RegisterOnPersisting(() =>
                 {
                     ComponentState.PersistAsJson(nameof(_user), _user);
+                    ComponentState.PersistAsJson(nameof(_mfaEmailEnabled), _mfaEmailEnabled);
+
                     return Task.CompletedTask;
                 }, RenderMode.InteractiveServer);
             }
@@ -92,6 +111,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
                 {
                     ComponentState.PersistAsJson(nameof(Model), Model);
                     ComponentState.PersistAsJson(nameof(_errorMessage), _errorMessage);
+
 
                     return Task.CompletedTask;
 
@@ -112,8 +132,9 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
     {
         SignInResult result = await (Model.Method switch
         {
-            MfaMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
-            MfaMethod.Recovery => SignInManager.TwoFactorRecoveryCodeSignInAsync(Model.TrimmedCode),
+            TwoFactorMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
+            TwoFactorMethod.Email => SignInManager.TwoFactorEmailSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
+            TwoFactorMethod.Recovery => SignInManager.TwoFactorRecoveryCodeSignInAsync(Model.TrimmedCode),
             _ => Task.FromResult(SignInResult.Failed)
         }).ConfigureAwait(false);
 
@@ -133,6 +154,47 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
             default:
                 _errorMessage = Localizer["signIn_" + result];
                 break;
+        }
+    }
+
+    private async Task SendEmailAuthenticationCode_ClickAsync()
+    {
+        if (!_mfaEmailEnabled)
+        {
+            return;
+        }
+
+        if (!await Limiter.CanRequestTwoFactorEmailCodeAsync(_user).ConfigureAwait(false))
+        {
+            DateTimeOffset? expiration = await Limiter.GetTwoFactorEmailCodeExpirationTimeAsync(_user).ConfigureAwait(false);
+            ToastService.Notify(new(ToastType.Info, Localizer["emailConfirmation_Timeout"], Localizer["emailConfirmation_TimeoutMessage", expiration.Humanize()])
+            {
+                AutoHide = true,
+            });
+        }
+        else
+        {
+            // Renew the user instance because a persistent instance isn't changed tracked anymore.
+            string userId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
+            User user = (await UserManager.FindByIdAsync(userId).ConfigureAwait(false))!;
+
+            string code = await UserManager.GenerateTwoFactorEmailCodeAsync(user).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(code))
+            {
+                throw new Exception("An unknown error occurred during the email code generation.");
+            }
+
+            // Show the Toast before the email is sent for better user experience (sending the mail is time expensive).
+            await InvokeAsync(() =>
+            {
+                ToastService.Notify(new(ToastType.Info, Localizer["emailConfirmation"], Localizer["emailConfirmationMessage", user.GetAnonymizedEmail()])
+                {
+                    AutoHide = true
+                });
+            }).ConfigureAwait(false);
+
+            string email = (await UserManager.GetEmailAsync(user).ConfigureAwait(false))!;
+            await EmailSender.Send2faEmailCodeAsync(user, email, code).ConfigureAwait(false);
         }
     }
 

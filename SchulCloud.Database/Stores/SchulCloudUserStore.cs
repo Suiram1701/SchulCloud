@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace SchulCloud.Database.Stores;
 
 public class SchulCloudUserStore(SchulCloudDbContext context, IdentityErrorDescriber? describer = null)
-    : UserStore<User, Role, DbContext>(context, describer)
+    : UserStore<User, Role, DbContext>(context, describer), IUserTwoFactorEmailStore<User>
 {
     public override Task<bool> GetTwoFactorEnabledAsync(User user, CancellationToken ct = default)
     {
@@ -43,19 +43,26 @@ public class SchulCloudUserStore(SchulCloudDbContext context, IdentityErrorDescr
     public Task<bool> GetTwoFactorEmailEnabled(User user, CancellationToken ct = default)
     {
         ThrowIfDisposed();
-        cancellationToken.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(nameof(user));
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(user);
 
-        return Task.FromResult(user.TwoFactorEnabled.HasFlag(TwoFactorEnabled.Authenticator));
+        return Task.FromResult(user.TwoFactorEnabledFlags.HasFlag(TwoFactorMethod.Email));
     }
 
-    public override Task SetTwoFactorEnabledAsync(User user, bool enabled, CancellationToken cancellationToken = default)
+    public Task SetTwoFactorEmailEnabled(User user, bool enabled, CancellationToken ct = default)
     {
         ThrowIfDisposed();
-        cancellationToken.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(nameof(user));
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(user);
 
-        user.TwoFactorEnabled |= TwoFactorEnabled.Authenticator;
+        if (enabled)
+        {
+            user.TwoFactorEnabledFlags |= TwoFactorMethod.Email;
+        }
+        else
+        {
+            user.TwoFactorEnabledFlags &= ~TwoFactorMethod.Email;
+        }
         return Task.CompletedTask;
     }
 }

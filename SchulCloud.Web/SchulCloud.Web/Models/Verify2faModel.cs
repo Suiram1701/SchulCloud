@@ -12,5 +12,5 @@ public class Verify2faModel : AuthenticatorModel
     /// <summary>
     /// The 2fa method the <see cref="AuthenticatorModel.Code"/> is used for.
     /// </summary>
-    public MfaMethod Method { get; set; } = MfaMethod.Authenticator;
+    public TwoFactorMethod Method { get; set; } = TwoFactorMethod.Authenticator;
 }

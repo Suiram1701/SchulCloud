@@ -3,7 +3,7 @@
 /// <summary>
 /// Different methods for 2fa authentication.
 /// </summary>
-public enum MfaMethod
+public enum TwoFactorMethod
 {
     /// <summary>
     /// The authenticator app.
@@ -11,7 +11,12 @@ public enum MfaMethod
     Authenticator,
 
     /// <summary>
+    /// A code sent to the user's email.
+    /// </summary>
+    Email,
+
+    /// <summary>
     /// A recovery code.
     /// </summary>
-    Recovery
+    Recovery,
 }

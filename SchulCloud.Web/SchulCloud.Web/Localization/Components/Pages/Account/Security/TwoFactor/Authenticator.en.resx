@@ -97,13 +97,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="activationGuide_0" xml:space="preserve">
+  <data name="enableGuide_0" xml:space="preserve">
     <value>Download an authentication app on your mobile device if you don't already have one installed. Recommended apps: Google Authenticator, Microsoft Authenticator, Authy.</value>
   </data>
-  <data name="activationGuide_1" xml:space="preserve">
+  <data name="enableGuide_1" xml:space="preserve">
     <value>Open the authenticator app on your mobile device. Select "Add Account" or the corresponding icon to create a new code. Scan the QR code displayed on your screen with the app or enter the code manually below.</value>
   </data>
-  <data name="activationGuide_2" xml:space="preserve">
+  <data name="enableGuide_2" xml:space="preserve">
     <value>The authentication app will now generate a {0}-digit code. Enter this code in the corresponding confirmation field and click "Activate". If the code is correct, two-factor authentication will be activated.</value>
   </data>
   <data name="title" xml:space="preserve">
@@ -121,13 +121,13 @@
   <data name="form_Submit" xml:space="preserve">
     <value>Activate</value>
   </data>
-  <data name="activationSuccess_Title" xml:space="preserve">
+  <data name="enableSuccess_Title" xml:space="preserve">
     <value>2FA authentication enabled</value>
   </data>
-  <data name="activationError_Title" xml:space="preserve">
+  <data name="enableError_Title" xml:space="preserve">
     <value>An error occurred while activating 2FA.</value>
   </data>
-  <data name="activationSuccess_Message" xml:space="preserve">
+  <data name="enableSuccess_Message" xml:space="preserve">
     <value>The authentication app can now be used as a 2FA authentication method.</value>
   </data>
 </root>

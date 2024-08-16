@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SchulCloud.Database.Models;
+using SchulCloud.Web.Identity.TokenProviders;
 using SchulCloud.Web.Options;
 using SchulCloud.Web.Services.Interfaces;
 
@@ -55,8 +57,16 @@ public static class IdentityBuilderExtensions
         return builder;
     }
 
-        builder.Services.AddMemoryCache();
-        builder.Services.AddSingleton(limiterType, typeof(TLimiter));
-        return builder;
-    }
+    /// <summary>
+    /// Adds the token providers of the application to the identity builder.
+    /// </summary>
+    /// <param name="builder">The identity builder.</param>
+    /// <returns>The identity builder.</returns>
+    public static IdentityBuilder AddTokenProviders(this IdentityBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        Type emailProviderType = typeof(AuthenticationCodeTokenProvider<>).MakeGenericType(builder.UserType);
+        return builder.AddTokenProvider(ExtendedTokenProviderOptions.AuthenticationTokenProvider, emailProviderType);
+    }//
 }

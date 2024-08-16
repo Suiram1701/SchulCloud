@@ -16,9 +16,10 @@ public static class ApplicationBuilderExtensions
         // Identity
         builder.Services
             .Configure<IdentityOptions>(builder.Configuration.GetSection("Identity"))
-            .Configure<PasswordResetOptions>(builder.Configuration.GetSection("Identity:PasswordReset"))
+            .Configure<ExtendedTokenProviderOptions>(builder.Configuration.GetSection("Identity:Tokens"))
             .Configure<EmailSenderOptions>(builder.Configuration.GetSection("Identity:EmailSender"))
-            .Configure<DataProtectionTokenProviderOptions>(builder.Configuration.GetSection($"Identity:TokenProviders:DataProtectionTokenProvider"));
+            .Configure<DataProtectionTokenProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:DataProtectionTokenProvider"))
+            .Configure<AuthenticationTokenProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:AuthenticationTokenTokenProvider"));
 
         // Visual presentation
         builder.Services

@@ -13,18 +13,18 @@ using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Models;
 using SchulCloud.Web.Options;
 
-namespace SchulCloud.Web.Components.Pages.Account.Security;
+namespace SchulCloud.Web.Components.Pages.Account.Security.TwoFactor;
 
 [Authorize]
-[Route("/account/security/activateAuthenticator")]
-public sealed partial class ActivateAuthenticator : ComponentBase
+[Route("/account/security/2fa/authenticator")]
+public sealed partial class Authenticator : ComponentBase
 {
     #region Injections
     [Inject]
     private IMemoryCache Cache { get; set; } = default!;
 
     [Inject]
-    private IStringLocalizer<ActivateAuthenticator> Localizer { get; set; } = default!;
+    private IStringLocalizer<Authenticator> Localizer { get; set; } = default!;
 
     [Inject]
     private UserManager<User> UserManager { get; set; } = default!;
@@ -40,7 +40,7 @@ public sealed partial class ActivateAuthenticator : ComponentBase
     private (string Base32Secret, string SvgRenderedQrCode)? _authenticatorInfo;
     private readonly AuthenticatorModel _model = new();
 
-    private string CacheKey => $"authenticatorActivationData_{_user.Id}";
+    private string CacheKey => $"authenticatorData_{_user.Id}";
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
@@ -98,12 +98,12 @@ public sealed partial class ActivateAuthenticator : ComponentBase
         {
             Cache.Remove(CacheKey);
 
-            await InvokeAsync(() => ToastService.NotifySuccess(Localizer["activationSuccess_Title"], Localizer["activationSuccess_Message"])).ConfigureAwait(false);
+            await InvokeAsync(() => ToastService.NotifySuccess(Localizer["enableSuccess_Title"], Localizer["enableSuccess_Message"])).ConfigureAwait(false);
             NavigationManager.NavigateToSecurityIndex();
         }
         else
         {
-            await InvokeAsync(() => ToastService.NotifyError(result.Errors, Localizer["activationError_Title"])).ConfigureAwait(false);
+            await InvokeAsync(() => ToastService.NotifyError(result.Errors, Localizer["enableError_Title"])).ConfigureAwait(false);
         }
 
         return [];
