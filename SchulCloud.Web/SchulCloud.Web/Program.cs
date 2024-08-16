@@ -47,6 +47,7 @@ public class Program
         builder.AddMailKitClient("maildev");
 
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<User, Role>()
+            .AddUserStore<SchulCloudUserStore>()
             .AddEntityFrameworkStores<SchulCloudDbContext>()
             .AddUserManager<SchulCloudUserManager>()
             .AddErrorDescriber<LocalizedErrorDescriber>()

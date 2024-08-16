@@ -206,7 +206,7 @@ namespace SchulCloud.Database.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
-                    b.Property<int>("TwoFactorEnabled")
+                    b.Property<int>("TwoFactorEnabledFlags")
                         .HasColumnType("integer");
 
                     b.Property<string>("UserName")

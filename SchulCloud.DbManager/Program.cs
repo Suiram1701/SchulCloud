@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SchulCloud.Database;
 using SchulCloud.Database.Models;
+using SchulCloud.Database.Stores;
 using SchulCloud.DbManager.HealthChecks;
 using SchulCloud.DbManager.Options;
 using SchulCloud.ServiceDefaults;
@@ -25,6 +26,7 @@ internal class Program
             .Configure<IdentityOptions>(builder.Configuration.GetSection("Identity"))
             .AddIdentityCore<User>()
             .AddRoles<Role>()
+            .AddUserStore<SchulCloudUserStore>()
             .AddEntityFrameworkStores<SchulCloudDbContext>();
 
         builder.Services

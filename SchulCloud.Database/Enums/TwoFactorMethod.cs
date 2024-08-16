@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 namespace SchulCloud.Database.Enums;
 
 /// <summary>
-/// Flags that indicates which 2fa methods are enabled.
+/// Flags that represents different 2fa methods.
 /// </summary>
 [Flags]
-public enum TwoFactorEnabled
+internal enum TwoFactorMethod
 {
     /// <summary>
-    /// General enabled and Authenticator app enabled.
+    /// General and Authenticator app.
     /// </summary>
     Authenticator = 1,
 
     /// <summary>
-    /// Recovery codes are enabled.
+    /// Email code.
     /// </summary>
-    Recovery = 2
+    Email = 2,
 }

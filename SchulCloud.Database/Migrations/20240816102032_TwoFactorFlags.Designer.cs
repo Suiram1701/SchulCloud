@@ -12,8 +12,8 @@ using SchulCloud.Database;
 namespace SchulCloud.Database.Migrations
 {
     [DbContext(typeof(SchulCloudDbContext))]
-    [Migration("20240815140711_TwoFactorMethods")]
-    partial class TwoFactorMethods
+    [Migration("20240816102032_TwoFactorFlags")]
+    partial class TwoFactorFlags
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -209,7 +209,7 @@ namespace SchulCloud.Database.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
-                    b.Property<int>("TwoFactorEnabled")
+                    b.Property<int>("TwoFactorEnabledFlags")
                         .HasColumnType("integer");
 
                     b.Property<string>("UserName")

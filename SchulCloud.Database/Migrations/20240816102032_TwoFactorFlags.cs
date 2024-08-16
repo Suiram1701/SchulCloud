@@ -5,30 +5,36 @@
 namespace SchulCloud.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class TwoFactorMethods : Migration
+    public partial class TwoFactorFlags : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
+            migrationBuilder.DropColumn(
                 name: "TwoFactorEnabled",
+                table: "AspNetUsers");
+
+            migrationBuilder.AddColumn<int>(
+                name: "TwoFactorEnabledFlags",
                 table: "AspNetUsers",
                 type: "integer",
                 nullable: false,
-                oldClrType: typeof(bool),
-                oldType: "boolean");
+                defaultValue: 0);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<bool>(
+            migrationBuilder.DropColumn(
+                name: "TwoFactorEnabledFlags",
+                table: "AspNetUsers");
+
+            migrationBuilder.AddColumn<bool>(
                 name: "TwoFactorEnabled",
                 table: "AspNetUsers",
                 type: "boolean",
                 nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+                defaultValue: false);
         }
     }
 }
