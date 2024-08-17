@@ -9,7 +9,6 @@ using SchulCloud.Database.Models;
 using SchulCloud.Web.Constants;
 using SchulCloud.Web.Enums;
 using SchulCloud.Web.Extensions;
-using SchulCloud.Web.Identity.EmailSenders;
 using SchulCloud.Web.Identity.Managers;
 using SchulCloud.Web.Models;
 using SchulCloud.Web.Services.Interfaces;
@@ -147,7 +146,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
             case { IsLockedOut: true }:
                 DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(_user).ConfigureAwait(false)).Value;
 
-                _errorMessage = lockOutEnd < DateTimeOffset.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
+                _errorMessage = lockOutEnd.UtcDateTime <= DateTime.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
                     ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
                     : Localizer["signIn_LockedOut_NotSpecified"];
                 break;
@@ -185,9 +184,10 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
             }
 
             // Show the Toast before the email is sent for better user experience (sending the mail is time expensive).
-            await InvokeAsync(() =>
+            await InvokeAsync(async () =>
             {
-                ToastService.Notify(new(ToastType.Info, Localizer["emailConfirmation"], Localizer["emailConfirmationMessage", user.GetAnonymizedEmail()])
+                string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(user).ConfigureAwait(false);
+                ToastService.Notify(new(ToastType.Info, Localizer["emailConfirmation"], Localizer["emailConfirmationMessage", anonymizedAddress])
                 {
                     AutoHide = true
                 });

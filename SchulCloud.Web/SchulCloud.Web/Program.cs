@@ -12,7 +12,6 @@ using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Identity;
 using SchulCloud.Web.Identity.EmailSenders;
 using SchulCloud.Web.Identity.Managers;
-using SchulCloud.Web.Identity.TokenProviders;
 using SchulCloud.Web.Services;
 using SchulCloud.Web.Utils;
 using SchulCloud.Web.Utils.Interfaces;

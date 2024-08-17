@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using SchulCloud.Database.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace SchulCloud.Web.Models;
 

@@ -1,9 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Identity;
-using SchulCloud.Database.Models;
-using System.ComponentModel.DataAnnotations;
-
-namespace SchulCloud.Web.Models;
+﻿namespace SchulCloud.Web.Models;
 
 /// <summary>
 /// The model for the <see cref="Components.Pages.Account.Security.ChangePassword"/> page.

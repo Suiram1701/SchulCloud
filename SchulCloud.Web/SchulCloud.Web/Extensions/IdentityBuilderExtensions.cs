@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SchulCloud.Database.Models;
 using SchulCloud.Web.Identity.TokenProviders;
 using SchulCloud.Web.Options;
 using SchulCloud.Web.Services.Interfaces;

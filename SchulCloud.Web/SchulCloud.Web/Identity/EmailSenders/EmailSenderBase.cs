@@ -1,9 +1,7 @@
 ﻿using Humanizer;
 using Microsoft.Extensions.Options;
 using SchulCloud.Database.Models;
-using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Options;
-using SchulCloud.Web.Services.Interfaces;
 using System.Globalization;
 
 namespace SchulCloud.Web.Identity.EmailSenders;

@@ -98,7 +98,11 @@ public sealed partial class SignIn : ComponentBase, IDisposable
         User? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
         user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
 
-        string resetUrl = Web.Routes.ResetPassword(userId: user?.Id, returnUrl: ReturnUrl);
+        string? userId = user is not null
+            ? await UserManager.GetUserIdAsync(user).ConfigureAwait(false)
+            : null;
+
+        string resetUrl = Routes.ResetPassword(userId: userId, returnUrl: ReturnUrl);
         NavigationManager.NavigateTo(resetUrl);
     }
 
@@ -126,7 +130,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
             case { IsLockedOut: true }:
                 DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(user).ConfigureAwait(false)).Value;
 
-                _errorMessage = lockOutEnd < DateTimeOffset.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
+                _errorMessage = lockOutEnd.UtcDateTime <= DateTime.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
                     ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
                     : Localizer["signIn_LockedOut_NotSpecified"];
                 break;
@@ -143,9 +147,13 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
     private bool IsInvalid() => _errorMessage is not null;
 
-    private string IsInvalidFormClass => IsInvalid() ? "form-invalid" : string.Empty;
+    private string IsInvalidFormClass => IsInvalid()
+        ? "form-invalid"
+        : string.Empty;
 
-    private string IsInvalidInputClass => IsInvalid() ? ExtendedBootstrapClass.IsInvalid : string.Empty;
+    private string IsInvalidInputClass => IsInvalid()
+        ? ExtendedBootstrapClass.IsInvalid
+        : string.Empty;
 
     void IDisposable.Dispose()
     {

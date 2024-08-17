@@ -19,7 +19,7 @@ public static class ApplicationBuilderExtensions
             .Configure<ExtendedTokenProviderOptions>(builder.Configuration.GetSection("Identity:Tokens"))
             .Configure<EmailSenderOptions>(builder.Configuration.GetSection("Identity:EmailSender"))
             .Configure<DataProtectionTokenProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:DataProtectionTokenProvider"))
-            .Configure<AuthenticationTokenProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:AuthenticationTokenTokenProvider"));
+            .Configure<AuthenticationCodeProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:AuthenticationCodeTokenProvider"));
 
         // Visual presentation
         builder.Services

@@ -6,12 +6,10 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
 using QRCoder;
 using SchulCloud.Database.Models;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Models;
-using SchulCloud.Web.Options;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security.TwoFactor;
 
@@ -40,8 +38,6 @@ public sealed partial class Authenticator : ComponentBase
     private (string Base32Secret, string SvgRenderedQrCode)? _authenticatorInfo;
     private readonly AuthenticatorModel _model = new();
 
-    private string CacheKey => $"authenticatorData_{_user.Id}";
-
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
 
@@ -56,7 +52,13 @@ public sealed partial class Authenticator : ComponentBase
             return;
         }
 
-        _authenticatorInfo = await Cache.GetOrCreateAsync(CacheKey, CreateAuthenticatorInfoAsync);
+        _authenticatorInfo = await Cache.GetOrCreateAsync(await GetCacheKeyAsync().ConfigureAwait(false), CreateAuthenticatorInfoAsync);
+    }
+
+    private async Task<string> GetCacheKeyAsync()
+    {
+        string userId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
+        return $"authenticatorData_{userId}";
     }
 
     private async Task<(string, string)?> CreateAuthenticatorInfoAsync(ICacheEntry entry)
@@ -73,13 +75,15 @@ public sealed partial class Authenticator : ComponentBase
         entry.SlidingExpiration = TimeSpan.FromMinutes(10);
         string base32secret = (await UserManager.GetAuthenticatorKeyAsync(_user).ConfigureAwait(false))!;
 
+        string userName = (await UserManager.GetUserNameAsync(_user).ConfigureAwait(false))!;
         PayloadGenerator.OneTimePassword payload = new()
         {
             Issuer = UserManager.Options.Tokens.AuthenticatorIssuer,
-            Label = _user.UserName,
+            Label = userName,
             Secret = base32secret,
             Type = PayloadGenerator.OneTimePassword.OneTimePasswordAuthType.TOTP
         };
+
         using QRCodeData data = QRCodeGenerator.GenerateQrCode(payload);
         using SvgQRCode svgQRCode = new(data);
         return (base32secret, svgQRCode.GetGraphic(6));
@@ -96,7 +100,7 @@ public sealed partial class Authenticator : ComponentBase
         IdentityResult result = await UserManager.SetTwoFactorEnabledAsync(_user, true).ConfigureAwait(false);
         if (result.Succeeded)
         {
-            Cache.Remove(CacheKey);
+            Cache.Remove(await GetCacheKeyAsync().ConfigureAwait(false));
 
             await InvokeAsync(() => ToastService.NotifySuccess(Localizer["enableSuccess_Title"], Localizer["enableSuccess_Message"])).ConfigureAwait(false);
             NavigationManager.NavigateToSecurityIndex();

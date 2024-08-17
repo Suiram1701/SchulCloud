@@ -199,4 +199,7 @@
   <data name="email_Desc" xml:space="preserve">
     <value>Bei der 2FA-Authentifizierung per E-Mail erhalten Sie Einmalcode an die E-Mail-Adresse ihres Accounts.</value>
   </data>
+  <data name="authenticator_DisableAbortBtn" xml:space="preserve">
+    <value>Abrechen</value>
+  </data>
 </root>

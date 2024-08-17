@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SchulCloud.Database.Enums;
+﻿namespace SchulCloud.Database.Enums;
 
 /// <summary>
 /// Flags that represents different 2fa methods.

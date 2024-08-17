@@ -33,15 +33,14 @@ public sealed partial class Index : ComponentBase
 
     [Inject]
     private ToastService ToastService { get; set; } = default!;
-
-    [Inject]
-    private ModalService ModalService { get; set; } = default!;
     #endregion
 
     private User _user = default!;
     private bool _mfaEnabled;
     private int _mfaRemainingRecoveryCodes;
     private bool _mfaEmailEnabled;
+
+    private Modal AuthenticatorDisableModal { get; set; } = default!;
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
@@ -58,18 +57,18 @@ public sealed partial class Index : ComponentBase
 
     private async Task AuthenticatorDisable_ClickAsync()
     {
-        await ModalService.ShowAsync(new()
-        {
-            Title = Localizer["authenticator_Disable"],
-            Message = Localizer["authenticator_DisableMessage"],
-            ShowFooterButton = true,
-            FooterButtonColor = ButtonColor.Danger,
-            FooterButtonText = Localizer["authenticator_DisableExecuteBtn"]
-        }, AuthenticatorDisable_CallbackAsync);
+        await AuthenticatorDisableModal.ShowAsync().ConfigureAwait(false);
     }
 
-    private async void AuthenticatorDisable_CallbackAsync()
+    private async Task AuthenticatorDisableAbort_ClickAsync()
     {
+        await AuthenticatorDisableModal.HideAsync().ConfigureAwait(false);
+    }
+
+    private async void AuthenticatorDisableExecute_ClickAsync()
+    {
+        await AuthenticatorDisableModal.HideAsync().ConfigureAwait(false);
+
         IdentityResult result = await UserManager.SetTwoFactorEnabledAsync(_user, false).ConfigureAwait(false);
         await InvokeAsync(() =>
         {
@@ -82,6 +81,8 @@ public sealed partial class Index : ComponentBase
             {
                 ToastService.NotifyError(result.Errors, Localizer["disable_Error"]);
             }
+
+            StateHasChanged();
         }).ConfigureAwait(false);
     }
 
@@ -99,6 +100,8 @@ public sealed partial class Index : ComponentBase
             {
                 ToastService.NotifyError(result.Errors, Localizer["enable_Error"]);
             }
+
+            StateHasChanged();
         }).ConfigureAwait(false);
     }
 

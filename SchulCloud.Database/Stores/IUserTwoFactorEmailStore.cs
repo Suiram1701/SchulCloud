@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SchulCloud.Database.Stores;
+﻿namespace SchulCloud.Database.Stores;
 
 /// <summary>
 /// An interface that provides a flag that indicates whether 2fa via email is enabled.

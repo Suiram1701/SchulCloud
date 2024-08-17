@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
+﻿using System.Data.Common;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MailKit.Client;
 

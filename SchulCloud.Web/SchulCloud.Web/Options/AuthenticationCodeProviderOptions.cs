@@ -1,6 +1,6 @@
 ﻿namespace SchulCloud.Web.Options;
 
-public class AuthenticationTokenProviderOptions
+public class AuthenticationCodeProviderOptions
 {
     /// <summary>
     /// The lifespan of the generated token.

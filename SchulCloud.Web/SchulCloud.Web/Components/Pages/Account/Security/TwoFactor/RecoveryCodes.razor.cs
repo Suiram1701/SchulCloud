@@ -75,10 +75,11 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
         if (_recoveryCodes.Length > 0)
         {
             string appName = PresentationOptionsAccessor.Value.ApplicationName;
+            string userName = (await UserManager.GetUserNameAsync(_user).ConfigureAwait(false))!;
+            string userEmail = (await UserManager.GetEmailAsync(_user).ConfigureAwait(false))!;
 
             StringBuilder fileBuilder = new();
-            fileBuilder.AppendLine(Localizer["file_Introduction", appName, _user.UserName!, _user.Email!]);
-
+            fileBuilder.AppendLine(Localizer["file_Introduction", appName, userName, userEmail]);
             foreach (string code in _recoveryCodes)
             {
                 fileBuilder.Append("- ").AppendLine(code);

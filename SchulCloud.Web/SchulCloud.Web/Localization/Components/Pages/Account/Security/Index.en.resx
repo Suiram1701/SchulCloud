@@ -199,4 +199,7 @@
   <data name="email_Disable_SuccessMessage" xml:space="preserve">
     <value>Email 2FA authentication is no longer available for this account.</value>
   </data>
+  <data name="authenticator_DisableAbortBtn" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
 </root>

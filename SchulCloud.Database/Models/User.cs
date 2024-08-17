@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SchulCloud.Database.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchulCloud.Database.Models;
 

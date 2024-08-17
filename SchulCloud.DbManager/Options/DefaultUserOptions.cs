@@ -2,7 +2,6 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SchulCloud.Database.Models;
 
 namespace SchulCloud.DbManager.Options;
 

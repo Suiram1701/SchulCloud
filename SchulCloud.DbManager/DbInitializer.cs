@@ -122,11 +122,10 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
             if (result.Succeeded)
             {
                 result = await userManager.AddToRoleAsync(user, RoleNames.AdminRoleName);
-            }
 
-            if (result.Succeeded)
-            {
-                _logger.LogInformation("Created admin user with id {id}.", user.Id);
+                string userId = await userManager.GetUserIdAsync(user).ConfigureAwait(false);
+
+                _logger.LogInformation("Created admin user with id {id}.", userId);
                 activity?.AddEvent(new("Admin user created"));
             }
             else

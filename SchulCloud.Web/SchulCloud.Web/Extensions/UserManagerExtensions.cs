@@ -2,7 +2,7 @@
 
 namespace SchulCloud.Web.Extensions;
 
-public static class IdentityUserExtensions
+public static class UserManagerExtensions
 {
     /// <summary>
     /// Anonymizes the user's email address by replacing the local part with *.
@@ -13,22 +13,26 @@ public static class IdentityUserExtensions
     /// <param name="user">The user</param>
     /// <returns>The anonymized email address.</returns>
     /// <exception cref="ArgumentException"></exception>
-    public static string GetAnonymizedEmail(this IdentityUser user)
+    public static async Task<string> GetAnonymizedEmailAsync<TUser>(this UserManager<TUser> manager, TUser user)
+        where TUser : class
     {
-        ArgumentNullException.ThrowIfNull(user, nameof(user));
-        if (user.Email is null)
+        ArgumentNullException.ThrowIfNull(manager);
+        ArgumentNullException.ThrowIfNull(user);
+
+        string? userEmail = await manager.GetEmailAsync(user).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(userEmail))
         {
-            throw new ArgumentException("The specified user doesn't have an email address.");
+            throw new InvalidOperationException("The user doesn't have an email address.");
         }
 
-        int atIndex = user.Email.IndexOf('@');
+        int atIndex = userEmail.IndexOf('@');
         if (atIndex <= -1)
         {
-            throw new ArgumentException("Invalid email address.");
+            throw new InvalidOperationException("The user doesn't have a valid email address.");
         }
 
-        string localPart = user.Email[..atIndex];
-        string domainPart = user.Email[atIndex..];
+        string localPart = userEmail[..atIndex];
+        string domainPart = userEmail[atIndex..];
 
         if (localPart.Length <= 1)
         {

@@ -80,7 +80,7 @@ public sealed partial class ResetPassword : ComponentBase
         if (!await ResetLimiter.CanRequestPasswordResetAsync(_user).ConfigureAwait(false))
         {
             DateTimeOffset? expiration = await ResetLimiter.GetPasswordResetExpirationTimeAsync(_user).ConfigureAwait(false);
-            ToastService.Notify(new(ToastType.Info, Localizer["sentToastTitle_Timeout"], Localizer["sentToastMessage_Timeout", expiration.Humanize()])
+            ToastService.Notify(new(ToastType.Info, Localizer["sent_Timeout"], Localizer["sent_TimeoutMessage", expiration.Humanize()])
             {
                 AutoHide = true,
             });
@@ -90,16 +90,19 @@ public sealed partial class ResetPassword : ComponentBase
             string resetToken = await UserManager.GeneratePasswordResetTokenAsync(_user).ConfigureAwait(false);
 
             // Show the Toast before the email is sent for better user experience (sending the mail is time expensive).
-            await InvokeAsync(() =>
+            await InvokeAsync(async () =>
             {
-                ToastService.Notify(new(ToastType.Info, Localizer["sentToastTitle"], Localizer["sentToastMessage", _user.GetAnonymizedEmail()])
+                string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(_user).ConfigureAwait(false);
+                ToastService.Notify(new(ToastType.Info, Localizer["sent"], Localizer["sentMessage", anonymizedAddress])
                 {
                     AutoHide = true
                 });
             }).ConfigureAwait(false);
 
             Uri resetUri = NavigationManager.ToAbsoluteUri(Routes.ResetPassword(userId: UserId, token: resetToken, returnUrl: ReturnUrl));
-            await EmailSender.SendPasswordResetLinkAsync(_user, _user.Email!, resetUri.AbsoluteUri).ConfigureAwait(false); 
+
+            string userEmail = (await UserManager.GetEmailAsync(_user).ConfigureAwait(false))!;
+            await EmailSender.SendPasswordResetLinkAsync(_user, userEmail, resetUri.AbsoluteUri).ConfigureAwait(false);
         }
     }
 
@@ -113,8 +116,8 @@ public sealed partial class ResetPassword : ComponentBase
             return [Localizer["userForm_NotFound"]];
         }
 
-        UserId = _user.Id;
-        NavigationManager.NavigateToResetPassword(userId: _user.Id, returnUrl: ReturnUrl, replace: true);
+        UserId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
+        NavigationManager.NavigateToResetPassword(userId: UserId, returnUrl: ReturnUrl, replace: true);
 
         return [];
     }
@@ -137,7 +140,7 @@ public sealed partial class ResetPassword : ComponentBase
         {
             await InvokeAsync(() => ToastService.NotifySuccess(Localizer["toastTitle"], Localizer["successToastMessage"]));
 
-            Uri returnUri = NavigationManager.ToAbsoluteUri(ReturnUrl ?? Web.Routes.SignIn());
+            Uri returnUri = NavigationManager.ToAbsoluteUri(ReturnUrl ?? Routes.SignIn());
             NavigationManager.NavigateTo(returnUri.PathAndQuery);
         }
     }

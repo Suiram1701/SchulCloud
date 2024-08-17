@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using SchulCloud.Web.Options;
+﻿using SchulCloud.Web.Options;
 
 namespace SchulCloud.Web.Services.Interfaces;
 

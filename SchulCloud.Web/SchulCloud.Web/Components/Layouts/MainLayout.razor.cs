@@ -27,7 +27,7 @@ public partial class MainLayout : LayoutComponentBase
     private NavigationManager NavigationManager { get; set; } = default!;
     #endregion
 
-    private ClaimsPrincipal _user = default!;
+    private ClaimsPrincipal _userPrincipial = default!;
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
@@ -35,7 +35,7 @@ public partial class MainLayout : LayoutComponentBase
     protected override async Task OnInitializedAsync()
     {
         AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
-        _user = state.User;
+        _userPrincipial = state.User;
     }
 
     private bool IsActive(string path)

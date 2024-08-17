@@ -1,25 +1,22 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SchulCloud.Database.Models;
+using SchulCloud.Web.Helpers;
 using SchulCloud.Web.Options;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SchulCloud.Web.Identity.TokenProviders;
 
 /// <summary>
 /// A token provider that stores the generated token as an authentication token.
 /// </summary>
-public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<AuthenticationCodeTokenProvider<TUser>> logger, IOptions<AuthenticationTokenProviderOptions> optionsAccessor)
+public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<AuthenticationCodeTokenProvider<TUser>> logger, IOptions<AuthenticationCodeProviderOptions> optionsAccessor)
     : IUserTwoFactorTokenProvider<TUser>
     where TUser : class
 {
     private const string _providerName = "[AuthenticationCodeTokenProvider]";
 
     private readonly ILogger _logger = logger;
-    private readonly AuthenticationTokenProviderOptions _options = optionsAccessor.Value;
+    private readonly AuthenticationCodeProviderOptions _options = optionsAccessor.Value;
 
     public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
     {
@@ -34,7 +31,7 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
         ArgumentNullException.ThrowIfNull(user);
 
         string code = GenerateRandomToken();
-        AuthenticationTokenModel model = new(DateTimeOffset.UtcNow.Add(_options.TokenLifeSpan), HashCode(code, purpose));
+        AuthenticationTokenModel model = new(DateTimeOffset.UtcNow.Add(_options.TokenLifeSpan), HashingHelpers.HashData(purpose, code));
 
         IdentityResult result = await manager.SetAuthenticationTokenAsync(user, _providerName, GetTokenName(purpose), JsonSerializer.Serialize(model)).ConfigureAwait(false);
         if (!result.Succeeded)
@@ -73,7 +70,7 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
             return false;
         }
 
-        if (model.CodeHash?.Equals(HashCode(token, purpose)) ?? false)
+        if (model.CodeHash?.Equals(HashingHelpers.HashData(purpose, token)) ?? false)
         {
             if (await TryRemoveTokenAsync(manager, user, purpose).ConfigureAwait(false))
             {
@@ -85,14 +82,6 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
     }
 
     private static string GetTokenName(string purpose) => $"AuthenticationCode-{purpose}";
-
-    private static string HashCode(string code, string purpose)
-    {
-        byte[] keyBytes = Encoding.UTF8.GetBytes(purpose);
-        byte[] codeBytes = Encoding.UTF8.GetBytes(code);
-
-        return Convert.ToBase64String(HMACSHA256.HashData(keyBytes, codeBytes));
-    }
 
     private async Task<bool> TryRemoveTokenAsync(UserManager<TUser> manager, TUser user, string purpose)
     {

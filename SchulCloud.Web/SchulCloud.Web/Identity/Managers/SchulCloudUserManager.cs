@@ -1,15 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SchulCloud.Database.Models;
 using SchulCloud.Database.Stores;
+using SchulCloud.Web.Helpers;
 using SchulCloud.Web.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SchulCloud.Web.Identity.Managers;
 
@@ -101,41 +95,24 @@ public class SchulCloudUserManager(
             codes.Add(CreateTwoFactorRecoveryCode());
         }
 
-        await store.ReplaceCodesAsync(user, HashRecoveryCodes(user, codes), CancellationToken).ConfigureAwait(false);
+        string userId = await GetUserIdAsync(user);
+        IEnumerable<string> hashedCodes = codes.Select(c => HashingHelpers.HashData(userId, c));
+
+        await store.ReplaceCodesAsync(user, hashedCodes, CancellationToken).ConfigureAwait(false);
         IdentityResult result = await UpdateAsync(user).ConfigureAwait(false);
 
-        if (result.Succeeded)
-        {
-            return codes;
-        }
-        return null;
+        return result.Succeeded
+            ? codes
+            : null;
     }
 
-    public override Task<IdentityResult> RedeemTwoFactorRecoveryCodeAsync(User user, string code)
+    public override async Task<IdentityResult> RedeemTwoFactorRecoveryCodeAsync(User user, string code)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        return base.RedeemTwoFactorRecoveryCodeAsync(user, HashRecoveryCode(user, code));
-    }
-
-    private static string HashRecoveryCode(User user, string code)
-    {
-        byte[] keyBytes = Encoding.UTF8.GetBytes(user.Id);
-        byte[] codeBytes = Encoding.UTF8.GetBytes(code);
-        byte[] result = HMACSHA256.HashData(keyBytes, codeBytes);
-        return Convert.ToBase64String(result);
-    }
-
-    private static IEnumerable<string> HashRecoveryCodes(User user, IEnumerable<string> codes)
-    {
-        byte[] keyBytes = Encoding.UTF8.GetBytes(user.Id);
-        foreach (string code in codes)
-        {
-            byte[] codeBytes = Encoding.UTF8.GetBytes(code);
-            byte[] result = HMACSHA256.HashData(keyBytes, codeBytes);
-            yield return Convert.ToBase64String(result);
-        }
+        string userId = await GetUserIdAsync(user).ConfigureAwait(false);
+        return await base.RedeemTwoFactorRecoveryCodeAsync(user, HashingHelpers.HashData(userId, code));
     }
 
     private IUserTwoFactorEmailStore<User> GetTwoFactorEmailStore()
