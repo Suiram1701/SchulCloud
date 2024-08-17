@@ -143,7 +143,7 @@
     <value>Disable authentication app</value>
   </data>
   <data name="mfa_Desc" xml:space="preserve">
-    <value>Two-factor authentication (2FA) provides an additional layer of security for your account. Once activated, you will need an additional factor in addition to your password to log in. This method ensures that only you can access your account, even if your password is compromised.</value>
+    <value>Two-factor authentication (2FA) provides an additional layer of security for your account. Once enabled, you will need another factor in addition to your password to log in. This method ensures that only you can access your account, even if your password is compromised. To enable this, enable the authenticator app.</value>
   </data>
   <data name="authenticator_Desc" xml:space="preserve">
     <value>2FA authentication using an authentication app uses an app on your mobile device to generate a temporary, one-time code each time you log in.</value>
@@ -201,5 +201,14 @@
   </data>
   <data name="authenticator_DisableAbortBtn" xml:space="preserve">
     <value>Cancel</value>
+  </data>
+  <data name="authenticator_EnableFirst" xml:space="preserve">
+    <value>2FA authentication via authentication app must be active.</value>
+  </data>
+  <data name="recovery_NoValidCodes" xml:space="preserve">
+    <value>No valid codes available</value>
+  </data>
+  <data name="recovery_NoValidCodes_Tooltip" xml:space="preserve">
+    <value>No recovery codes are available. Generate new recovery codes so that a backup option is still available.</value>
   </data>
 </root>

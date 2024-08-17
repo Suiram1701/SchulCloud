@@ -51,8 +51,11 @@ public sealed partial class Index : ComponentBase
         _user = (await UserManager.GetUserAsync(authenticationState.User).ConfigureAwait(false))!;
 
         _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user).ConfigureAwait(false);
-        _mfaRemainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user).ConfigureAwait(false);
-        _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user).ConfigureAwait(false);
+        if (_mfaEnabled)
+        {
+            _mfaRemainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user).ConfigureAwait(false);
+            _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user).ConfigureAwait(false);
+        }
     }
 
     private async Task AuthenticatorDisable_ClickAsync()
@@ -75,7 +78,10 @@ public sealed partial class Index : ComponentBase
             if (result.Succeeded)
             {
                 ToastService.NotifySuccess(Localizer["authenticator_Disable_Success"], Localizer["authenticator_Disable_SuccessMessage"]);
+
                 _mfaEnabled = false;
+                _mfaEmailEnabled = false;
+                _mfaRemainingRecoveryCodes = 0;
             }
             else
             {
@@ -88,6 +94,11 @@ public sealed partial class Index : ComponentBase
 
     private async Task EmailEnable_ClickAsync()
     {
+        if (!_mfaEnabled)
+        {
+            return;
+        }
+
         IdentityResult result = await UserManager.SetTwoFactorEmailEnabledAsync(_user, true).ConfigureAwait(false);
         await InvokeAsync(() =>
         {

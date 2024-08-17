@@ -40,6 +40,31 @@ public class SchulCloudUserManager(
         }
     }
 
+    public override async Task<IdentityResult> SetTwoFactorEnabledAsync(User user, bool enabled)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(enabled);
+
+        IUserTwoFactorStore<User> twoFactorStore = GetTwoFactorStore();
+        await twoFactorStore.SetTwoFactorEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
+
+        if (!enabled)
+        {
+            // Reset every other 2fa method.
+            IUserAuthenticatorKeyStore<User> authenticatorKeyStore = GetAuthenticatorKeyStore();
+            await authenticatorKeyStore.SetAuthenticatorKeyAsync(user, string.Empty, CancellationToken).ConfigureAwait(false);
+
+            IUserTwoFactorEmailStore<User> twoFactorEmailStore = GetTwoFactorEmailStore();
+            await twoFactorEmailStore.SetTwoFactorEmailEnabled(user, false, CancellationToken).ConfigureAwait(false);
+
+            IUserTwoFactorRecoveryCodeStore<User> twoFactorRecoveryStore = GetTwoFactorRecoveryCodeStore();
+            await twoFactorRecoveryStore.ReplaceCodesAsync(user, [], CancellationToken).ConfigureAwait(false);
+        }
+
+        return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
+    }
+
     /// <summary>
     /// Gets the flag whether email two factor is enabled.
     /// </summary>
@@ -113,6 +138,24 @@ public class SchulCloudUserManager(
 
         string userId = await GetUserIdAsync(user).ConfigureAwait(false);
         return await base.RedeemTwoFactorRecoveryCodeAsync(user, HashingHelpers.HashData(userId, code));
+    }
+
+    private IUserAuthenticatorKeyStore<User> GetAuthenticatorKeyStore()
+    {
+        if (Store is not IUserAuthenticatorKeyStore<User> cast)
+        {
+            throw new NotSupportedException($"{nameof(IUserAuthenticatorKeyStore<User>)} isn't supported by the store.");
+        }
+        return cast;
+    }
+
+    private IUserTwoFactorStore<User> GetTwoFactorStore()
+    {
+        if (Store is not IUserTwoFactorStore<User> cast)
+        {
+            throw new NotSupportedException($"{nameof(IUserTwoFactorStore<User>)} isn't supported by the store.");
+        }
+        return cast;
     }
 
     private IUserTwoFactorEmailStore<User> GetTwoFactorEmailStore()
