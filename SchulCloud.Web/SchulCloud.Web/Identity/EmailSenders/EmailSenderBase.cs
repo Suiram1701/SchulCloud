@@ -1,6 +1,5 @@
 ﻿using Humanizer;
 using Microsoft.Extensions.Options;
-using SchulCloud.Database.Models;
 using SchulCloud.Web.Options;
 using System.Globalization;
 
@@ -9,13 +8,14 @@ namespace SchulCloud.Web.Identity.EmailSenders;
 /// <summary>
 /// Provides a email sender that generates a localized UI for the sendet emails
 /// </summary>
-public abstract class EmailSenderBase(ILogger logger, IOptions<EmailSenderOptions> optionsAccessor) : IEmailSender<User>
+public abstract class EmailSenderBase<TUser>(ILogger logger, IOptions<EmailSenderOptions> optionsAccessor) : IEmailSender<TUser>
+    where TUser : class
 {
     protected readonly ILogger _logger = logger;
     private readonly EmailSenderOptions _options = optionsAccessor.Value;
 
     // A real UI and localization will be implemented later.
-    public virtual async Task SendPasswordResetLinkAsync(User user, string email, string resetLink)
+    public virtual async Task SendPasswordResetLinkAsync(TUser user, string email, string resetLink)
     {
         string content = string.Format(
             "A reset of the account password of this account was requested. " +
@@ -25,7 +25,7 @@ public abstract class EmailSenderBase(ILogger logger, IOptions<EmailSenderOption
         await ExecuteInternalAsync(user, email, "Reset account password", content).ConfigureAwait(false);
     }
 
-    public virtual async Task Send2faEmailCodeAsync(User user, string email, string code)
+    public virtual async Task Send2faEmailCodeAsync(TUser user, string email, string code)
     {
         string content = string.Format(
             "A 2fa authentication via email was requested for this account. " +
@@ -35,7 +35,7 @@ public abstract class EmailSenderBase(ILogger logger, IOptions<EmailSenderOption
         await ExecuteInternalAsync(user, email, "2FA Email confirmation", content).ConfigureAwait(false);
     }
 
-    private async Task ExecuteInternalAsync(User user, string email, string subject, string content)
+    private async Task ExecuteInternalAsync(TUser user, string email, string subject, string content)
     {
         try
         {
@@ -57,5 +57,5 @@ public abstract class EmailSenderBase(ILogger logger, IOptions<EmailSenderOption
     /// <param name="subject">The subject of the email.</param>
     /// <param name="content">The raw content of the email</param>
     /// <returns>A task that returns the result of the email sending.</returns>
-    protected abstract Task ExecuteAsync(User user, string email, string subject, string content);
+    protected abstract Task ExecuteAsync(TUser user, string email, string subject, string content);
 }

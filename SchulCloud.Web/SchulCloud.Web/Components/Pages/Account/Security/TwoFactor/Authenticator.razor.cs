@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using QRCoder;
-using SchulCloud.Database.Models;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Models;
 
@@ -25,7 +24,7 @@ public sealed partial class Authenticator : ComponentBase
     private IStringLocalizer<Authenticator> Localizer { get; set; } = default!;
 
     [Inject]
-    private UserManager<User> UserManager { get; set; } = default!;
+    private UserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -34,7 +33,7 @@ public sealed partial class Authenticator : ComponentBase
     private ToastService ToastService { get; set; } = default!;
     #endregion
 
-    private User _user = default!;
+    private ApplicationUser _user = default!;
     private (string Base32Secret, string SvgRenderedQrCode)? _authenticatorInfo;
     private readonly AuthenticatorModel _model = new();
 

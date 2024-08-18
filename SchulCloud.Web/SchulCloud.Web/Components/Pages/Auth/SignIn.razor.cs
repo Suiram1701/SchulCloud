@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
-using SchulCloud.Database.Models;
 using SchulCloud.Web.Constants;
 using SchulCloud.Web.Models;
 
@@ -24,10 +23,10 @@ public sealed partial class SignIn : ComponentBase, IDisposable
     private AntiforgeryStateProvider AntiforgeryStateProvider { get; set; } = default!;
 
     [Inject]
-    private SignInManager<User> SignInManager { get; set; } = default!;
+    private SignInManager<ApplicationUser> SignInManager { get; set; } = default!;
 
     [Inject]
-    private UserManager<User> UserManager { get; set; } = default!;
+    private UserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -95,7 +94,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
     private async Task ForgotPasswordAsync_ClickAsync()
     {
-        User? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
+        ApplicationUser? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
         user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
 
         string? userId = user is not null
@@ -108,7 +107,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
     private async Task SignInAsync()
     {
-        User? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
+        ApplicationUser? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
         user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
 
         if (user is null)

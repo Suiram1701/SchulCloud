@@ -1,14 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
-using SchulCloud.Database.Models;
-
-namespace SchulCloud.Web.Identity.EmailSenders;
+﻿namespace SchulCloud.Web.Identity.EmailSenders;
 
 /// <summary>
 /// An interface that provides sending automated emails.
 /// </summary>
 /// <typeparam name="TUser"></typeparam>
 public interface IEmailSender<TUser>
-    where TUser : IdentityUser
+    where TUser : class
 {
     /// <summary>
     /// Sends a password reset email to the specified <paramref name="email"/> address.
@@ -31,5 +28,5 @@ public interface IEmailSender<TUser>
     /// <param name="email">The recipient email.</param>
     /// <param name="code">The authentication code.</param>
     /// <returns></returns>
-    public Task Send2faEmailCodeAsync(User user, string email, string code);
+    public Task Send2faEmailCodeAsync(TUser user, string email, string code);
 }

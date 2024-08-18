@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SchulCloud.Database;
-using SchulCloud.Database.Models;
-using SchulCloud.Database.Stores;
+using SchulCloud.Database.Extensions;
+using SchulCloud.DbManager.Extensions;
 using SchulCloud.DbManager.HealthChecks;
 using SchulCloud.DbManager.Options;
 using SchulCloud.ServiceDefaults;
+using SchulCloud.Store;
 
 namespace SchulCloud.DbManager;
 
@@ -16,18 +16,18 @@ internal class Program
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.Services.AddValidatorsFromAssemblyContaining<IDbManager>(includeInternalTypes: true);
-        builder.AddServiceDefaults();
+        builder
+            .AddServiceDefaults()
+            .ConfigureOptions();
 
         builder.Services.AddOpenTelemetry()
             .WithTracing(traceBuilder => traceBuilder.AddSource(DbInitializer.ActivitySourceName));
 
         builder.AddNpgsqlDbContext<SchulCloudDbContext>("schulcloud-db");
-        builder.Services
-            .Configure<IdentityOptions>(builder.Configuration.GetSection("Identity"))
-            .AddIdentityCore<User>()
-            .AddRoles<Role>()
-            .AddUserStore<SchulCloudUserStore>()
-            .AddEntityFrameworkStores<SchulCloudDbContext>();
+        builder.Services.AddIdentityCore<ApplicationUser>()
+            .AddRoles<ApplicationRole>()
+            .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()
+            .AddSchulCloudManagers();
 
         builder.Services
             .AddSingleton<DbInitializer>()

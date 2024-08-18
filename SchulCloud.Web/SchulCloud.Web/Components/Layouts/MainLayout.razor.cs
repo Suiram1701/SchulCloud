@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using SchulCloud.Database.Models;
 using SchulCloud.Web.Options;
 using System.Security.Claims;
 
@@ -21,7 +20,7 @@ public partial class MainLayout : LayoutComponentBase
     private IOptionsSnapshot<PresentationOptions> PresentationOptions { get; set; } = default!;
 
     [Inject]
-    private UserManager<User> UserManager { get; set; } = default!;
+    private UserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;

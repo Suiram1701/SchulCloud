@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
+using SchulCloud.Store;
 using SchulCloud.Web.Options;
 
 namespace SchulCloud.Web.Extensions;
@@ -16,7 +17,6 @@ public static class ApplicationBuilderExtensions
         // Identity
         builder.Services
             .Configure<IdentityOptions>(builder.Configuration.GetSection("Identity"))
-            .Configure<ExtendedTokenProviderOptions>(builder.Configuration.GetSection("Identity:Tokens"))
             .Configure<EmailSenderOptions>(builder.Configuration.GetSection("Identity:EmailSender"))
             .Configure<DataProtectionTokenProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:DataProtectionTokenProvider"))
             .Configure<AuthenticationCodeProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:AuthenticationCodeTokenProvider"));
@@ -39,6 +39,7 @@ public static class ApplicationBuilderExtensions
 
         // Other
         builder.Services.Configure<RequestLimiterOptions>(builder.Configuration.GetSection("RequestLimiter"));
+        builder.ConfigureManagers();
 
         return builder;
     }

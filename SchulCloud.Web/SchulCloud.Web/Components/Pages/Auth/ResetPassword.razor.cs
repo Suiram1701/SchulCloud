@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
-using SchulCloud.Database.Models;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Models;
 using SchulCloud.Web.Services.Interfaces;
@@ -22,16 +21,16 @@ public sealed partial class ResetPassword : ComponentBase
     private IStringLocalizer<ResetPassword> Localizer { get; set; } = default!;
 
     [Inject]
-    private Identity.EmailSenders.IEmailSender<User> EmailSender { get; set; } = default!;
+    private Identity.EmailSenders.IEmailSender<ApplicationUser> EmailSender { get; set; } = default!;
 
     [Inject]
-    private IRequestLimiter<User> ResetLimiter { get; set; } = default!;
+    private IRequestLimiter<ApplicationUser> ResetLimiter { get; set; } = default!;
 
     [Inject]
-    private SignInManager<User> SignInManager { get; set; } = default!;
+    private SignInManager<ApplicationUser> SignInManager { get; set; } = default!;
 
     [Inject]
-    private UserManager<User> UserManager { get; set; } = default!;
+    private UserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -40,7 +39,7 @@ public sealed partial class ResetPassword : ComponentBase
     private ToastService ToastService { get; set; } = default!;
     #endregion
 
-    private User? _user;
+    private ApplicationUser? _user;
     private readonly PasswordResetUserModel _userModel = new();
     private readonly PasswordResetModel _model = new();
 

@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SchulCloud.Web.Helpers;
 using SchulCloud.Web.Options;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace SchulCloud.Web.Identity.TokenProviders;
@@ -31,7 +32,7 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
         ArgumentNullException.ThrowIfNull(user);
 
         string code = GenerateRandomToken();
-        AuthenticationTokenModel model = new(DateTimeOffset.UtcNow.Add(_options.TokenLifeSpan), HashingHelpers.HashData(purpose, code));
+        AuthenticationTokenModel model = new(DateTimeOffset.UtcNow.Add(_options.TokenLifeSpan), HashCode(purpose, code));
 
         IdentityResult result = await manager.SetAuthenticationTokenAsync(user, _providerName, GetTokenName(purpose), JsonSerializer.Serialize(model)).ConfigureAwait(false);
         if (!result.Succeeded)
@@ -70,7 +71,7 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
             return false;
         }
 
-        if (model.CodeHash?.Equals(HashingHelpers.HashData(purpose, token)) ?? false)
+        if (model.CodeHash?.Equals(HashCode(purpose, token)) ?? false)
         {
             if (await TryRemoveTokenAsync(manager, user, purpose).ConfigureAwait(false))
             {
@@ -82,6 +83,14 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
     }
 
     private static string GetTokenName(string purpose) => $"AuthenticationCode-{purpose}";
+
+    private static string HashCode(string purpose, string code)
+    {
+        byte[] keyBytes = Encoding.UTF8.GetBytes(purpose);
+        byte[] codeBytes = Encoding.UTF8.GetBytes(code);
+
+        return Convert.ToBase64String(HMACSHA256.HashData(keyBytes, codeBytes));
+    }
 
     private async Task<bool> TryRemoveTokenAsync(UserManager<TUser> manager, TUser user, string purpose)
     {

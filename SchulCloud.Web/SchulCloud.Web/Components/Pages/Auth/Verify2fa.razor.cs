@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
-using SchulCloud.Database.Models;
+using SchulCloud.Store.Managers;
 using SchulCloud.Web.Constants;
 using SchulCloud.Web.Enums;
 using SchulCloud.Web.Extensions;
@@ -23,19 +23,19 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
     private IStringLocalizer<Verify2fa> Localizer { get; set; } = default!;
 
     [Inject]
-    private Identity.EmailSenders.IEmailSender<User> EmailSender { get; set; } = default!;
+    private Identity.EmailSenders.IEmailSender<ApplicationUser> EmailSender { get; set; } = default!;
 
     [Inject]
-    private IRequestLimiter<User> Limiter { get; set; } = default!;
+    private IRequestLimiter<ApplicationUser> Limiter { get; set; } = default!;
 
     [Inject]
     private AntiforgeryStateProvider AntiforgeryStateProvider { get; set; } = default!;
 
     [Inject]
-    private SchulCloudSignInManager SignInManager { get; set; } = default!;
+    private SchulCloudSignInManager<ApplicationUser> SignInManager { get; set; } = default!;
 
     [Inject]
-    private SchulCloudUserManager UserManager { get; set; } = default!;
+    private SchulCloudUserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -49,7 +49,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
 
     private const string _formName = "verify2fa";
 
-    private User _user = default!;
+    private ApplicationUser _user = default!;
     private bool _mfaEmailEnabled;
     private string? _errorMessage;
     private PersistingComponentStateSubscription? _persistingSubscription;
@@ -74,7 +74,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
             NavigationManager.Refresh(forceReload: true);
         }
 
-        if (ComponentState.TryTakeFromJson(nameof(_user), out User? user))
+        if (ComponentState.TryTakeFromJson(nameof(_user), out ApplicationUser? user))
         {
             _user = user!;
         }
@@ -175,7 +175,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
         {
             // Renew the user instance because a persistent instance isn't changed tracked anymore.
             string userId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
-            User user = (await UserManager.FindByIdAsync(userId).ConfigureAwait(false))!;
+            ApplicationUser user = (await UserManager.FindByIdAsync(userId).ConfigureAwait(false))!;
 
             string code = await UserManager.GenerateTwoFactorEmailCodeAsync(user).ConfigureAwait(false);
             if (string.IsNullOrEmpty(code))

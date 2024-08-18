@@ -3,9 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using SchulCloud.Database;
-using SchulCloud.Database.Models;
 using SchulCloud.DbManager.Options;
+using SchulCloud.Store.Managers;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace SchulCloud.DbManager;
 
@@ -31,8 +32,7 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
 
     private async Task MigrateDbAsync(IServiceProvider serviceProvider, Activity? activity, CancellationToken ct)
     {
-        SchulCloudDbContext context = serviceProvider.GetRequiredService<SchulCloudDbContext>();
-
+        DbContext context = serviceProvider.GetRequiredService<SchulCloudDbContext>();
         IExecutionStrategy strategy = context.Database.CreateExecutionStrategy();
 
         IEnumerable<string> pendingMigrations = await strategy.ExecuteAsync(context.Database.GetPendingMigrationsAsync, ct);
@@ -63,30 +63,27 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
 
     private async Task AddDefaultRolesAsync(IServiceProvider serviceProvider, Activity? activity, CancellationToken ct)
     {
-        RoleManager<Role> roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
-
+        SchulCloudRoleManager<ApplicationRole> roleManager = serviceProvider.GetRequiredService<SchulCloudRoleManager<ApplicationRole>>();
         IEnumerable<string?> defaultRoles = await roleManager.Roles
             .Where(role => role.DefaultRole)
             .Select(role => role.Name)
             .ToListAsync(ct);
 
-        await TryAddDefaultRoleAsync(RoleNames.AdminRoleName, "#FF0000", defaultRoles, roleManager, activity);
-        await TryAddDefaultRoleAsync(RoleNames.TeacherRoleName, "#0000FF", defaultRoles, roleManager, activity);
-        await TryAddDefaultRoleAsync(RoleNames.StudentRoleName, "#008000", defaultRoles, roleManager, activity);
+        await TryAddDefaultRoleAsync(roleManager, RoleNames.AdminRoleName, Color.Red, defaultRoles, activity);
+        await TryAddDefaultRoleAsync(roleManager, RoleNames.TeacherRoleName, Color.Blue, defaultRoles, activity);
+        await TryAddDefaultRoleAsync(roleManager, RoleNames.StudentRoleName, Color.Green, defaultRoles, activity);
     }
 
-    private async Task TryAddDefaultRoleAsync(string roleName, string hexColor, IEnumerable<string?> roles, RoleManager<Role> manager, Activity? activity)
+    private async Task TryAddDefaultRoleAsync(SchulCloudRoleManager<ApplicationRole> manager, string roleName, Color? roleColor, IEnumerable<string?> roles, Activity? activity)
     {
         if (!roles.Contains(roleName))
         {
-            Role role = new()
-            {
-                Name = roleName,
-                Color = hexColor,
-                DefaultRole = true
-            };
-            IdentityResult result = await manager.CreateAsync(role);
+            ApplicationRole role = new();
+            await manager.SetRoleNameAsync(role, roleName).ConfigureAwait(false);
+            await manager.SetRoleColorAsync(role, roleColor).ConfigureAwait(false);
+            await manager.SetIsDefaultRoleAsync(role, true).ConfigureAwait(false);
 
+            IdentityResult result = await manager.CreateAsync(role);
             if (result.Succeeded)
             {
                 _logger.LogInformation("Created default role '{role}' with id {id}.", roleName, role.Id);
@@ -104,26 +101,24 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
 
     private async Task AddDefaultUserAsync(IServiceProvider serviceProvider, Activity? activity)
     {
-        UserManager<User> userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+        UserManager<ApplicationUser> manager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        IEnumerable<User> adminUsers = await userManager.GetUsersInRoleAsync(RoleNames.AdminRoleName);
+        IEnumerable<ApplicationUser> adminUsers = await manager.GetUsersInRoleAsync(RoleNames.AdminRoleName);
         if (!adminUsers.Any())
         {
             DefaultUserOptions userOptions = serviceProvider.GetRequiredService<IOptions<DefaultUserOptions>>().Value;
 
-            User user = new()
-            {
-                UserName = userOptions.UserName,
-                Email = userOptions.Email,
-                EmailConfirmed = true
-            };
-            IdentityResult result = await userManager.CreateAsync(user, userOptions.Password);
+            ApplicationUser user = new();
+            await manager.SetUserNameAsync(user, userOptions.UserName).ConfigureAwait(false);
+            await manager.SetEmailAsync(user, userOptions.Email).ConfigureAwait(false);
+
+            IdentityResult result = await manager.CreateAsync(user, userOptions.Password);
 
             if (result.Succeeded)
             {
-                result = await userManager.AddToRoleAsync(user, RoleNames.AdminRoleName);
+                result = await manager.AddToRoleAsync(user, RoleNames.AdminRoleName);
 
-                string userId = await userManager.GetUserIdAsync(user).ConfigureAwait(false);
+                string userId = await manager.GetUserIdAsync(user).ConfigureAwait(false);
 
                 _logger.LogInformation("Created admin user with id {id}.", userId);
                 activity?.AddEvent(new("Admin user created"));

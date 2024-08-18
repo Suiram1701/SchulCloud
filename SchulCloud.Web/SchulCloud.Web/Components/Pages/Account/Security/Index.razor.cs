@@ -5,9 +5,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using SchulCloud.Database.Models;
+using SchulCloud.Store.Managers;
 using SchulCloud.Web.Extensions;
-using SchulCloud.Web.Identity.Managers;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security;
 
@@ -23,7 +22,7 @@ public sealed partial class Index : ComponentBase
     private IOptions<PasswordOptions> PasswordOptionsAccessor { get; set; } = default!;
 
     [Inject]
-    private SchulCloudUserManager UserManager { get; set; } = default!;
+    private SchulCloudUserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -35,7 +34,7 @@ public sealed partial class Index : ComponentBase
     private ToastService ToastService { get; set; } = default!;
     #endregion
 
-    private User _user = default!;
+    private ApplicationUser _user = default!;
     private bool _mfaEnabled;
     private int _mfaRemainingRecoveryCodes;
     private bool _mfaEmailEnabled;

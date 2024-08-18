@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\MailKit.Client\MailKit.Client.csproj" />
+    <ProjectReference Include="..\..\SchulCloud.Store\SchulCloud.Store.csproj" />
     <ProjectReference Include="..\SchulCloud.Web.Client\SchulCloud.Web.Client.csproj" />
     <ProjectReference Include="..\..\SchulCloud.Database\SchulCloud.Database.csproj" />
     <ProjectReference Include="..\..\SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj" />

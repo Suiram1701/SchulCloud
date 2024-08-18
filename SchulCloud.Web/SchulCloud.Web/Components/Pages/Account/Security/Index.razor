@@ -106,15 +106,18 @@
                             <TitleTemplate>
                                 <SecurityMethodItemTitle IconName="pin" Title="@Localizer["mfa_Recovery"]" Enabled="@(_mfaEnabled ? (_mfaRemainingRecoveryCodes > 0) : null)">
                                     <AdditionalBadges>
-                                        @if (_mfaRemainingRecoveryCodes > 0)
+                                        @if (_mfaEnabled)
                                         {
-                                            <Badge Class="ms-2" Color="BadgeColor.Info">@Localizer["recovery_ValidCodes", _mfaRemainingRecoveryCodes]</Badge>
-                                        }
-                                        else
-                                        {
-                                            <Tooltip Title="@Localizer["recovery_NoValidCodes_Tooltip"]" Placement="TooltipPlacement.Right">
-                                                <Badge Class="ms-2" Color="BadgeColor.Warning">@Localizer["recovery_NoValidCodes"]</Badge>
-                                            </Tooltip>
+                                            @if (_mfaRemainingRecoveryCodes > 0)
+                                            {
+                                                <Badge Class="ms-2" Color="BadgeColor.Info">@Localizer["recovery_ValidCodes", _mfaRemainingRecoveryCodes]</Badge>
+                                            }
+                                            else
+                                            {
+                                                <Tooltip Title="@Localizer["recovery_NoValidCodes_Tooltip"]" Placement="TooltipPlacement.Right">
+                                                    <Badge Class="ms-2" Color="BadgeColor.Warning">@Localizer["recovery_NoValidCodes"]</Badge>
+                                                </Tooltip>
+                                            }
                                         }
                                     </AdditionalBadges>
                                 </SecurityMethodItemTitle>

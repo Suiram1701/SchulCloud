@@ -1,4 +1,4 @@
-﻿namespace SchulCloud.Database.Stores;
+﻿namespace SchulCloud.Store.Abstractions;
 
 /// <summary>
 /// An interface that provides a flag that indicates whether 2fa via email is enabled.

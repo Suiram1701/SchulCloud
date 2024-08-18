@@ -4,9 +4,9 @@ using MailKit.Client;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SchulCloud.Database;
-using SchulCloud.Database.Models;
-using SchulCloud.Database.Stores;
+using SchulCloud.Database.Extensions;
 using SchulCloud.ServiceDefaults;
+using SchulCloud.Store;
 using SchulCloud.Web.Components;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Identity;
@@ -47,14 +47,13 @@ public class Program
 
         builder.AddMailKitClient("maildev");
 
-        IdentityBuilder identityBuilder = builder.Services.AddIdentity<User, Role>()
-            .AddUserStore<SchulCloudUserStore>()
-            .AddEntityFrameworkStores<SchulCloudDbContext>()
-            .AddUserManager<SchulCloudUserManager>()
-            .AddSignInManager<SchulCloudSignInManager>()
+        IdentityBuilder identityBuilder = builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+            .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()
+            .AddSchulCloudManagers()
+            .AddSignInManager<SchulCloudSignInManager<ApplicationUser>>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
-            .AddEmailSender<MailKitEmailSender>()
-            .AddPasswordResetLimiter<CachedRequestLimiter<User>>()
+            .AddEmailSender<MailKitEmailSender<ApplicationUser>>()
+            .AddRequestLimiter<CachedRequestLimiter<ApplicationUser>>()
             .AddDefaultTokenProviders()
             .AddTokenProviders();
 

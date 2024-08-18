@@ -3,7 +3,7 @@ using SchulCloud.Database.Enums;
 
 namespace SchulCloud.Database.Models;
 
-public class User : IdentityUser
+public class SchulCloudUser : IdentityUser
 {
     public override bool TwoFactorEnabled
     {

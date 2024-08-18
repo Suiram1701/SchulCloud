@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
-using SchulCloud.Database.Models;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Options;
 using System.Text;
@@ -29,7 +28,7 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
     private IOptions<PresentationOptions> PresentationOptionsAccessor { get; set; } = default!;
 
     [Inject]
-    private UserManager<User> UserManager { get; set; } = default!;
+    private UserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
     private PersistentComponentState ComponentState { get; set; } = default!;
@@ -38,7 +37,7 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
     private ToastService ToastService { get; set; } = default!;
     #endregion
 
-    private User _user = default!;
+    private ApplicationUser _user = default!;
     private string[] _recoveryCodes = [];
     private PersistingComponentStateSubscription? _stateSubscription;
 

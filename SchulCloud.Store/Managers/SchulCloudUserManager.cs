@@ -1,27 +1,29 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SchulCloud.Database.Models;
-using SchulCloud.Database.Stores;
-using SchulCloud.Web.Helpers;
-using SchulCloud.Web.Options;
+using SchulCloud.Store.Abstractions;
+using SchulCloud.Store.Options;
+using System.Security.Cryptography;
+using System.Text;
 
-namespace SchulCloud.Web.Identity.Managers;
+namespace SchulCloud.Store.Managers;
 
 /// <summary>
 /// A user manager that provides functionalities of this application.
 /// </summary>
-public class SchulCloudUserManager(
-    IUserStore<User> store,
+public class SchulCloudUserManager<TUser>(
+    IUserStore<TUser> store,
     IOptions<IdentityOptions> optionsAccessor,
     IOptions<ExtendedTokenProviderOptions> tokenProviderOptionsAccessor,
-    IPasswordHasher<User> passwordHasher,
-    IEnumerable<IUserValidator<User>> userValidators,
-    IEnumerable<IPasswordValidator<User>> passwordValidators,
+    IPasswordHasher<TUser> passwordHasher,
+    IEnumerable<IUserValidator<TUser>> userValidators,
+    IEnumerable<IPasswordValidator<TUser>> passwordValidators,
     ILookupNormalizer keyNormalizer,
     IdentityErrorDescriber errors,
     IServiceProvider services,
-    ILogger<UserManager<User>> logger)
-    : UserManager<User>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
+    ILogger<UserManager<TUser>> logger)
+    : UserManager<TUser>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
+    where TUser : class
 {
     /// <summary>
     /// Extended token provider options
@@ -36,29 +38,29 @@ public class SchulCloudUserManager(
         get
         {
             ThrowIfDisposed();
-            return Store is IUserTwoFactorEmailStore<User>;
+            return Store is IUserTwoFactorEmailStore<TUser>;
         }
     }
 
-    public override async Task<IdentityResult> SetTwoFactorEnabledAsync(User user, bool enabled)
+    public override async Task<IdentityResult> SetTwoFactorEnabledAsync(TUser user, bool enabled)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(enabled);
 
-        IUserTwoFactorStore<User> twoFactorStore = GetTwoFactorStore();
+        IUserTwoFactorStore<TUser> twoFactorStore = GetTwoFactorStore();
         await twoFactorStore.SetTwoFactorEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
 
         if (!enabled)
         {
             // Reset every other 2fa method.
-            IUserAuthenticatorKeyStore<User> authenticatorKeyStore = GetAuthenticatorKeyStore();
+            IUserAuthenticatorKeyStore<TUser> authenticatorKeyStore = GetAuthenticatorKeyStore();
             await authenticatorKeyStore.SetAuthenticatorKeyAsync(user, string.Empty, CancellationToken).ConfigureAwait(false);
 
-            IUserTwoFactorEmailStore<User> twoFactorEmailStore = GetTwoFactorEmailStore();
+            IUserTwoFactorEmailStore<TUser> twoFactorEmailStore = GetTwoFactorEmailStore();
             await twoFactorEmailStore.SetTwoFactorEmailEnabled(user, false, CancellationToken).ConfigureAwait(false);
 
-            IUserTwoFactorRecoveryCodeStore<User> twoFactorRecoveryStore = GetTwoFactorRecoveryCodeStore();
+            IUserTwoFactorRecoveryCodeStore<TUser> twoFactorRecoveryStore = GetTwoFactorRecoveryCodeStore();
             await twoFactorRecoveryStore.ReplaceCodesAsync(user, [], CancellationToken).ConfigureAwait(false);
         }
 
@@ -70,12 +72,12 @@ public class SchulCloudUserManager(
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>The flag.</returns>
-    public async Task<bool> GetTwoFactorEmailEnabledAsync(User user)
+    public async Task<bool> GetTwoFactorEmailEnabledAsync(TUser user)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserTwoFactorEmailStore<User> store = GetTwoFactorEmailStore();
+        IUserTwoFactorEmailStore<TUser> store = GetTwoFactorEmailStore();
         return await store.GetTwoFactorEmailEnabled(user).ConfigureAwait(false);
     }
 
@@ -85,18 +87,18 @@ public class SchulCloudUserManager(
     /// <param name="user">The user.</param>
     /// <param name="enabled">The flag.</param>
     /// <returns>The result.</returns>
-    public async Task<IdentityResult> SetTwoFactorEmailEnabledAsync(User user, bool enabled)
+    public async Task<IdentityResult> SetTwoFactorEmailEnabledAsync(TUser user, bool enabled)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserTwoFactorEmailStore<User> store = GetTwoFactorEmailStore();
+        IUserTwoFactorEmailStore<TUser> store = GetTwoFactorEmailStore();
         await store.SetTwoFactorEmailEnabled(user, enabled, CancellationToken).ConfigureAwait(false);
 
-        return await UpdateSecurityStampAsync(user).ConfigureAwait(false);     // UpdateSecurityStampAsync also calls UpdateAsync.
+        return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
     }
 
-    public async Task<string> GenerateTwoFactorEmailCodeAsync(User user)
+    public async Task<string> GenerateTwoFactorEmailCodeAsync(TUser user)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
@@ -107,10 +109,10 @@ public class SchulCloudUserManager(
 
     /// <returns>The new recovery codes for the user.</returns>
     /// <inheritdoc />
-    public override async Task<IEnumerable<string>?> GenerateNewTwoFactorRecoveryCodesAsync(User user, int number)
+    public override async Task<IEnumerable<string>?> GenerateNewTwoFactorRecoveryCodesAsync(TUser user, int number)
     {
         ThrowIfDisposed();
-        IUserTwoFactorRecoveryCodeStore<User> store = GetTwoFactorRecoveryCodeStore();
+        IUserTwoFactorRecoveryCodeStore<TUser> store = GetTwoFactorRecoveryCodeStore();
         ArgumentNullException.ThrowIfNull(user);
         ArgumentOutOfRangeException.ThrowIfNegative(number);
 
@@ -121,7 +123,7 @@ public class SchulCloudUserManager(
         }
 
         string userId = await GetUserIdAsync(user);
-        IEnumerable<string> hashedCodes = codes.Select(c => HashingHelpers.HashData(userId, c));
+        IEnumerable<string> hashedCodes = codes.Select(code => HashRecoveryCode(userId, code));
 
         await store.ReplaceCodesAsync(user, hashedCodes, CancellationToken).ConfigureAwait(false);
         IdentityResult result = await UpdateAsync(user).ConfigureAwait(false);
@@ -131,47 +133,55 @@ public class SchulCloudUserManager(
             : null;
     }
 
-    public override async Task<IdentityResult> RedeemTwoFactorRecoveryCodeAsync(User user, string code)
+    public override async Task<IdentityResult> RedeemTwoFactorRecoveryCodeAsync(TUser user, string code)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
         string userId = await GetUserIdAsync(user).ConfigureAwait(false);
-        return await base.RedeemTwoFactorRecoveryCodeAsync(user, HashingHelpers.HashData(userId, code));
+        return await base.RedeemTwoFactorRecoveryCodeAsync(user, HashRecoveryCode(userId, code));
     }
 
-    private IUserAuthenticatorKeyStore<User> GetAuthenticatorKeyStore()
+    private static string HashRecoveryCode(string userId, string code)
     {
-        if (Store is not IUserAuthenticatorKeyStore<User> cast)
+        byte[] keyBytes = Encoding.UTF8.GetBytes(userId);
+        byte[] codeBytes = Encoding.UTF8.GetBytes(code);
+
+        return Convert.ToBase64String(HMACSHA256.HashData(keyBytes, codeBytes));
+    }
+
+    private IUserAuthenticatorKeyStore<TUser> GetAuthenticatorKeyStore()
+    {
+        if (Store is not IUserAuthenticatorKeyStore<TUser> cast)
         {
-            throw new NotSupportedException($"{nameof(IUserAuthenticatorKeyStore<User>)} isn't supported by the store.");
+            throw new NotSupportedException($"{nameof(IUserAuthenticatorKeyStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }
 
-    private IUserTwoFactorStore<User> GetTwoFactorStore()
+    private IUserTwoFactorStore<TUser> GetTwoFactorStore()
     {
-        if (Store is not IUserTwoFactorStore<User> cast)
+        if (Store is not IUserTwoFactorStore<TUser> cast)
         {
-            throw new NotSupportedException($"{nameof(IUserTwoFactorStore<User>)} isn't supported by the store.");
+            throw new NotSupportedException($"{nameof(IUserTwoFactorStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }
 
-    private IUserTwoFactorEmailStore<User> GetTwoFactorEmailStore()
+    private IUserTwoFactorEmailStore<TUser> GetTwoFactorEmailStore()
     {
-        if (Store is not IUserTwoFactorEmailStore<User> cast)
+        if (Store is not IUserTwoFactorEmailStore<TUser> cast)
         {
-            throw new NotSupportedException($"{nameof(IUserTwoFactorEmailStore<User>)} isn't supported by the store.");
+            throw new NotSupportedException($"{nameof(IUserTwoFactorEmailStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }
 
-    private IUserTwoFactorRecoveryCodeStore<User> GetTwoFactorRecoveryCodeStore()
+    private IUserTwoFactorRecoveryCodeStore<TUser> GetTwoFactorRecoveryCodeStore()
     {
-        if (Store is not IUserTwoFactorRecoveryCodeStore<User> cast)
+        if (Store is not IUserTwoFactorRecoveryCodeStore<TUser> cast)
         {
-            throw new NotSupportedException($"{nameof(IUserTwoFactorRecoveryCodeStore<User>)} isn't supported by the store.");
+            throw new NotSupportedException($"{nameof(IUserTwoFactorRecoveryCodeStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }

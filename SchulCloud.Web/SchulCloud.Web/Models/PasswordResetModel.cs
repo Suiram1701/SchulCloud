@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
-using SchulCloud.Database.Models;
 
 namespace SchulCloud.Web.Models;
 
@@ -25,10 +24,10 @@ public class PasswordResetModel
     /// </summary>>
     public class Validator : AbstractValidator<PasswordResetModel>
     {
-        private readonly IPasswordValidator<User> _passwordValidator;
-        private readonly UserManager<User> _userManager;
+        private readonly IPasswordValidator<ApplicationUser> _passwordValidator;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public Validator(IStringLocalizer<PasswordResetModel> localizer, IPasswordValidator<User> passwordValidator, UserManager<User> userManager)
+        public Validator(IStringLocalizer<PasswordResetModel> localizer, IPasswordValidator<ApplicationUser> passwordValidator, UserManager<ApplicationUser> userManager)
         {
             _passwordValidator = passwordValidator;
             _userManager = userManager;

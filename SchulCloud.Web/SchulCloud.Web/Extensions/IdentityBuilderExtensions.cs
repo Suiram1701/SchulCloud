@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SchulCloud.Store.Options;
 using SchulCloud.Web.Identity.TokenProviders;
 using SchulCloud.Web.Options;
 using SchulCloud.Web.Services.Interfaces;
@@ -40,7 +41,7 @@ public static class IdentityBuilderExtensions
     /// <typeparam name="TLimiter">The type of the reset limiter.</typeparam>
     /// <param name="builder">The identity builder.</param>
     /// <returns>The identity builder pipeline.</returns>
-    public static IdentityBuilder AddPasswordResetLimiter<TLimiter>(this IdentityBuilder builder, Action<RequestLimiterOptions>? optionsAction = null)
+    public static IdentityBuilder AddRequestLimiter<TLimiter>(this IdentityBuilder builder, Action<RequestLimiterOptions>? optionsAction = null)
         where TLimiter : class
     {
         ArgumentNullException.ThrowIfNull(builder);

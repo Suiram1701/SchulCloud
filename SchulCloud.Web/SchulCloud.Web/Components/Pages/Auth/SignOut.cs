@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using SchulCloud.Database.Models;
 
 namespace SchulCloud.Web.Components.Pages.Auth;
 
@@ -14,10 +13,10 @@ public sealed class SignOut : ComponentBase
     private ILogger<SignOut> Logger { get; set; } = default!;
 
     [Inject]
-    private SignInManager<User> SignInManager { get; set; } = default!;
+    private SignInManager<ApplicationUser> SignInManager { get; set; } = default!;
 
     [Inject]
-    private UserManager<User> UserManager { get; set; } = default!;
+    private UserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;

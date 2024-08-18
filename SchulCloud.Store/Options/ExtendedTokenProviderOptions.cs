@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace SchulCloud.Web.Options;
+namespace SchulCloud.Store.Options;
 
 /// <summary>
 /// Extended options for <see cref="TokenOptions"/>
