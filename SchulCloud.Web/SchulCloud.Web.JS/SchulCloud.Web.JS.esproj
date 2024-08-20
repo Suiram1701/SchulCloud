@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.1184077">
   <ItemGroup>
-	<OutputFiles Include=".\dist\*.js" />
+    <OutputFiles Include=".\dist\*.js" />
   </ItemGroup>
-	
   <Target Name="BuildJS" AfterTargets="Build">
     <Exec Command="npm install" WorkingDirectory="$(ProjectDir)\" />
     <Exec Command="npx rollup -c" WorkingDirectory="$(ProjectDir)\" />
