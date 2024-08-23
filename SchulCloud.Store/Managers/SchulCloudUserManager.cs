@@ -11,7 +11,7 @@ namespace SchulCloud.Store.Managers;
 /// <summary>
 /// A user manager that provides functionalities of this application.
 /// </summary>
-public class SchulCloudUserManager<TUser>(
+public partial class SchulCloudUserManager<TUser, TCredential>(
     IUserStore<TUser> store,
     IOptions<IdentityOptions> optionsAccessor,
     IOptions<ExtendedTokenProviderOptions> tokenProviderOptionsAccessor,
@@ -22,9 +22,12 @@ public class SchulCloudUserManager<TUser>(
     IdentityErrorDescriber errors,
     IServiceProvider services,
     ILogger<UserManager<TUser>> logger)
-    : UserManager<TUser>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
+    : UserManager<TUser>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger: logger)
     where TUser : class
+    where TCredential : class
 {
+    private readonly IServiceProvider _services = services;
+
     /// <summary>
     /// Extended token provider options
     /// </summary>
@@ -33,7 +36,7 @@ public class SchulCloudUserManager<TUser>(
     /// <summary>
     /// Indicates whether the store support two factor email.
     /// </summary>
-    public bool SupportsUserTwoFactorEmail
+    public virtual bool SupportsUserTwoFactorEmail
     {
         get
         {
@@ -72,7 +75,7 @@ public class SchulCloudUserManager<TUser>(
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>The flag.</returns>
-    public async Task<bool> GetTwoFactorEmailEnabledAsync(TUser user)
+    public virtual async Task<bool> GetTwoFactorEmailEnabledAsync(TUser user)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
@@ -87,7 +90,7 @@ public class SchulCloudUserManager<TUser>(
     /// <param name="user">The user.</param>
     /// <param name="enabled">The flag.</param>
     /// <returns>The result.</returns>
-    public async Task<IdentityResult> SetTwoFactorEmailEnabledAsync(TUser user, bool enabled)
+    public virtual async Task<IdentityResult> SetTwoFactorEmailEnabledAsync(TUser user, bool enabled)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
@@ -98,7 +101,7 @@ public class SchulCloudUserManager<TUser>(
         return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
     }
 
-    public async Task<string> GenerateTwoFactorEmailCodeAsync(TUser user)
+    public virtual async Task<string> GenerateTwoFactorEmailCodeAsync(TUser user)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);

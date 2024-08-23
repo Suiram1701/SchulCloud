@@ -8,8 +8,8 @@ namespace SchulCloud.Web.Identity.Managers;
 /// <summary>
 /// A sign in manager that provides extended sign in logic.
 /// </summary>
-public class SchulCloudSignInManager<TUser>(
-    SchulCloudUserManager<TUser> userManager,
+public class SchulCloudSignInManager<TUser, TCredential>(
+    SchulCloudUserManager<TUser, TCredential> userManager,
     IHttpContextAccessor contextAccessor,
     IUserClaimsPrincipalFactory<TUser> claimsFactory,
     IOptions<IdentityOptions> optionsAccessor,
@@ -18,6 +18,7 @@ public class SchulCloudSignInManager<TUser>(
     IUserConfirmation<TUser> confirmation)
     : SignInManager<TUser>(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
     where TUser : class
+    where TCredential : class
 {
     /// <summary>
     /// Tries to sign in with an code sent to the user's email.

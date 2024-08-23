@@ -9,4 +9,8 @@
   <ItemGroup>
 	<FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fido2" Version="4.0.0-beta.13" />
+  </ItemGroup>
 </Project>

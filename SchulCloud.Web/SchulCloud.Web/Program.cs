@@ -49,13 +49,15 @@ public class Program
 
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()
-            .AddSchulCloudManagers()
-            .AddSignInManager<SchulCloudSignInManager<ApplicationUser>>()
+            .AddSchulCloudManagers<AppCredential>()
+            .AddSignInManager<SchulCloudSignInManager<ApplicationUser, AppCredential>>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
             .AddEmailSender<MailKitEmailSender<ApplicationUser>>()
             .AddRequestLimiter<CachedRequestLimiter<ApplicationUser>>()
             .AddDefaultTokenProviders()
             .AddTokenProviders();
+
+        builder.Services.AddFido2Services();
 
         builder.Services.ConfigureApplicationCookie(options =>
         {

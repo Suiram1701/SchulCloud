@@ -22,7 +22,7 @@ public sealed partial class Index : ComponentBase
     private IOptions<PasswordOptions> PasswordOptionsAccessor { get; set; } = default!;
 
     [Inject]
-    private SchulCloudUserManager<ApplicationUser> UserManager { get; set; } = default!;
+    private SchulCloudUserManager<ApplicationUser, AppCredential> UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
