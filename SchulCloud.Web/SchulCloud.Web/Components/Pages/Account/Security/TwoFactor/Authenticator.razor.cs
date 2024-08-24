@@ -1,5 +1,4 @@
 ﻿using BlazorBootstrap;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -12,7 +11,6 @@ using SchulCloud.Web.Models;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security.TwoFactor;
 
-[Authorize]
 [Route("/account/security/2fa/authenticator")]
 public sealed partial class Authenticator : ComponentBase
 {

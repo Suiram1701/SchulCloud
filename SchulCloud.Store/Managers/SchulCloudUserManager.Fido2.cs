@@ -295,8 +295,8 @@ partial class SchulCloudUserManager<TUser, TCredential>
     private IMetadataService GetMetadataService() => _services.GetRequiredService<IMetadataService>();
 
     [LoggerMessage(LogLevel.Debug, "An error occurred on fido2 assertion: {message}")]
-    public static partial void LogFido2AssertionError(ILogger logger, string message);
+    private static partial void LogFido2AssertionError(ILogger logger, string message);
 
     [LoggerMessage(LogLevel.Debug, "An error occurred on fido2 attestation: {message}")]
-    public static partial void LogFido2AttestationError(ILogger logger, string message);
+    private static partial void LogFido2AttestationError(ILogger logger, string message);
 }

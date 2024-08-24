@@ -4,7 +4,6 @@ using Microsoft.Extensions.Localization;
 
 namespace SchulCloud.Web.Components.Pages.Account;
 
-[Authorize]
 [Route("/account/settings")]
 public sealed partial class Settings : ComponentBase
 {

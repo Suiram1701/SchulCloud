@@ -3,148 +3,133 @@
 @using SchulCloud.Web.Components.Account
 @using SchulCloud.Web.Extensions
 
-<SchulCloudPageTitle Title="@Localizer["title"]" />
+<h5 class="mt-4">@Localizer["signInMethods"]</h5>
+<Accordion>
+    <AccordionItem>
+        <TitleTemplate>
+            <SecurityMethodItemTitle IconName="password" Title="@Localizer["signIn_Password"]" />
+        </TitleTemplate>
+        <Content>
+            @{
+                string? ShowWhenTrue(bool condition, Func<IdentityError> errorProvider)
+                {
+                    if (condition)
+                    {
+                        @errorProvider().Description
+                    }
+                    return null;
+                }
 
-<div class="d-flex flex-column mt-3">
-    <h3 class="text-center">@Localizer["tabHeader"]</h3>
+                PasswordOptions options = PasswordOptionsAccessor.Value;
+            }
 
-    <div class="mt-4 mx-3 d-flex flex-column justify-content-center">
-        <Tabs Class="justify-content-center" EnableFadeEffect>
-            <Tab Title="@Localizer["tabSignIn"]">
-                <Content>
+            <p>@Localizer["password_Desc"]</p>
+            <p class="lh-base">
+                @ErrorDescriber.PasswordTooShort(options.RequiredLength).Description<br />
+                @ErrorDescriber.PasswordRequiresUniqueChars(options.RequiredUniqueChars).Description<br />
+                @ShowWhenTrue(options.RequireNonAlphanumeric, ErrorDescriber.PasswordRequiresNonAlphanumeric)<br />
+                @ShowWhenTrue(options.RequireLowercase, ErrorDescriber.PasswordRequiresLower)<br />
+                @ShowWhenTrue(options.RequireUppercase, ErrorDescriber.PasswordRequiresUpper)<br />
+                @ShowWhenTrue(options.RequireDigit, ErrorDescriber.PasswordRequiresDigit)
+            </p>
 
-                    <h5 class="mt-4">@Localizer["signInMethods"]</h5>
-                    <Accordion>
-                        <AccordionItem>
-                            <TitleTemplate>
-                                <SecurityMethodItemTitle IconName="password" Title="@Localizer["signIn_Password"]" />
-                            </TitleTemplate>
-                            <Content>
-                                @{
-                                    string? ShowWhenTrue(bool condition, Func<IdentityError> errorProvider)
-                                    {
-                                        if (condition)
-                                        {
-                                            @errorProvider().Description
-                                        }
-                                        return null;
-                                    }
+            <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.ChangePassword()">@Localizer["password_Change"]</Button>
+            <Button Class="ms-2" Color="ButtonColor.Danger" Type="ButtonType.Link" To="@Routes.ResetPassword(returnUrl: NavigationManager.GetRelativeUri())">@Localizer["password_Reset"]</Button>
+        </Content>
+    </AccordionItem>
+</Accordion>
 
-                                    PasswordOptions options = PasswordOptionsAccessor.Value;
-                                }
+<h5 class="mt-5">@Localizer["mfaMethods"]</h5>
+<p class="mt-2">@Localizer["mfa_Desc"]</p>
+<Accordion>
+    <AccordionItem>
+        <TitleTemplate>
+            <SecurityMethodItemTitle IconName="qr_code_scanner" Title="@Localizer["mfa_Authenticator"]" Enabled="_mfaEnabled" LastTimeUsed="DateTime.Now.AddHours(-3)" />
+        </TitleTemplate>
+        <Content>
+            <p>@Localizer["authenticator_Desc"]</p>
 
-                                <p>@Localizer["password_Desc"]</p>
-                                <p class="lh-base">
-                                    @ErrorDescriber.PasswordTooShort(options.RequiredLength).Description<br />
-                                    @ErrorDescriber.PasswordRequiresUniqueChars(options.RequiredUniqueChars).Description<br />
-                                    @ShowWhenTrue(options.RequireNonAlphanumeric, ErrorDescriber.PasswordRequiresNonAlphanumeric)<br />
-                                    @ShowWhenTrue(options.RequireLowercase, ErrorDescriber.PasswordRequiresLower)<br />
-                                    @ShowWhenTrue(options.RequireUppercase, ErrorDescriber.PasswordRequiresUpper)<br />
-                                    @ShowWhenTrue(options.RequireDigit, ErrorDescriber.PasswordRequiresDigit)
-                                </p>
+            @if (!_mfaEnabled)
+            {
+                <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.Authenticator()">@Localizer["authenticator_Enable"]</Button>
+            }
+            else
+            {
+                <Button Color="ButtonColor.Danger" @onclick="AuthenticatorDisable_ClickAsync">@Localizer["authenticator_Disable"]</Button>
+            }
 
-                                <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.ChangePassword()">@Localizer["password_Change"]</Button>
-                                <Button Class="ms-2" Color="ButtonColor.Danger" Type="ButtonType.Link" To="@Routes.ResetPassword(returnUrl: NavigationManager.GetRelativeUri())">@Localizer["password_Reset"]</Button>
-                            </Content>
-                        </AccordionItem>
-                    </Accordion>
+            <Modal @ref="AuthenticatorDisableModal" Title="@Localizer["authenticator_Disable"]" Message="@Localizer["authenticator_DisableMessage"]">
+                <FooterTemplate>
+                    <Button Color="ButtonColor.Secondary" @onclick="AuthenticatorDisableAbort_ClickAsync">@Localizer["authenticator_DisableAbortBtn"]</Button>
+                    <Button Class="ms-2" Color="ButtonColor.Danger" @onclick="AuthenticatorDisableExecute_ClickAsync">@Localizer["authenticator_DisableExecuteBtn"]</Button>
+                </FooterTemplate>
+            </Modal>
+        </Content>
+    </AccordionItem>
+    <AccordionItem>
+        <TitleTemplate>
+            <SecurityMethodItemTitle IconName="mail" Title="@Localizer["mfa_Email"]" Enabled="@(_mfaEnabled ? _mfaEmailEnabled : null)" LastTimeUsed="DateTime.Now.AddYears(-1)" />
+        </TitleTemplate>
+        <Content>
+            <p>@Localizer["email_Desc"]</p>
 
-                    <h5 class="mt-5">@Localizer["mfaMethods"]</h5>
-                    <p class="mt-2">@Localizer["mfa_Desc"]</p>
-                    <Accordion>
-                        <AccordionItem>
-                            <TitleTemplate>
-                                <SecurityMethodItemTitle IconName="qr_code_scanner" Title="@Localizer["mfa_Authenticator"]" Enabled="_mfaEnabled" LastTimeUsed="DateTime.Now.AddHours(-3)" />
-                            </TitleTemplate>
-                            <Content>
-                                <p>@Localizer["authenticator_Desc"]</p>
+            @if (!_mfaEmailEnabled)
+            {
+                @if (_mfaEnabled)
+                {
+                    <Button Color="ButtonColor.Primary" @onclick="EmailEnable_ClickAsync">@Localizer["email_Enable"]</Button>
+                }
+                else
+                {
+                    <Tooltip Title="@Localizer["authenticator_EnableFirst"]">
+                        <Button Color="ButtonColor.Primary" Disabled @onclick="EmailEnable_ClickAsync">@Localizer["email_Enable"]</Button>
+                    </Tooltip>
+                }
+            }
+            else
+            {
+                <Button Color="ButtonColor.Danger" @onclick="EmailDisable_ClickAsync">@Localizer["email_Disable"]</Button>
+            }
+        </Content>
+    </AccordionItem>
+    <AccordionItem>
+        <TitleTemplate>
+            <SecurityMethodItemTitle IconName="pin" Title="@Localizer["mfa_Recovery"]" Enabled="@(_mfaEnabled ? (_mfaRemainingRecoveryCodes > 0) : null)">
+                <AdditionalBadges>
+                    @if (_mfaEnabled)
+                    {
+                        @if (_mfaRemainingRecoveryCodes > 0)
+                        {
+                            <Badge Class="ms-2" Color="BadgeColor.Info">@Localizer["recovery_ValidCodes", _mfaRemainingRecoveryCodes]</Badge>
+                        }
+                        else
+                        {
+                            <Tooltip Title="@Localizer["recovery_NoValidCodes_Tooltip"]" Placement="TooltipPlacement.Right">
+                                <Badge Class="ms-2" Color="BadgeColor.Warning">@Localizer["recovery_NoValidCodes"]</Badge>
+                            </Tooltip>
+                        }
+                    }
+                </AdditionalBadges>
+            </SecurityMethodItemTitle>
+        </TitleTemplate>
+        <Content>
+            <p>@Localizer["recovery_Desc"]</p>
 
-                                @if (!_mfaEnabled)
-                                {
-                                    <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.Authenticator()">@Localizer["authenticator_Enable"]</Button>
-                                }
-                                else
-                                {
-                                    <Button Color="ButtonColor.Danger" @onclick="AuthenticatorDisable_ClickAsync">@Localizer["authenticator_Disable"]</Button>
-                                }
-
-                                <Modal @ref="AuthenticatorDisableModal" Title="@Localizer["authenticator_Disable"]" Message="@Localizer["authenticator_DisableMessage"]">
-                                    <FooterTemplate>
-                                        <Button Color="ButtonColor.Secondary" @onclick="AuthenticatorDisableAbort_ClickAsync">@Localizer["authenticator_DisableAbortBtn"]</Button>
-                                        <Button Class="ms-2" Color="ButtonColor.Danger" @onclick="AuthenticatorDisableExecute_ClickAsync">@Localizer["authenticator_DisableExecuteBtn"]</Button>
-                                    </FooterTemplate>
-                                </Modal>
-                            </Content>
-                        </AccordionItem>
-                        <AccordionItem>
-                            <TitleTemplate>
-                                <SecurityMethodItemTitle IconName="mail" Title="@Localizer["mfa_Email"]" Enabled="@(_mfaEnabled ? _mfaEmailEnabled : null)" LastTimeUsed="DateTime.Now.AddYears(-1)" />
-                            </TitleTemplate>
-                            <Content>
-                                <p>@Localizer["email_Desc"]</p>
-
-                                @if (!_mfaEmailEnabled)
-                                {
-                                    @if (_mfaEnabled)
-                                    {
-                                        <Button Color="ButtonColor.Primary" @onclick="EmailEnable_ClickAsync">@Localizer["email_Enable"]</Button>
-                                    }
-                                    else
-                                    {
-                                        <Tooltip Title="@Localizer["authenticator_EnableFirst"]">
-                                            <Button Color="ButtonColor.Primary" Disabled @onclick="EmailEnable_ClickAsync">@Localizer["email_Enable"]</Button>
-                                        </Tooltip>
-                                    }
-                                }
-                                else
-                                {
-                                    <Button Color="ButtonColor.Danger" @onclick="EmailDisable_ClickAsync">@Localizer["email_Disable"]</Button>
-                                }
-                            </Content>
-                        </AccordionItem>
-                        <AccordionItem>
-                            <TitleTemplate>
-                                <SecurityMethodItemTitle IconName="pin" Title="@Localizer["mfa_Recovery"]" Enabled="@(_mfaEnabled ? (_mfaRemainingRecoveryCodes > 0) : null)">
-                                    <AdditionalBadges>
-                                        @if (_mfaEnabled)
-                                        {
-                                            @if (_mfaRemainingRecoveryCodes > 0)
-                                            {
-                                                <Badge Class="ms-2" Color="BadgeColor.Info">@Localizer["recovery_ValidCodes", _mfaRemainingRecoveryCodes]</Badge>
-                                            }
-                                            else
-                                            {
-                                                <Tooltip Title="@Localizer["recovery_NoValidCodes_Tooltip"]" Placement="TooltipPlacement.Right">
-                                                    <Badge Class="ms-2" Color="BadgeColor.Warning">@Localizer["recovery_NoValidCodes"]</Badge>
-                                                </Tooltip>
-                                            }
-                                        }
-                                    </AdditionalBadges>
-                                </SecurityMethodItemTitle>
-                            </TitleTemplate>
-                            <Content>
-                                <p>@Localizer["recovery_Desc"]</p>
-
-                                @{
-                                    string btnLabelKey = _mfaRemainingRecoveryCodes == 0
-                                        ? "recovery_GenerateNew"
-                                        : "recovery_Renew";
-                                }
-                                @if (_mfaEnabled)
-                                {
-                                    <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.RecoveryCodes()">@Localizer[btnLabelKey]</Button>
-                                }
-                                else
-                                {
-                                    <Tooltip Title="@Localizer["authenticator_EnableFirst"]" Placement="TooltipPlacement.Right">
-                                        <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.RecoveryCodes()" Disabled>@Localizer[btnLabelKey]</Button>
-                                    </Tooltip>
-                                }
-                            </Content>
-                        </AccordionItem>
-                    </Accordion>
-                </Content>
-            </Tab>
-        </Tabs>
-    </div>
-</div>
+            @{
+                string btnLabelKey = _mfaRemainingRecoveryCodes == 0
+                ? "recovery_GenerateNew"
+                : "recovery_Renew";
+            }
+            @if (_mfaEnabled)
+            {
+                <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.RecoveryCodes()">@Localizer[btnLabelKey]</Button>
+            }
+            else
+            {
+                <Tooltip Title="@Localizer["authenticator_EnableFirst"]" Placement="TooltipPlacement.Right">
+                    <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.RecoveryCodes()" Disabled>@Localizer[btnLabelKey]</Button>
+                </Tooltip>
+            }
+        </Content>
+    </AccordionItem>
+</Accordion>

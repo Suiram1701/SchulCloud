@@ -12,7 +12,6 @@ using SchulCloud.Web.Services.Interfaces;
 
 namespace SchulCloud.Web.Components.Pages.Auth;
 
-[AllowAnonymous]
 [Route("/auth/resetPassword")]
 public sealed partial class ResetPassword : ComponentBase
 {

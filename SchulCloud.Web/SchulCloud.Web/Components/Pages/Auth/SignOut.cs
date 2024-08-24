@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace SchulCloud.Web.Components.Pages.Auth;
 
-[AllowAnonymous]
+[AllowAnonymous]     // it doesn't have a .razor page so _Imports.razor won't be applied.
 [Route("/auth/signOut")]
 public sealed class SignOut : ComponentBase
 {

@@ -9,8 +9,7 @@ using System.Security.Claims;
 
 namespace SchulCloud.Web.Components.Layouts;
 
-[Authorize]
-public partial class MainLayout : LayoutComponentBase
+public sealed partial class MainLayout : LayoutComponentBase
 {
     #region Injections
     [Inject]

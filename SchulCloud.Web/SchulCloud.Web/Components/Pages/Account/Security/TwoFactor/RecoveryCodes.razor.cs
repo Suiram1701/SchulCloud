@@ -1,5 +1,4 @@
 ﻿using BlazorBootstrap;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,7 +12,6 @@ using System.Text;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security.TwoFactor;
 
-[Authorize]
 [Route("/account/security/2fa/recoveryCodes")]
 public sealed partial class RecoveryCodes : ComponentBase, IDisposable
 {

@@ -1,5 +1,4 @@
 ﻿using BlazorBootstrap;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -10,7 +9,6 @@ using SchulCloud.Web.Models;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security;
 
-[Authorize]
 [Route("/account/security/changePassword")]
 public sealed partial class ChangePassword : ComponentBase
 {

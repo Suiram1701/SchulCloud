@@ -11,7 +11,6 @@ using SchulCloud.Web.Models;
 
 namespace SchulCloud.Web.Components.Pages.Auth;
 
-[AllowAnonymous]
 [Route("/auth/signIn")]
 public sealed partial class SignIn : ComponentBase, IDisposable
 {

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Localization;
 
 namespace SchulCloud.Web.Components.Pages;
 
-[Authorize]
 [Route("/")]
 public sealed partial class Index : ComponentBase
 {

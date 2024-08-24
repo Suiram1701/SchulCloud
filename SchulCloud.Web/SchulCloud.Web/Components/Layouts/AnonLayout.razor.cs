@@ -13,8 +13,7 @@ using System.Globalization;
 
 namespace SchulCloud.Web.Components.Layouts;
 
-[AllowAnonymous]
-public partial class AnonLayout : LayoutComponentBase
+public sealed partial class AnonLayout : LayoutComponentBase
 {
     #region Injections
     [Inject]

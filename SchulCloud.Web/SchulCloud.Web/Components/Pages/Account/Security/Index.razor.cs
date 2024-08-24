@@ -10,7 +10,6 @@ using SchulCloud.Web.Extensions;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security;
 
-[Authorize]
 [Route("/account/security")]
 public sealed partial class Index : ComponentBase
 {
