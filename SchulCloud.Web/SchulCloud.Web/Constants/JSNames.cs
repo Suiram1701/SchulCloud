@@ -9,4 +9,6 @@ internal static class JSNames
     public const string BlazorBootstrapCheckBox = _jsPrefix + "blazorBootstrapExtensions.checkBox";
 
     public const string File = _jsPrefix + "file";
+
+    public const string WebAuthn = _jsPrefix + "webAuthn";
 }

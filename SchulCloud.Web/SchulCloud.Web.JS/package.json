@@ -9,6 +9,7 @@
   "license": "GPL-3.0-only",
   "description": "",
   "devDependencies": {
+    "@microsoft/dotnet-js-interop": "^8.0.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "rollup": "^4.20.0",

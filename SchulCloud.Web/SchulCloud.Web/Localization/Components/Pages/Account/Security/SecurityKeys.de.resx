@@ -97,16 +97,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="tabOverview" xml:space="preserve">
-    <value>Overview</value>
+  <data name="registerBtn" xml:space="preserve">
+    <value>Sicherheitsschlüssel hinzufügen</value>
   </data>
-  <data name="tabHeader" xml:space="preserve">
-    <value>Account Security</value>
+  <data name="securityKey_isPasskey" xml:space="preserve">
+    <value>Passkey</value>
   </data>
-  <data name="title" xml:space="preserve">
-    <value>Account Security</value>
+  <data name="securityKey_added" xml:space="preserve">
+    <value>Hinzugefügt am: {0}</value>
   </data>
-  <data name="tabSecurityKeys" xml:space="preserve">
-    <value>Security key</value>
+  <data name="securityKey_desc" xml:space="preserve">
+    <value>Beschreibung: {0}</value>
+  </data>
+  <data name="securityKey_protocol" xml:space="preserve">
+    <value>Verwendetes Protokoll: {0}</value>
+  </data>
+  <data name="securityKey_NoDesc" xml:space="preserve">
+    <value>Von diesem Sicherheitsschlüssel konnte keine Schreibung abgerufen werden.</value>
+  </data>
+  <data name="securityKey_renameBtn" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="securityKey_removeBtn" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="removeDialog" xml:space="preserve">
+    <value>Sicherheitsschlüssel entfernen</value>
+  </data>
+  <data name="removeDialogMessage" xml:space="preserve">
+    <value>Der Sicherheitsschlüssel wird dauerhaft von diesem Konto entfernt. Möchten Sie wirklich fortfahren?</value>
+  </data>
+  <data name="securityKey_rename" xml:space="preserve">
+    <value>Sicherheitsschlüssel umbenennen</value>
+  </data>
+  <data name="desc" xml:space="preserve">
+    <value>Sicherheitsschlüssel sind Anmeldedaten die auf einem Computer/Mobilgerät oder einem Hardware-Schlüssel gespeichert werden. Ein Sicherheitsschlüssel kann, wenn aktiviert für Zwei-Faktor-Authentifizierung (2FA) genutzt werden.</value>
+  </data>
+  <data name="desc_passkey" xml:space="preserve">
+    <value>Ein Passkey ist ein Sicherheitsschlüssel, der für die benutzernamenlose Authentifizierung verwendet werden kann, da er bei seiner Erstellung eine erhöhte Sicherheit bietet.</value>
+  </data>
+  <data name="browserNotSupported" xml:space="preserve">
+    <value>Ihr Aktueller Browser unterstützt keine Sicherheitsschlüssel</value>
+  </data>
+  <data name="registerModal" xml:space="preserve">
+    <value>Sicherheitsschlüssel hinzufügen</value>
+  </data>
+  <data name="registerModal_keyName" xml:space="preserve">
+    <value>Name des Sicherheitsschlüssels</value>
+  </data>
+  <data name="registerModal_isPasskey" xml:space="preserve">
+    <value>Als Passkey hinzufügen</value>
+  </data>
+  <data name="registerModal_close" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="registerModal_register" xml:space="preserve">
+    <value>Hinzufügen</value>
   </data>
 </root>

@@ -97,16 +97,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="tabOverview" xml:space="preserve">
-    <value>Overview</value>
+  <data name="registerBtn" xml:space="preserve">
+    <value>Add security key</value>
   </data>
-  <data name="tabHeader" xml:space="preserve">
-    <value>Account Security</value>
+  <data name="securityKey_isPasskey" xml:space="preserve">
+    <value>Passkey</value>
   </data>
-  <data name="title" xml:space="preserve">
-    <value>Account Security</value>
+  <data name="securityKey_added" xml:space="preserve">
+    <value>Added on: {0}</value>
   </data>
-  <data name="tabSecurityKeys" xml:space="preserve">
-    <value>Security key</value>
+  <data name="securityKey_desc" xml:space="preserve">
+    <value>Description: {0}</value>
+  </data>
+  <data name="securityKey_NoDesc" xml:space="preserve">
+    <value>No writing could be retrieved from this security key.</value>
+  </data>
+  <data name="securityKey_protocol" xml:space="preserve">
+    <value>Protocol used: {0}</value>
+  </data>
+  <data name="securityKey_removeBtn" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="securityKey_renameBtn" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="removeDialog" xml:space="preserve">
+    <value>Remove security key</value>
+  </data>
+  <data name="removeDialogMessage" xml:space="preserve">
+    <value>The security key will be permanently removed from this account. Are you sure you want to continue?</value>
+  </data>
+  <data name="securityKey_rename" xml:space="preserve">
+    <value>Rename security key</value>
+  </data>
+  <data name="desc" xml:space="preserve">
+    <value>Security keys are login credentials stored on a computer/mobile device or a hardware key. A security key can, if enabled, be used for two-factor authentication (2FA).</value>
+  </data>
+  <data name="desc_passkey" xml:space="preserve">
+    <value>A passkey is a security key that can be used for usernameless authentication because it provides increased security when created.</value>
+  </data>
+  <data name="registerModal_register" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="browserNotSupported" xml:space="preserve">
+    <value>Your current browser does not support security keys</value>
+  </data>
+  <data name="registerModal_keyName" xml:space="preserve">
+    <value>Name of the security key</value>
+  </data>
+  <data name="registerModal_isPasskey" xml:space="preserve">
+    <value>Add as passkey</value>
+  </data>
+  <data name="registerModal_close" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="registerModal" xml:space="preserve">
+    <value>Add security key</value>
   </data>
 </root>

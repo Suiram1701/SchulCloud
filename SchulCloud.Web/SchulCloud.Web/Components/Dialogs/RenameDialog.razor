@@ -1,0 +1,15 @@
+﻿<Modal @ref="_modal" Title="@_title">
+    <BodyTemplate>
+        <EditForm Model="_model" OnValidSubmit="ValidSubmitAsync">
+            <BsFieldCssProvider />
+            <Blazored.FluentValidation.FluentValidationValidator />
+
+            <FloatingTextInput @bind-Value="_model.NewName" FloatingLabel="@Localizer["newName"]" Placeholder="newName" required />
+
+            <div class="d-flex justify-content-end mt-2">
+                <Button Color="ButtonColor.Secondary" @onclick="Close_ClickAsync">@Localizer["close"]</Button>
+                <Button Class="ms-2" Color="ButtonColor.Primary" Type="ButtonType.Submit">@Localizer["rename"]</Button>
+            </div>
+        </EditForm>
+    </BodyTemplate>
+</Modal>

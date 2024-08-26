@@ -3,9 +3,12 @@ using Fido2NetLib.Objects;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SchulCloud.Store.Abstractions;
+using SchulCloud.Store.Options;
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -30,14 +33,10 @@ partial class SchulCloudUserManager<TUser, TCredential>
     /// <summary>
     /// Creates options that can be used to request a fido2 credential creation.
     /// </summary>
-    /// <remarks>
-    /// NOTE: If <paramref name="attestationConveyance"/> is set to <see cref="AttestationConveyancePreference.None"/> the <see cref="GetFido2CredentialMetadataStatementAsync(TCredential)"/> won't be available.
-    /// </remarks>
     /// <param name="user">The user that will own the created credential.</param>
-    /// <param name="selection">Options for creating the credential.</param>
-    /// <param name="attestationConveyance">The attestation conveyance.</param>
+    /// <param name="isPasskey">Indicates whether the </param>
     /// <returns>The created options.</returns>
-    public virtual async Task<CredentialCreateOptions> CreateFido2CreationOptionsAsync(TUser user, AuthenticatorSelection selection, AttestationConveyancePreference attestationConveyance = AttestationConveyancePreference.None)
+    public virtual async Task<CredentialCreateOptions> CreateFido2CreationOptionsAsync(TUser user, bool isPasskey)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
@@ -49,13 +48,18 @@ partial class SchulCloudUserManager<TUser, TCredential>
         IEnumerable<TCredential> existingCreds = await store.GetCredentialsByUserAsync(user, CancellationToken).ConfigureAwait(false);
         PublicKeyCredentialDescriptor[] existingKeys = await Task.WhenAll(existingCreds.Select(cred => store.GetCredentialDescriptorAsync(cred, CancellationToken))).ConfigureAwait(false);
 
+        ResidentKeyRequirement residentKey = isPasskey
+            ? ResidentKeyRequirement.Required
+            : ResidentKeyRequirement.Discouraged;
+        IdentityFido2Options options = GetFido2Options();
+
         AuthenticationExtensionsClientInputs extensions = new()
         {
             Extensions = true,
             UserVerificationMethod = true,
             CredProps = true
         };
-        return fido2.RequestNewCredential(fido2User, [..existingKeys], selection, attestationConveyance, extensions);
+        return fido2.RequestNewCredential(fido2User, [..existingKeys], options.ToAuthenticatorSelection(residentKey), options.AttestationConveyancePreference, extensions);
     }
 
     /// <summary>
@@ -63,11 +67,11 @@ partial class SchulCloudUserManager<TUser, TCredential>
     /// </summary>
     /// <param name="user">The user that should own the credential.</param>
     /// <param name="securityKeyName">A user specified name of the security key.</param>
-    /// <param name="usernamelessAllowed">Indicates whether usernameless sign ins are allowed with the credential.</param>
+    /// <param name="isPasskey">Indicates The credential is a passkey.</param>
     /// <param name="authenticatorResponse">The raw response of the authenticator.</param>
     /// <param name="options">The options that were used to request the credential creation from the authenticator.</param>
     /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> StoreFido2CredentialsAsync(TUser user, string? securityKeyName, bool usernamelessAllowed, AuthenticatorAttestationRawResponse authenticatorResponse, CredentialCreateOptions options)
+    public virtual async Task<IdentityResult> StoreFido2CredentialsAsync(TUser user, string? securityKeyName, bool isPasskey, AuthenticatorAttestationRawResponse authenticatorResponse, CredentialCreateOptions options)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
@@ -91,7 +95,7 @@ partial class SchulCloudUserManager<TUser, TCredential>
                 throw new Fido2VerificationException(makeResult.ErrorMessage);
             }
 
-            await store.CreateCredentialAsync(user, securityKeyName, usernamelessAllowed, makeResult.Result, CancellationToken).ConfigureAwait(false);
+            await store.CreateCredentialAsync(user, securityKeyName, isPasskey, makeResult.Result, CancellationToken).ConfigureAwait(false);
             return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
         }
         catch (Fido2VerificationException ex)
@@ -130,8 +134,7 @@ partial class SchulCloudUserManager<TUser, TCredential>
             UserVerificationMethod = true,
             DevicePubKey = new()
         };
-
-        return fido2.GetAssertionOptions([.. existingKeys], verificationRequirement, extensions);
+        return fido2.GetAssertionOptions([.. existingKeys], GetFido2Options().UserVerificationRequirement, extensions);
     }
 
     /// <summary>
@@ -201,6 +204,36 @@ partial class SchulCloudUserManager<TUser, TCredential>
     }
 
     /// <summary>
+    /// Removes a fido2 credential.
+    /// </summary>
+    /// <param name="credential">The credential.</param>
+    /// <param name="user">The user that owns the credential.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> RemoveFido2CredentialAsync(TCredential credential, TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credential);
+        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
+
+        await store.DeleteCredentialAsync(credential, CancellationToken).ConfigureAwait(false);
+        return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets a fido2 credential by its id.
+    /// </summary>
+    /// <param name="credId">The id of the credential.</param>
+    /// <returns>The credential if found.</returns>
+    public virtual async Task<TCredential?> GetFido2CredentialById(byte[] credId)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credId);
+        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
+
+        return await store.GetCredentialById(credId, CancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Gets the fido2 credentials of a user.
     /// </summary>
     /// <param name="user">The user</param>
@@ -226,6 +259,37 @@ partial class SchulCloudUserManager<TUser, TCredential>
         IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
 
         return await store.GetCredentialSecurityKeyNameAsync(credential, CancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets a flag that indicates whether a credential was registered as a passkey.
+    /// </summary>
+    /// <param name="credential">The credential.</param>
+    /// <returns>The flag.</returns>
+    public virtual async Task<bool> GetFido2CredentialIsPasskey(TCredential credential)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credential);
+        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
+
+        return await store.GetCredentialUsernamelessAllowedAsync(credential, CancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Changes the name of a credential.
+    /// </summary>
+    /// <param name="credential">The credential to modify.</param>
+    /// <param name="user">The owner of the credential.</param>
+    /// <param name="newName">The new name.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> ChangeFido2CredentialSecurityKeyNameAsync(TCredential credential, TUser user, string? newName)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credential);
+        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
+
+        await store.SetCredentialSecurityKeyNameAsync(credential, newName, CancellationToken).ConfigureAwait(false);
+        return await UpdateAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -291,6 +355,8 @@ partial class SchulCloudUserManager<TUser, TCredential>
     }
 
     private IFido2 GetFido2Service() => _services.GetRequiredService<IFido2>();
+
+    private IdentityFido2Options GetFido2Options() => _services.GetRequiredService<IOptions<IdentityFido2Options>>().Value;
 
     private IMetadataService GetMetadataService() => _services.GetRequiredService<IMetadataService>();
 

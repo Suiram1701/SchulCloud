@@ -106,4 +106,7 @@
   <data name="title" xml:space="preserve">
     <value>Konto Sicherheit</value>
   </data>
+  <data name="tabSecurityKeys" xml:space="preserve">
+    <value>Sicherheitsschlüssel</value>
+  </data>
 </root>

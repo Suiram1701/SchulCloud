@@ -97,16 +97,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="tabOverview" xml:space="preserve">
-    <value>Overview</value>
+  <data name="rename" xml:space="preserve">
+    <value>Rename</value>
   </data>
-  <data name="tabHeader" xml:space="preserve">
-    <value>Account Security</value>
+  <data name="newName" xml:space="preserve">
+    <value>New name</value>
   </data>
-  <data name="title" xml:space="preserve">
-    <value>Account Security</value>
+  <data name="defaultTitle" xml:space="preserve">
+    <value>Rename</value>
   </data>
-  <data name="tabSecurityKeys" xml:space="preserve">
-    <value>Security key</value>
+  <data name="close" xml:space="preserve">
+    <value>Cancel</value>
   </data>
 </root>

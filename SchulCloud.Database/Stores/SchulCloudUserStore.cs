@@ -142,6 +142,16 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         return Task.FromResult(credential.SecurityKeyName);
     }
 
+    public Task SetCredentialSecurityKeyNameAsync(Fido2Credential credential, string? newName, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(credential);
+
+        credential.SecurityKeyName = newName;
+        return Task.CompletedTask;
+    }
+
     public Task<bool> GetCredentialUsernamelessAllowedAsync(Fido2Credential credential, CancellationToken ct)
     {
         ThrowIfDisposed();

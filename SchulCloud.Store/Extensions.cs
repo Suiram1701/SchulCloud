@@ -12,7 +12,9 @@ public static class Extensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.Configure<ExtendedTokenProviderOptions>(builder.Configuration.GetSection("Identity:Tokens"));
+        builder.Services
+            .Configure<IdentityFido2Options>(builder.Configuration.GetSection("Identity:Fido2"))
+            .Configure<ExtendedTokenProviderOptions>(builder.Configuration.GetSection("Identity:Tokens"));
         return builder;
     }
 

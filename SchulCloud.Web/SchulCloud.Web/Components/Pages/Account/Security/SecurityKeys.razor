@@ -1,0 +1,112 @@
+﻿@using System.Globalization;
+@using Fido2NetLib.Objects;
+@using Fido2NetLib;
+@using SchulCloud.Web.Extensions
+
+<p class="mt-2">@Localizer["desc"]</p>
+<p>@Localizer["desc_passkey"]</p>
+
+<Accordion>
+    @if (_securityKeys is not null)
+    {
+        @foreach (SecurityKey securityKey in _securityKeys.OrderByDescending(key => key.RegistrationDate))
+        {
+            <AccordionItem>
+                <TitleTemplate>
+                    <div class="d-flex justify-content-between align-items-center flex-fill">
+                        <div class="d-flex align-items-center">
+                            @{
+                                string iconName;
+                                if (securityKey.Transports?.Any(transport => new[] { AuthenticatorTransport.Internal, AuthenticatorTransport.Hybrid }.Contains(transport)) ?? false)
+                                {
+                                    iconName = "devices";
+                                }
+                                else
+                                {
+                                    iconName = "security_key";
+                                }
+                            }
+                            <FontsIcon Name="@iconName" />
+
+                            <span class="ms-3">@securityKey.Name</span>
+                            @if (securityKey.IsPasskey)
+                            {
+                                <Badge Class="ms-2" Color="BadgeColor.Info">@Localizer["securityKey_isPasskey"]</Badge>
+                            }
+                        </div>
+
+                        <span class="mx-2">
+                            @Localizer["securityKey_added", securityKey.RegistrationDate.ToDisplayedString()]
+                        </span>
+                    </div>
+                </TitleTemplate>
+                <Content>
+                    @if (securityKey.Metadata is not null)
+                    {
+                        <div class="d-flex">
+                            <Image Class="object-fit-cover me-2" Src="@securityKey.Metadata.Icon" IsThumbnail />
+
+                            <div class="d-flex flex-column align-items-start">
+                                @if (!(securityKey.Metadata.IETFLanguageCodesMembers?.IETFLanguageCodesMembers.TryGetValue(CultureInfo.CurrentUICulture.ToString(), out string? desc) ?? false))
+                                {
+                                    desc = securityKey.Metadata.Description;
+                                }
+                                <span>@Localizer["securityKey_desc", desc]</span>
+                                <span>@Localizer["securityKey_protocol", securityKey.Metadata.ProtocolFamily]</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p>@Localizer["securityKey_NoDesc"]</p>
+                    }
+
+                    <div class="d-flex mt-2">
+                        <Button Class="d-flex align-items-center" Color="ButtonColor.Secondary" @onclick="async () => await SecurityKeyChangeName_ClickAsync(securityKey).ConfigureAwait(false)">
+                            <Icon Name="IconName.InputCursorText" />
+                            <span class="ms-2">@Localizer["securityKey_renameBtn"]</span>
+                        </Button>
+                        <Button Class="d-flex align-items-center ms-2" Color="ButtonColor.Danger" @onclick="async () => await Remove_ClickAsync(securityKey)">
+                            <FontsIcon Name="delete" />
+                            <span class="ms-2">@Localizer["securityKey_removeBtn"]</span>
+                        </Button>
+                    </div>
+                </Content>
+            </AccordionItem>
+        }
+    }
+    else
+    {
+        <span>@Localizer["loading"]</span>
+    }
+</Accordion>
+@if (_browserSupported)
+{
+    <Button Class="mt-2" Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="RegisterSecurityKey_ClickAsync">@Localizer["registerBtn"]</Button>
+}
+else
+{
+    <Tooltip Title="@Localizer["browserNotSupported"]">
+        <Button Class="mt-2" Color="ButtonColor.Primary" Size="ButtonSize.Small" Disabled>@Localizer["registerBtn"]</Button>
+    </Tooltip>
+}
+
+<Modal @ref="_registerModal" Title="@Localizer["registerModal"]">
+    <BodyTemplate>
+        <EditForm Model="_registerModel" OnValidSubmit="RegisterModal_ValidSubmitAsync">
+            <BsFieldCssProvider DisableValidState />
+
+            <EditFormValidator For="() => _registerModel.SecurityKeyName" ValidateAsync="ValidateSecurityKeyNameAsync" />
+            <FloatingTextInput Class="my-2" @bind-Value="_registerModel.SecurityKeyName" FloatingLabel="@Localizer["registerModal_keyName"]" autocomplete="off" required />
+
+            <CheckBoxInput Class="mb-3" @bind-Value="_registerModel.IsPasskey" Label="@Localizer["registerModal_isPasskey"]" />
+
+            <div class="d-flex justify-content-end">
+                <Button Class="mx-2" Color="ButtonColor.Secondary" @onclick="RegisterModalClose_ClickAsync">@Localizer["registerModal_close"]</Button>
+                <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">@Localizer["registerModal_register"]</Button>
+            </div>
+        </EditForm>
+    </BodyTemplate>
+</Modal>
+<RenameDialog @ref="_renameDialog" />
+<RemoveDialog @ref="_removeDialog" />

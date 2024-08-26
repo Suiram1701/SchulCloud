@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using SchulCloud.Store;
 using SchulCloud.Web.Options;
+using SchulCloud.Web.Services;
 
 namespace SchulCloud.Web.Extensions;
 
@@ -50,13 +51,34 @@ public static class ApplicationBuilderExtensions
     public static IServiceCollection AddFido2Services(this IServiceCollection services)
     {
         services
+            .AddScoped<WebAuthnService>()
             .AddMemoryCache()
             .AddDistributedMemoryCache()
-            .AddFido2(_ => { })
+            .AddFido2(options =>
+            {
+                // Aspire stores the application url with port in this env variable.
+                string? envVar = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+                if (string.IsNullOrWhiteSpace(envVar))
+                {
+                    return;
+                }
+
+                HashSet<string> origins = new(options.Origins);
+                foreach (string url in envVar.Split(';'))
+                {
+                    if (Uri.TryCreate(url, UriKind.Absolute, out _))
+                    {
+                        origins.Add(url);
+                    }
+                }
+
+                options.Origins = origins;
+            })
             .AddCachedMetadataService(metadataBuilder =>
             {
                 metadataBuilder.AddFidoMetadataRepository();
             });
+
         return services;
     }
 

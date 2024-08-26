@@ -1,5 +1,6 @@
 ﻿@using Humanizer
 @using System.Globalization
+@using SchulCloud.Web.Extensions
 
 <div class="d-flex justify-content-between align-items-center flex-fill">
     <div class="d-flex align-items-center">
@@ -30,7 +31,7 @@
         {
             string value = (DateTime.UtcNow - LastTimeUsed).Value.Days <= 7
                 ? LastTimeUsed.Humanize()
-                : LastTimeUsed.Value.ToString("d", CultureInfo.CurrentCulture);
+                : LastTimeUsed.Value.ToDisplayedString();
             @Localizer["usedLast", value]
         }
     </span>
