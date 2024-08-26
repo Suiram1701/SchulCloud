@@ -123,9 +123,9 @@ export namespace webAuthn {
             object = object.replace(/-/g, "+").replace(/_/g, "/");
 
             // base64 to Uint8Array
-            let str: string = window.atob(object);
-            let bytes: Uint8Array = new Uint8Array(str.length);
-            for (var i = 0; i < str.length; i++) {
+            const str: string = window.atob(object);
+            const bytes: Uint8Array = new Uint8Array(str.length);
+            for (let i = 0; i < str.length; i++) {
                 bytes[i] = str.charCodeAt(i);
             }
 
@@ -167,10 +167,10 @@ export namespace webAuthn {
         }
 
         // Uint8Array to base64
-        var str = "";
-        var len = bytes.byteLength;
+        let str = "";
+        const len = bytes.byteLength;
 
-        for (var i = 0; i < len; i++) {
+        for (let i = 0; i < len; i++) {
             str += String.fromCharCode(bytes[i]);
         }
         str = window.btoa(str);
