@@ -55,7 +55,7 @@ public sealed partial class Authenticator : ComponentBase
     private async Task<string> GetCacheKeyAsync()
     {
         string userId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
-        return $"authenticatorData_{userId}";
+        return $"authenticatorEnableData_{userId}";
     }
 
     private async Task<(string, string)?> CreateAuthenticatorInfoAsync(ICacheEntry entry)

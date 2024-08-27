@@ -133,17 +133,8 @@
   <data name="authenticator_DisableMessage" xml:space="preserve">
     <value>Sie sind dabei die 2FA Authentifizierung zu deaktivieren. Dies sorgt dafür, dass Codes der Authenticator-App und die Backup-Codes ungültig werden. Wollen Sie trotzdem fortfahren?</value>
   </data>
-  <data name="authenticator_DisableExecuteBtn" xml:space="preserve">
-    <value>Deaktivieren</value>
-  </data>
   <data name="mfa_Desc" xml:space="preserve">
     <value>Die Zwei-Faktor-Authentifizierung (2FA) bietet eine zusätzliche Sicherheitsebene für Ihr Konto. Sobald diese aktiviert ist, benötigen Sie zusätzlich zu Ihrem Passwort einen weiteren Faktor, um sich anzumelden. Diese Methode stellt sicher, dass nur Sie auf Ihr Konto zugreifen können, selbst wenn Ihr Passwort kompromittiert ist. Um dies zu aktivieren, aktivieren Sie die Authentifizierungs-App.</value>
-  </data>
-  <data name="authenticator_Disable_Success" xml:space="preserve">
-    <value>Die 2FA-Authentifizierung wurde deaktiviert</value>
-  </data>
-  <data name="authenticator_Disable_SuccessMessage" xml:space="preserve">
-    <value>Die zusätzliche Kontosicherheit durch die 2FA-Authentifizierung nicht mehr verfügbar.</value>
   </data>
   <data name="recovery_Desc" xml:space="preserve">
     <value>2FA-Wiederherstellungscodes sind ein einmalig gültige Codes, der es ermöglicht, den Zugang zu Ihrem Konto wiederherzustellen, falls alle anderen 2FA-Authentifizierungsmethoden nicht verfügbar ist. Bewahre diese Codes sicher auf, da er eine wichtige Backup-Option darstellt, um den Zugriff auf das Konto zu gewährleisten.</value>
@@ -163,35 +154,20 @@
   <data name="email_Enable" xml:space="preserve">
     <value>E-Mail Authentifizierung aktivieren</value>
   </data>
-  <data name="email_Enable_Success" xml:space="preserve">
-    <value>E-Mail Authentifizierung aktiviert</value>
-  </data>
-  <data name="email_Enable_SuccessMessage" xml:space="preserve">
-    <value>Die E-Mail Authentifizierung kann nun als 2FA Authentifizierungs-Methode genutzt werden.</value>
-  </data>
   <data name="enable_Error" xml:space="preserve">
     <value>Beim der aktivieren ist ein Fehler aufgetreten.</value>
   </data>
   <data name="email_Disable" xml:space="preserve">
     <value>E-Mail Authentifizierung deaktivieren</value>
   </data>
-  <data name="email_Disable_Success" xml:space="preserve">
-    <value>E-Mail Authentifizierung deaktiviert.</value>
-  </data>
   <data name="disable_Error" xml:space="preserve">
     <value>Bei der deaktivierung ist ein Fehler aufgetreten.</value>
-  </data>
-  <data name="email_Disable_SuccessMessage" xml:space="preserve">
-    <value>Die E-Mail 2FA-Authentifizierung ist nun nicht mehr für diesen Account verfügbar.</value>
   </data>
   <data name="mfa_Email" xml:space="preserve">
     <value>E-Mail Authentifizierung</value>
   </data>
   <data name="email_Desc" xml:space="preserve">
     <value>Bei der 2FA-Authentifizierung per E-Mail erhalten Sie Einmalcode an die E-Mail-Adresse ihres Accounts.</value>
-  </data>
-  <data name="authenticator_DisableAbortBtn" xml:space="preserve">
-    <value>Abrechen</value>
   </data>
   <data name="authenticator_EnableFirst" xml:space="preserve">
     <value>Die 2FA-Authentifizierung per Authentifizierungs-App muss aktiv sein.</value>

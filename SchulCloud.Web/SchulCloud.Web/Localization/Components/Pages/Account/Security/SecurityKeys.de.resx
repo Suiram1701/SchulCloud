@@ -113,7 +113,7 @@
     <value>Verwendetes Protokoll: {0}</value>
   </data>
   <data name="securityKey_NoDesc" xml:space="preserve">
-    <value>Von diesem Sicherheitsschlüssel konnte keine Schreibung abgerufen werden.</value>
+    <value>Von diesem Sicherheitsschlüssel konnte keine Beschreibung abgerufen werden.</value>
   </data>
   <data name="securityKey_renameBtn" xml:space="preserve">
     <value>Umbenennen</value>

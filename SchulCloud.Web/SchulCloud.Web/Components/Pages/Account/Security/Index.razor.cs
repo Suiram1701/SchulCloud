@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using SchulCloud.Store.Managers;
+using SchulCloud.Web.Components.Dialogs;
 using SchulCloud.Web.Extensions;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security;
@@ -33,12 +34,12 @@ public sealed partial class Index : ComponentBase
     private ToastService ToastService { get; set; } = default!;
     #endregion
 
+    private RemoveDialog _removeDialog = default!;
+
     private ApplicationUser _user = default!;
     private bool _mfaEnabled;
     private int _mfaRemainingRecoveryCodes;
     private bool _mfaEmailEnabled;
-
-    private Modal AuthenticatorDisableModal { get; set; } = default!;
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
@@ -58,35 +59,26 @@ public sealed partial class Index : ComponentBase
 
     private async Task AuthenticatorDisable_ClickAsync()
     {
-        await AuthenticatorDisableModal.ShowAsync().ConfigureAwait(false);
-    }
-
-    private async Task AuthenticatorDisableAbort_ClickAsync()
-    {
-        await AuthenticatorDisableModal.HideAsync().ConfigureAwait(false);
-    }
-
-    private async void AuthenticatorDisableExecute_ClickAsync()
-    {
-        await AuthenticatorDisableModal.HideAsync().ConfigureAwait(false);
+        if (!await _removeDialog.ShowAsync(Localizer["authenticator_Disable"], Localizer["authenticator_DisableMessage"]).ConfigureAwait(false))
+        {
+            return;
+        }
 
         IdentityResult result = await UserManager.SetTwoFactorEnabledAsync(_user, false).ConfigureAwait(false);
         await InvokeAsync(() =>
         {
             if (result.Succeeded)
             {
-                ToastService.NotifySuccess(Localizer["authenticator_Disable_Success"], Localizer["authenticator_Disable_SuccessMessage"]);
-
                 _mfaEnabled = false;
                 _mfaEmailEnabled = false;
                 _mfaRemainingRecoveryCodes = 0;
+
+                StateHasChanged();
             }
             else
             {
                 ToastService.NotifyError(result.Errors, Localizer["disable_Error"]);
             }
-
-            StateHasChanged();
         }).ConfigureAwait(false);
     }
 
@@ -102,15 +94,13 @@ public sealed partial class Index : ComponentBase
         {
             if (result.Succeeded)
             {
-                ToastService.NotifySuccess(Localizer["email_Enable_Success"], Localizer["email_Enable_SuccessMessage"]);
                 _mfaEmailEnabled = true;
+                StateHasChanged();
             }
             else
             {
                 ToastService.NotifyError(result.Errors, Localizer["enable_Error"]);
             }
-
-            StateHasChanged();
         }).ConfigureAwait(false);
     }
 
@@ -121,15 +111,13 @@ public sealed partial class Index : ComponentBase
         {
             if (result.Succeeded)
             {
-                ToastService.NotifySuccess(Localizer["email_Disable_Success"], Localizer["email_Disable_SuccessMessage"]);
                 _mfaEmailEnabled = false;
+                StateHasChanged();
             }
             else
             {
                 ToastService.NotifyError(result.Errors, Localizer["disable_Error"]);
             }
-
-            StateHasChanged();
         }).ConfigureAwait(false);
     }
 }

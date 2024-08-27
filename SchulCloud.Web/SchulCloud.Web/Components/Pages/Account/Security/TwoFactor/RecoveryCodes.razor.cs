@@ -84,7 +84,7 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
 
             Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(fileBuilder.ToString()));
             string fileName = $"{Localizer["file_Name", appName]}.txt";
-            await JSRuntime.DownloadFileAsync(fileName, stream);
+            await JSRuntime.DownloadFileAsync(stream, fileName, mimeType: "text/plain", convertNlChars: true);
         }
     }
 

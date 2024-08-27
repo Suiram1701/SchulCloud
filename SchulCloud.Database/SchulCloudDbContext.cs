@@ -12,6 +12,7 @@ public class SchulCloudDbContext(DbContextOptions options) : IdentityDbContext<S
 
         builder.Entity<SchulCloudUser>(b =>
         {
+            b.Property(u => u.PasskeysEnabled).HasDefaultValue(false).IsRequired();
             b.Ignore(u => u.TwoFactorEnabled);
             b.Property(u => u.TwoFactorEnabledFlags);
 
@@ -26,7 +27,7 @@ public class SchulCloudDbContext(DbContextOptions options) : IdentityDbContext<S
             b.Property(c => c.Id).HasMaxLength(256).IsRequired();
             b.Property(c => c.UserId).HasMaxLength(256).IsRequired();
             b.Property(c => c.SecurityKeyName).HasMaxLength(256);
-            b.Property(c => c.IsUsernameless).HasDefaultValue(false);
+            b.Property(c => c.IsPasskey).HasDefaultValue(false);
             b.Property(c => c.PublicKey).IsRequired();
             b.Property(c => c.Transports).HasJsonPropertyName(null);
             b.Property(c => c.SignCount).HasDefaultValue(0);

@@ -19,7 +19,6 @@
                     }
                     return null;
                 }
-
                 PasswordOptions options = PasswordOptionsAccessor.Value;
             }
 
@@ -57,13 +56,6 @@
             {
                 <Button Color="ButtonColor.Danger" @onclick="AuthenticatorDisable_ClickAsync">@Localizer["authenticator_Disable"]</Button>
             }
-
-            <Modal @ref="AuthenticatorDisableModal" Title="@Localizer["authenticator_Disable"]" Message="@Localizer["authenticator_DisableMessage"]">
-                <FooterTemplate>
-                    <Button Color="ButtonColor.Secondary" @onclick="AuthenticatorDisableAbort_ClickAsync">@Localizer["authenticator_DisableAbortBtn"]</Button>
-                    <Button Class="ms-2" Color="ButtonColor.Danger" @onclick="AuthenticatorDisableExecute_ClickAsync">@Localizer["authenticator_DisableExecuteBtn"]</Button>
-                </FooterTemplate>
-            </Modal>
         </Content>
     </AccordionItem>
     <AccordionItem>
@@ -133,3 +125,5 @@
         </Content>
     </AccordionItem>
 </Accordion>
+
+<RemoveDialog @ref="_removeDialog" />

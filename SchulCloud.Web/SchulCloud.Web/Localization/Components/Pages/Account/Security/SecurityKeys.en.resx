@@ -110,7 +110,7 @@
     <value>Description: {0}</value>
   </data>
   <data name="securityKey_NoDesc" xml:space="preserve">
-    <value>No writing could be retrieved from this security key.</value>
+    <value>No description could be retrieved from this security key.</value>
   </data>
   <data name="securityKey_protocol" xml:space="preserve">
     <value>Protocol used: {0}</value>

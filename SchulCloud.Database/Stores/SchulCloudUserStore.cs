@@ -152,13 +152,13 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         return Task.CompletedTask;
     }
 
-    public Task<bool> GetCredentialUsernamelessAllowedAsync(Fido2Credential credential, CancellationToken ct)
+    public Task<bool> GetCredentialIsPasskeyAsync(Fido2Credential credential, CancellationToken ct)
     {
         ThrowIfDisposed();
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(credential);
 
-        return Task.FromResult(credential.IsUsernameless);
+        return Task.FromResult(credential.IsPasskey);
     }
 
     public Task<byte[]> GetCredentialPublicKeyAsync(Fido2Credential credential, CancellationToken ct)
@@ -248,7 +248,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             Id = credential.Id,
             UserId = userId,
             SecurityKeyName = securityKeyName,
-            IsUsernameless = usernamelessAllowed,
+            IsPasskey = usernamelessAllowed,
             PublicKey = credential.PublicKey,
             SignCount = credential.SignCount,
             Transports = credential.Transports,

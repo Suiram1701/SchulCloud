@@ -74,12 +74,12 @@ public interface IUserFido2CredentialStore<TCredential, TUser>
     public Task SetCredentialSecurityKeyNameAsync(TCredential credential, string? newName, CancellationToken ct);
 
     /// <summary>
-    /// Gets the flag that indicates whether a credential is allowed to perform a usernameless sign in.
+    /// Gets a flag that indicates whether the credential were registered as a passkey.
     /// </summary>
     /// <param name="credential">The credential.</param>
     /// <param name="ct">Cancellation token</param>
     /// <returns>The flag.</returns>
-    public Task<bool> GetCredentialUsernamelessAllowedAsync(TCredential credential, CancellationToken ct);
+    public Task<bool> GetCredentialIsPasskeyAsync(TCredential credential, CancellationToken ct);
 
     /// <summary>
     /// Gets the public key of a credential.

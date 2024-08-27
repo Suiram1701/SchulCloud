@@ -30,7 +30,7 @@ public class Fido2Credential
     /// <summary>
     /// Indicates whether this security key is allowed to perform a usernameless sign in.
     /// </summary>
-    public bool IsUsernameless { get; set; }
+    public bool IsPasskey { get; set; }
 
     /// <summary>
     /// The public key of the credential.

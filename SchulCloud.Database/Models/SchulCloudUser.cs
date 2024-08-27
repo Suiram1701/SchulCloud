@@ -5,6 +5,11 @@ namespace SchulCloud.Database.Models;
 
 public class SchulCloudUser : IdentityUser
 {
+    /// <summary>
+    /// Indicates whether passkey sign ins are enabled for the user.
+    /// </summary>
+    public bool PasskeysEnabled { get; set; }
+
     public override bool TwoFactorEnabled
     {
         get => false;

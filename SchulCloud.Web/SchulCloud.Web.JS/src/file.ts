@@ -1,9 +1,12 @@
 import { dotNetStreamReference } from "./declarations/dotnetStreamReference";
 
 export namespace file {
-    export async function download(fileName: string, streamReference: dotNetStreamReference): Promise<void> {
+    export async function download(streamReference: dotNetStreamReference, fileName: string, mimeType?: string, endings?: EndingType): Promise<void> {
         const arrayBuffer: ArrayBuffer = await streamReference.arrayBuffer();
-        const blob: Blob = new Blob([arrayBuffer]);
+        const blob: Blob = new Blob([arrayBuffer], {
+            type: mimeType,
+            endings: endings
+        });
 
         const url = URL.createObjectURL(blob);
         downloadFromUrl(fileName, url);

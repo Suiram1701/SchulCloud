@@ -165,7 +165,7 @@ partial class SchulCloudUserManager<TUser, TCredential>
             return null;
         }
 
-        if (user is null && await store.GetCredentialUsernamelessAllowedAsync(credential, CancellationToken).ConfigureAwait(false) is false)
+        if (user is null && await store.GetCredentialIsPasskeyAsync(credential, CancellationToken).ConfigureAwait(false) is false)
         {
             return null;
         }
@@ -272,7 +272,7 @@ partial class SchulCloudUserManager<TUser, TCredential>
         ArgumentNullException.ThrowIfNull(credential);
         IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
 
-        return await store.GetCredentialUsernamelessAllowedAsync(credential, CancellationToken).ConfigureAwait(false);
+        return await store.GetCredentialIsPasskeyAsync(credential, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
