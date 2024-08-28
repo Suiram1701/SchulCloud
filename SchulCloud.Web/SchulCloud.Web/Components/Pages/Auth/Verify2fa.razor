@@ -1,5 +1,6 @@
 ﻿@using SchulCloud.Web.Constants
 @using SchulCloud.Web.Enums
+@using System.Text.Json
 
 <SchulCloudPageTitle Title="@Localizer["title"]" />
 
@@ -12,24 +13,31 @@
     <div class="row mt-3">
         <div class="col" />
         <div class="col-6">
-            <form @formname="@_formName" class="d-flex flex-column" method="post" action="@Routes.Verify2fa(persistent: Persistent, returnUrl: ReturnUrl)">
-                <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive SSR Blazor doesn't place it by its own. *@
-                <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.Method)}")" value="@Model.Method" />
+            <form @ref="_formRef" @formname="@_formName" class="d-flex flex-column" method="post" action="@Routes.Verify2fa(persistent: Persistent, returnUrl: ReturnUrl)">
                 <AntiforgeryToken />
-                
-                <InputGroup>
-                    <FloatingTextInput InnerClass="@IsInvalidInputClass" @bind-Value="@Model.Code" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Code)}")"
-                                       FloatingLabel="@Localizer[$"form_{Model.Method}Code_Placeholder"]" Placeholder="code" autocomplete="off" required />
+                <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive rendering Blazor doesn't place it by its own. *@
+                <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.Method)}")" value="@Model.Method" />
 
-                    @if (Model.Method == TwoFactorMethod.Email)
-                    {
-                        <Button Color="ButtonColor.Secondary" Outline @onclick="SendEmailAuthenticationCode_ClickAsync">@Localizer["form_SendEmailCode"]</Button>
-                    }
-                </InputGroup>
-
-                @if (IsInvalid())
+                @if (Model.Method != TwoFactorMethod.SecurityKey)
                 {
-                    <div class="@ExtendedBootstrapClass.InvalidFeedback d-block">@_errorMessage</div>
+                    <InputGroup>
+                        <FloatingTextInput InnerClass="@IsInvalidInputClass" @bind-Value="@Model.Code" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Code)}")"
+                                           FloatingLabel="@Localizer[$"form_{Model.Method}Code_Placeholder"]" Placeholder="code" autocomplete="off" required />
+
+                        @if (Model.Method == TwoFactorMethod.Email)
+                        {
+                            <Button Color="ButtonColor.Secondary" Outline @onclick="SendEmailAuthenticationCode_ClickAsync">@Localizer["form_SendEmailCode"]</Button>
+                        }
+                    </InputGroup>
+
+                    @if (IsInvalid())
+                    {
+                        <div class="@ExtendedBootstrapClass.InvalidFeedback d-block">@_errorMessage</div>
+                    }
+                }
+                else
+                {
+                    <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.DataAccessKey)}")" value="@Model.DataAccessKey" />
                 }
 
                 @if (Model.Method != TwoFactorMethod.Recovery)
@@ -37,12 +45,13 @@
                     <CheckBoxInput Class="mt-2" @bind-Value="Model.RememberClient" name="@($"{nameof(Model)}.{nameof(Model.RememberClient)}")" Label="@Localizer["form_Persistent"]" />
                 }
 
-                <Dropdown Class="mt-3" Color="DropdownColor.Secondary">
+                <Dropdown Class="mt-3 mb-2" Color="DropdownColor.Secondary">
                     @{
                         string GetIconName(TwoFactorMethod method) => method switch
                         {
                             TwoFactorMethod.Authenticator => "qr_code_scanner",
                             TwoFactorMethod.Email => "mail",
+                            TwoFactorMethod.SecurityKey => "passkey",
                             TwoFactorMethod.Recovery => "pin",
                             _ => throw new NotImplementedException()
                         };
@@ -55,13 +64,19 @@
                     <DropdownMenu>
                         <DropdownHeader>@Localizer["methods"]</DropdownHeader>
 
-                        @foreach (TwoFactorMethod method in Enum.GetValues<TwoFactorMethod>())
-                        {
-                            if (method == TwoFactorMethod.Email && !_mfaEmailEnabled)
+                        @{
+                            HashSet<TwoFactorMethod> methods = new(Enum.GetValues<TwoFactorMethod>());
+                            if (!_mfaEmailEnabled)
                             {
-                                continue;
+                                methods.Remove(TwoFactorMethod.Email);
                             }
-
+                            if (!_mfaSecurityKeyEnabled)
+                            {
+                                methods.Remove(TwoFactorMethod.SecurityKey);
+                            }
+                        }
+                        @foreach (TwoFactorMethod method in methods)
+                        {
                             <DropdownItem Type="DropdownItemType.Button" Class="d-flex align-items-center" Active="Model.Method.Equals(method)" @onclick="() => Model.Method = method">
                                 <FontsIcon Name="@GetIconName(method)" />
                                 <span class="ms-2">@Localizer["method_" + method]</span>
@@ -70,7 +85,26 @@
                     </DropdownMenu>
                 </Dropdown>
 
-                <Button Class="mt-2" Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["form_Submit"]</Button>
+                @if (Model.Method != TwoFactorMethod.SecurityKey)
+                {
+                    <Button Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["form_SubmitBtn"]</Button>
+                }
+                else
+                {
+                    if (_webAuthnSupported)
+                    {
+                        <Button Color="ButtonColor.Success" @onclick="StartSecurityKeyAuthentication_ClickAsync">@Localizer["form_AuthenticateBtn"]</Button>
+                    }
+                    else
+                    {
+                        <Tooltip Class="d-flex" Title="@Localizer["securityKey_NotSupported"]">
+                            <Button Class="flex-fill d-flex flex-nowrap justify-content-center" Color="ButtonColor.Success" Disabled>
+                                <span>@Localizer["form_AuthenticateBtn"]</span>
+                                <Icon Class="ms-2" Name="IconName.ExclamationCircle" />
+                            </Button>
+                        </Tooltip>
+                    }
+                }
             </form>
         </div>
         <div class="col" />

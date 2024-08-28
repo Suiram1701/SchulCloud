@@ -16,6 +16,11 @@ public enum TwoFactorMethod
     Email,
 
     /// <summary>
+    /// A security key of the user.
+    /// </summary>
+    SecurityKey,
+
+    /// <summary>
     /// A recovery code.
     /// </summary>
     Recovery,

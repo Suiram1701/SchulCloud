@@ -34,7 +34,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
     private PersistentComponentState ComponentState { get; set; } = default!;
     #endregion
 
-    private const string _formName = "signIn";
+    private const string _formName = "signIn"; 
 
     private string? _errorMessage;
     private PersistingComponentStateSubscription? _persistingSubscription;

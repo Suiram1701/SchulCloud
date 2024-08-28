@@ -154,4 +154,13 @@
   <data name="registerModal_register" xml:space="preserve">
     <value>Hinzufügen</value>
   </data>
+  <data name="registerModal_Error" xml:space="preserve">
+    <value>Fehler beim Anfordern des Sicherheitsschlüssels</value>
+  </data>
+  <data name="registerModal_ErrorMessage" xml:space="preserve">
+    <value>Beim Anfordern des Sicherheitsschlüssels ist ein Fehler aufgetreten.</value>
+  </data>
+  <data name="registerModal_SaveError" xml:space="preserve">
+    <value></value>
+  </data>
 </root>

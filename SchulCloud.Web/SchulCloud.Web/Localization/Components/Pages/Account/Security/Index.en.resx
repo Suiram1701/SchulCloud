@@ -106,10 +106,10 @@
   <data name="password_Desc" xml:space="preserve">
     <value>The password is used to log in to this account. To protect your account, keep your password secret and do not share it with anyone. Use a strong password to log in to your account. Your password must meet at least the following security requirements.</value>
   </data>
-  <data name="password_Change" xml:space="preserve">
+  <data name="password_ChangeBtn" xml:space="preserve">
     <value>Change Password</value>
   </data>
-  <data name="password_Reset" xml:space="preserve">
+  <data name="password_ResetBtn" xml:space="preserve">
     <value>Forgot Password?</value>
   </data>
   <data name="mfaMethods" xml:space="preserve">
@@ -121,13 +121,13 @@
   <data name="mfa_Authenticator" xml:space="preserve">
     <value>Authentication app</value>
   </data>
-  <data name="authenticator_Enable" xml:space="preserve">
-    <value>Enable authentication app</value>
+  <data name="authenticator_EnableBtn" xml:space="preserve">
+    <value>Set up authentication app</value>
   </data>
   <data name="authenticator_DisableMessage" xml:space="preserve">
     <value>You are about to disable 2FA authentication. This will invalidate the authenticator app codes and backup codes. Do you still want to continue?</value>
   </data>
-  <data name="authenticator_Disable" xml:space="preserve">
+  <data name="authenticator_DisableBtn" xml:space="preserve">
     <value>Disable authentication app</value>
   </data>
   <data name="mfa_Desc" xml:space="preserve">
@@ -142,26 +142,20 @@
   <data name="recovery_ValidCodes" xml:space="preserve">
     <value>{0} codes are valid</value>
   </data>
-  <data name="recovery_GenerateNew" xml:space="preserve">
+  <data name="recovery_GenerateNewBtn" xml:space="preserve">
     <value>Generate recovery codes</value>
   </data>
-  <data name="recovery_Renew" xml:space="preserve">
+  <data name="recovery_RenewBtn" xml:space="preserve">
     <value>Generate new recovery codes</value>
   </data>
   <data name="mfa_Recovery" xml:space="preserve">
     <value>Wiederherstellungscodes</value>
-  </data>
-  <data name="email_Enable" xml:space="preserve">
-    <value>Enable email authentication</value>
   </data>
   <data name="enable_Error" xml:space="preserve">
     <value>An error occurred during activation.</value>
   </data>
   <data name="disable_Error" xml:space="preserve">
     <value>An error occurred during deactivation.</value>
-  </data>
-  <data name="email_Disable" xml:space="preserve">
-    <value>Disable email authentication</value>
   </data>
   <data name="mfa_Email" xml:space="preserve">
     <value>Email authentication</value>
@@ -177,5 +171,20 @@
   </data>
   <data name="recovery_NoValidCodes_Tooltip" xml:space="preserve">
     <value>No recovery codes are available. Generate new recovery codes so that a backup option is still available.</value>
+  </data>
+  <data name="mfa_securityKey" xml:space="preserve">
+    <value>Security key</value>
+  </data>
+  <data name="securityKey_ManageBtn" xml:space="preserve">
+    <value>Manage security keys</value>
+  </data>
+  <data name="enableBtn" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="disableBtn" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="securityKey_desc" xml:space="preserve">
+    <value>Use the security keys stored in your account for 2FA authentication.</value>
   </data>
 </root>

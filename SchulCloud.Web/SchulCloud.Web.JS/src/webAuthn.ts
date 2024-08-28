@@ -21,7 +21,7 @@ export namespace webAuthn {
             authenticatorData: string,
             clientDataJSON: string,
             signature: string,
-            userHandle: string
+            userHandle: string | null
         }
     }
 
@@ -91,6 +91,11 @@ export namespace webAuthn {
                 throw new Error('The authenticator returned an unexpected credential type.');
             }
 
+            let userHandle: string | null = null;
+            if (credential.response.userHandle !== null) {
+                userHandle = coerceToBase64Url(credential.response.userHandle);
+            }
+
             const response: assertionResponse = {
                 id: credential.id,
                 rawId: coerceToBase64Url(credential.rawId),
@@ -100,7 +105,7 @@ export namespace webAuthn {
                     authenticatorData: coerceToBase64Url(credential.response.authenticatorData),
                     clientDataJSON: coerceToBase64Url(credential.response.clientDataJSON),
                     signature: coerceToBase64Url(credential.response.signature),
-                    userHandle: coerceToBase64Url(credential.response.userHandle ?? [])
+                    userHandle: userHandle
                 }
             }
             await objReference.invokeMethodAsync('onOperationCompleted', response, null);

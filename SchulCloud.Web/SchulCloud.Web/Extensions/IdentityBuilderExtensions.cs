@@ -68,5 +68,5 @@ public static class IdentityBuilderExtensions
 
         Type emailProviderType = typeof(AuthenticationCodeTokenProvider<>).MakeGenericType(builder.UserType);
         return builder.AddTokenProvider(ExtendedTokenProviderOptions.AuthenticationTokenProvider, emailProviderType);
-    }//
+    }
 }

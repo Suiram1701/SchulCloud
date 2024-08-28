@@ -5,6 +5,11 @@ namespace SchulCloud.Web.Models;
 public class Verify2faModel : AuthenticatorModel
 {
     /// <summary>
+    /// A key to access auth data stored on the server.
+    /// </summary>
+    public string? DataAccessKey { get; set; }
+
+    /// <summary>
     /// Indicates whether the client should be remembered for further 2fa logins.
     /// </summary>
     public bool RememberClient { get; set; }

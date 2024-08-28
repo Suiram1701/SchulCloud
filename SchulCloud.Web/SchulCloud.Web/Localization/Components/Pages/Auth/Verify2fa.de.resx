@@ -103,7 +103,7 @@
   <data name="form_AuthenticatorCode_Placeholder" xml:space="preserve">
     <value>Authentifizierungscode</value>
   </data>
-  <data name="form_Submit" xml:space="preserve">
+  <data name="form_SubmitBtn" xml:space="preserve">
     <value>Anmelden</value>
   </data>
   <data name="form_Persistent" xml:space="preserve">
@@ -151,7 +151,7 @@
   <data name="method_Email" xml:space="preserve">
     <value>E-Mail Authentifizierung</value>
   </data>
-  <data name="form_SendEmailCode" xml:space="preserve">
+  <data name="form_SendEmailCodeBtn" xml:space="preserve">
     <value>Code senden</value>
   </data>
   <data name="emailConfirmation_Timeout" xml:space="preserve">
@@ -165,5 +165,23 @@
   </data>
   <data name="emailConfirmationMessage" xml:space="preserve">
     <value>Der Bestätigungscode wurde an {0} gesendet.</value>
+  </data>
+  <data name="form_AuthenticateBtn" xml:space="preserve">
+    <value>Authentifizieren</value>
+  </data>
+  <data name="securityKey_NotSupported" xml:space="preserve">
+    <value>Sicherheitsschlüssel werden von Ihrem aktuellen Browser nicht unterstützt</value>
+  </data>
+  <data name="securityKey_Error" xml:space="preserve">
+    <value>Fehler beim Anfordern des Sicherheitsschlüssels</value>
+  </data>
+  <data name="securityKey_ErrorMessage" xml:space="preserve">
+    <value>Beim Anfordern des Sicherheitsschlüssels ist ein Fehler aufgetreten.</value>
+  </data>
+  <data name="desc_SecurityKey" xml:space="preserve">
+    <value>Klicken Sie auf "Authentifizieren", um die Authentifizierung mit einem Sicherheitsschlüssel anzufordern.</value>
+  </data>
+  <data name="method_SecurityKey" xml:space="preserve">
+    <value>Sicherheitsschlüssel</value>
   </data>
 </root>

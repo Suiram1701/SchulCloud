@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using SchulCloud.Web.Constants;
 using static SchulCloud.Web.Constants.JSNames;
 using static System.Net.Mime.MediaTypeNames;
@@ -59,5 +60,16 @@ internal static class JSRuntimeExtensions
     {
         ArgumentNullException.ThrowIfNull(runtime);
         await runtime.InvokeVoidAsync($"{JSNames.File}.downloadFromUrl", fileName, filePath);
+    }
+
+    /// <summary>
+    /// Calls submit on a form element.
+    /// </summary>
+    /// <param name="runtime">The runtime to use.</param>
+    /// <param name="reference">The element to call submit on. If not a form element a error will be logged on client-side.</param>
+    public static async ValueTask FormSubmitAsync(this IJSRuntime runtime, ElementReference reference)
+    {
+        ArgumentNullException.ThrowIfNull(runtime);
+        await runtime.InvokeVoidAsync($"{ElementHelpers}.formSubmit", reference).ConfigureAwait(false);
     }
 }

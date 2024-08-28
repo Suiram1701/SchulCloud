@@ -37,7 +37,7 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
     private RenameDialog _renameDialog = default!;
     private RemoveDialog _removeDialog = default!;
 
-    private bool _browserSupported = true;
+    private bool _webAuthnSupported = true;
     private ApplicationUser _user = default!;
     private List<SecurityKey>? _securityKeys;
 
@@ -66,7 +66,7 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
         {
             if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
             {
-                _browserSupported = false;
+                _webAuthnSupported = false;
                 await InvokeAsync(StateHasChanged).ConfigureAwait(false);
             }
         }
@@ -74,7 +74,7 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
 
     private async Task RegisterSecurityKey_ClickAsync()
     {
-        if (_browserSupported)
+        if (_webAuthnSupported)
         {
             await _registerModal.ShowAsync().ConfigureAwait(false);
         }
@@ -110,7 +110,7 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
         {
             await InvokeAsync(() =>
             {
-                ToastService.NotifyError(Localizer["registerModal_error"], args.ErrorMessage ?? Localizer["registerModal_errorMessage"]);
+                ToastService.NotifyError(Localizer["registerModal_Error"], args.ErrorMessage ?? Localizer["registerModal_ErrorMessage"]);
             }).ConfigureAwait(false);
             return;
         }
@@ -131,7 +131,7 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
         }
         else
         {
-            await InvokeAsync(() => ToastService.NotifyError(result.Errors, Localizer["registerModal_error"])).ConfigureAwait(false);
+            await InvokeAsync(() => ToastService.NotifyError(result.Errors, Localizer["registerModal_SaveError"])).ConfigureAwait(false);
         }
     }
 

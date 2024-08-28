@@ -103,7 +103,7 @@
   <data name="form_AuthenticatorCode_Placeholder" xml:space="preserve">
     <value>Authentication code</value>
   </data>
-  <data name="form_Submit" xml:space="preserve">
+  <data name="form_SubmitBtn" xml:space="preserve">
     <value>Sign in</value>
   </data>
   <data name="form_Persistent" xml:space="preserve">
@@ -148,7 +148,7 @@
   <data name="method_Email" xml:space="preserve">
     <value>Email authentication</value>
   </data>
-  <data name="form_SendEmailCode" xml:space="preserve">
+  <data name="form_SendEmailCodeBtn" xml:space="preserve">
     <value>Send code</value>
   </data>
   <data name="form_EmailCode_Placeholder" xml:space="preserve">
@@ -165,5 +165,23 @@
   </data>
   <data name="emailConfirmationMessage" xml:space="preserve">
     <value>The verification code was sent to {0}.</value>
+  </data>
+  <data name="form_AuthenticateBtn" xml:space="preserve">
+    <value>Authenticate</value>
+  </data>
+  <data name="securityKey_NotSupported" xml:space="preserve">
+    <value>Security keys are not supported by your current browser</value>
+  </data>
+  <data name="method_SecurityKey" xml:space="preserve">
+    <value>Security key</value>
+  </data>
+  <data name="securityKey_Error" xml:space="preserve">
+    <value>Error requesting security key</value>
+  </data>
+  <data name="securityKey_ErrorMessage" xml:space="preserve">
+    <value>An error occurred while requesting the security key.</value>
+  </data>
+  <data name="desc_SecurityKey" xml:space="preserve">
+    <value>Click "Authenticate" to request authentication with a security key.</value>
   </data>
 </root>

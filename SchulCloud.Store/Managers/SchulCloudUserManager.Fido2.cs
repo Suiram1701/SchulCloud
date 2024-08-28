@@ -113,9 +113,8 @@ partial class SchulCloudUserManager<TUser, TCredential>
     /// Creates options for a fido2 assertion.
     /// </summary>
     /// <param name="user">The user that requested the assertion. If <c>null</c> the assertion will be done as usernameless.</param>
-    /// <param name="verificationRequirement">The verification requirement.</param>
     /// <returns>The created options.</returns>
-    public virtual async Task<AssertionOptions> CreateFido2AssertionOptionsAsync(TUser? user, UserVerificationRequirement verificationRequirement = UserVerificationRequirement.Preferred)
+    public virtual async Task<AssertionOptions> CreateFido2AssertionOptionsAsync(TUser? user)
     {
         ThrowIfDisposed();
         IFido2 fido2 = GetFido2Service();

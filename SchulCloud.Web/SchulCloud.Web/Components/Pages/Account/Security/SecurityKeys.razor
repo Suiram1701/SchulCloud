@@ -6,7 +6,7 @@
 <p class="mt-2">@Localizer["desc"]</p>
 <p>@Localizer["desc_passkey"]</p>
 
-<Accordion>
+<Accordion Class="mb-2">
     @if (_securityKeys is not null)
     {
         @foreach (SecurityKey securityKey in _securityKeys.OrderByDescending(key => key.RegistrationDate))
@@ -80,14 +80,18 @@
         <span>@Localizer["loading"]</span>
     }
 </Accordion>
-@if (_browserSupported)
+
+@if (_webAuthnSupported)
 {
-    <Button Class="mt-2" Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="RegisterSecurityKey_ClickAsync">@Localizer["registerBtn"]</Button>
+    <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="RegisterSecurityKey_ClickAsync">@Localizer["registerBtn"]</Button>
 }
 else
 {
-    <Tooltip Title="@Localizer["browserNotSupported"]">
-        <Button Class="mt-2" Color="ButtonColor.Primary" Size="ButtonSize.Small" Disabled>@Localizer["registerBtn"]</Button>
+    <Tooltip Class="d-flex" Title="@Localizer["browserNotSupported"]">
+        <Button Class="flex-fill d-flex flex-nowrap justify-content-center" Color="ButtonColor.Primary" Size="ButtonSize.Small" Disabled>
+            <span>@Localizer["registerBtn"]</span>
+            <Icon Class="ms-2" Name="IconName.ExclamationCircle" />
+        </Button>
     </Tooltip>
 }
 
