@@ -101,6 +101,11 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Generates a new two factor email code.
+    /// </summary>
+    /// <param name="user">The user to generate the code for.</param>
+    /// <returns>The generated code.</returns>
     public virtual async Task<string> GenerateTwoFactorEmailCodeAsync(TUser user)
     {
         ThrowIfDisposed();
@@ -108,6 +113,37 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
 
         string provider = ExtendedTokenProviderOptions.EmailTwoFactorTokenProvider;
         return await GenerateTwoFactorTokenAsync(user, provider).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets a flag that indicates whether two factor via security keys is enabled.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>The result.</returns>
+    public virtual async Task<bool> GetTwoFactorSecurityKeyEnableAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserTwoFactorSecurityKeyStore<TUser> store = GetTwoFactorSecurityKeyStore();
+        return await store.GetTwoFactorSecurityKeyEnabledAsync(user, CancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Sets tha flag that indicates whether two factor via security keys is enabled.
+    /// </summary>
+    /// <param name="user">The user to modify.</param>
+    /// <param name="enabled">The new flag.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> SetTwoFactorSecurityKeyEnabledAsync(TUser user, bool enabled)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserTwoFactorSecurityKeyStore<TUser> store = GetTwoFactorSecurityKeyStore();
+        await store.SetTwoFactorSecurityKeyEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
+
+        return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
     }
 
     /// <returns>The new recovery codes for the user.</returns>
@@ -176,6 +212,15 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         if (Store is not IUserTwoFactorEmailStore<TUser> cast)
         {
             throw new NotSupportedException($"{nameof(IUserTwoFactorEmailStore<TUser>)} isn't supported by the store.");
+        }
+        return cast;
+    }
+
+    private IUserTwoFactorSecurityKeyStore<TUser> GetTwoFactorSecurityKeyStore()
+    {
+        if (Store is not IUserTwoFactorSecurityKeyStore<TUser> cast)
+        {
+            throw new NotSupportedException($"{nameof(IUserTwoFactorSecurityKeyStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }

@@ -7,6 +7,7 @@ using SchulCloud.Database.Enums;
 using SchulCloud.Database.Models;
 using SchulCloud.Store.Abstractions;
 using System.Net;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -14,8 +15,9 @@ namespace SchulCloud.Database.Stores;
 
 public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, IdentityErrorDescriber? describer = null)
     : UserStore<TUser, TRole, TContext>(context, describer),
+    IUserFido2CredentialStore<Fido2Credential, TUser>,
     IUserTwoFactorEmailStore<TUser>,
-    IUserFido2CredentialStore<Fido2Credential, TUser>
+    IUserTwoFactorSecurityKeyStore<TUser>
     where TUser : SchulCloudUser
     where TRole : IdentityRole
     where TContext : DbContext
@@ -71,6 +73,34 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         else
         {
             user.TwoFactorEnabledFlags &= ~TwoFactorMethod.Email;
+        }
+        return Task.CompletedTask;
+    }
+    #endregion
+
+    #region IUserTwoFactorSecurityKeyStore
+    public Task<bool> GetTwoFactorSecurityKeyEnabledAsync(TUser user, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(user);
+
+        return Task.FromResult(user.TwoFactorEnabledFlags.HasFlag(TwoFactorMethod.SecurityKey));
+    }
+
+    public Task SetTwoFactorSecurityKeyEnabledAsync(TUser user, bool enabled, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(user);
+
+        if (enabled)
+        {
+            user.TwoFactorEnabledFlags |= TwoFactorMethod.SecurityKey;
+        }
+        else
+        {
+            user.TwoFactorEnabledFlags &= ~TwoFactorMethod.SecurityKey;
         }
         return Task.CompletedTask;
     }

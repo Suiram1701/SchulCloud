@@ -38,8 +38,9 @@ public sealed partial class Index : ComponentBase
 
     private ApplicationUser _user = default!;
     private bool _mfaEnabled;
-    private int _mfaRemainingRecoveryCodes;
     private bool _mfaEmailEnabled;
+    private bool _mfaSecurityKeyEnabled;
+    private int _mfaRemainingRecoveryCodes;
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
@@ -49,12 +50,7 @@ public sealed partial class Index : ComponentBase
         AuthenticationState authenticationState = await AuthenticationState.ConfigureAwait(false);
         _user = (await UserManager.GetUserAsync(authenticationState.User).ConfigureAwait(false))!;
 
-        _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user).ConfigureAwait(false);
-        if (_mfaEnabled)
-        {
-            _mfaRemainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user).ConfigureAwait(false);
-            _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user).ConfigureAwait(false);
-        }
+        await UpdateMfaStates().ConfigureAwait(false);
     }
 
     private async Task AuthenticatorDisable_ClickAsync()
@@ -65,14 +61,11 @@ public sealed partial class Index : ComponentBase
         }
 
         IdentityResult result = await UserManager.SetTwoFactorEnabledAsync(_user, false).ConfigureAwait(false);
-        await InvokeAsync(() =>
+        await InvokeAsync(async () =>
         {
             if (result.Succeeded)
             {
-                _mfaEnabled = false;
-                _mfaEmailEnabled = false;
-                _mfaRemainingRecoveryCodes = 0;
-
+                await UpdateMfaStates().ConfigureAwait(false);
                 StateHasChanged();
             }
             else
@@ -104,7 +97,7 @@ public sealed partial class Index : ComponentBase
         }).ConfigureAwait(false);
     }
 
-    private async void EmailDisable_ClickAsync()
+    private async Task EmailDisable_ClickAsync()
     {
         IdentityResult result = await UserManager.SetTwoFactorEmailEnabledAsync(_user, false).ConfigureAwait(false);
         await InvokeAsync(() =>
@@ -120,4 +113,56 @@ public sealed partial class Index : ComponentBase
             }
         }).ConfigureAwait(false);
     }
+
+    private async Task SecurityKeyEnable_ClickAsync()
+    {
+        if (!_mfaEnabled)
+        {
+            return;
+        }
+
+        IdentityResult enableResult = await UserManager.SetTwoFactorSecurityKeyEnabledAsync(_user, true).ConfigureAwait(false);
+        await InvokeAsync(() =>
+        {
+            if (enableResult.Succeeded)
+            {
+                _mfaSecurityKeyEnabled = true;
+                StateHasChanged();
+            }
+            else
+            {
+                ToastService.NotifyError(enableResult.Errors, Localizer["enable_Error"]);
+            }
+        }).ConfigureAwait(false);
+    }
+
+    private async Task SecurityKeyDisable_ClickAsync()
+    {
+        IdentityResult disableResult = await UserManager.SetTwoFactorSecurityKeyEnabledAsync(_user, false).ConfigureAwait(false);
+        await InvokeAsync(() =>
+        {
+            if (disableResult.Succeeded)
+            {
+                _mfaSecurityKeyEnabled = false;
+                StateHasChanged();
+            }
+            else
+            {
+                ToastService.NotifyError(disableResult.Errors, Localizer["disable_Error"]);
+            }
+        }).ConfigureAwait(false);
+    }
+
+    private async Task UpdateMfaStates()
+    {
+        _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user).ConfigureAwait(false);
+        if (_mfaEnabled)
+        {
+            _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user).ConfigureAwait(false);
+            _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user).ConfigureAwait(false);
+            _mfaRemainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user).ConfigureAwait(false);
+        }
+    }
+
+    private bool? IsMfaMethodEnabled(bool methodState) => _mfaEnabled ? methodState : null;
 }

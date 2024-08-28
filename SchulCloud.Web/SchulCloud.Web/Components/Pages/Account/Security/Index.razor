@@ -32,8 +32,8 @@
                 @ShowWhenTrue(options.RequireDigit, ErrorDescriber.PasswordRequiresDigit)
             </p>
 
-            <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.ChangePassword()">@Localizer["password_Change"]</Button>
-            <Button Class="ms-2" Color="ButtonColor.Danger" Type="ButtonType.Link" To="@Routes.ResetPassword(returnUrl: NavigationManager.GetRelativeUri())">@Localizer["password_Reset"]</Button>
+            <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.ChangePassword()">@Localizer["password_ChangeBtn"]</Button>
+            <Button Class="ms-2" Color="ButtonColor.Danger" Type="ButtonType.Link" To="@Routes.ResetPassword(returnUrl: NavigationManager.GetRelativeUri())">@Localizer["password_ResetBtn"]</Button>
         </Content>
     </AccordionItem>
 </Accordion>
@@ -50,17 +50,17 @@
 
             @if (!_mfaEnabled)
             {
-                <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.Authenticator()">@Localizer["authenticator_Enable"]</Button>
+                <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.Authenticator()">@Localizer["authenticator_EnableBtn"]</Button>
             }
             else
             {
-                <Button Color="ButtonColor.Danger" @onclick="AuthenticatorDisable_ClickAsync">@Localizer["authenticator_Disable"]</Button>
+                <Button Color="ButtonColor.Danger" @onclick="AuthenticatorDisable_ClickAsync">@Localizer["authenticator_DisableBtn"]</Button>
             }
         </Content>
     </AccordionItem>
     <AccordionItem>
         <TitleTemplate>
-            <SecurityMethodItemTitle IconName="mail" Title="@Localizer["mfa_Email"]" Enabled="@(_mfaEnabled ? _mfaEmailEnabled : null)" LastTimeUsed="DateTime.Now.AddYears(-1)" />
+            <SecurityMethodItemTitle IconName="mail" Title="@Localizer["mfa_Email"]" Enabled="IsMfaMethodEnabled(_mfaEmailEnabled)" LastTimeUsed="DateTime.Now.AddYears(-1)" />
         </TitleTemplate>
         <Content>
             <p>@Localizer["email_Desc"]</p>
@@ -69,19 +69,52 @@
             {
                 @if (_mfaEnabled)
                 {
-                    <Button Color="ButtonColor.Primary" @onclick="EmailEnable_ClickAsync">@Localizer["email_Enable"]</Button>
+                    <Button Color="ButtonColor.Primary" @onclick="EmailEnable_ClickAsync">@Localizer["enableBtn"]</Button>
                 }
                 else
                 {
                     <Tooltip Title="@Localizer["authenticator_EnableFirst"]">
-                        <Button Color="ButtonColor.Primary" Disabled @onclick="EmailEnable_ClickAsync">@Localizer["email_Enable"]</Button>
+                        <Button Color="ButtonColor.Primary" Disabled>@Localizer["enableBtn"]</Button>
                     </Tooltip>
                 }
             }
             else
             {
-                <Button Color="ButtonColor.Danger" @onclick="EmailDisable_ClickAsync">@Localizer["email_Disable"]</Button>
+                <Button Color="ButtonColor.Danger" @onclick="EmailDisable_ClickAsync">@Localizer["disableBtn"]</Button>
             }
+        </Content>
+    </AccordionItem>
+    <AccordionItem>
+        <TitleTemplate>
+            <SecurityMethodItemTitle IconName="passkey" Title="@Localizer["mfa_securityKey"]" Enabled="IsMfaMethodEnabled(_mfaSecurityKeyEnabled)" LastTimeUsed="null" />
+        </TitleTemplate>
+        <Content>
+            <p>@Localizer["securityKey_desc"]</p>
+
+            <div class="d-flex">
+                @if (!_mfaSecurityKeyEnabled)
+                {
+                    @if (_mfaEnabled)
+                    {
+                        <Button Color="ButtonColor.Primary" @onclick="SecurityKeyEnable_ClickAsync">@Localizer["enableBtn"]</Button>
+                    }
+                    else
+                    {
+                        <Tooltip Title="@Localizer["authenticator_EnableFirst"]">
+                            <Button Color="ButtonColor.Primary" Disabled>@Localizer["enableBtn"]</Button>
+                        </Tooltip>
+                    }
+                }
+                else
+                {
+                    <Button Color="ButtonColor.Danger" @onclick="SecurityKeyDisable_ClickAsync">@Localizer["disableBtn"]</Button>
+                }
+
+                <Button Class="d-flex align-items-center ms-2" Color="ButtonColor.Secondary" Type="ButtonType.Link" To="@Routes.SecurityKeys()">
+                    <FontsIcon Name="security_key" />
+                    <span class="ms-2">@Localizer["securityKey_ManageBtn"]</span>
+                </Button>
+            </div>
         </Content>
     </AccordionItem>
     <AccordionItem>
@@ -109,8 +142,8 @@
 
             @{
                 string btnLabelKey = _mfaRemainingRecoveryCodes == 0
-                ? "recovery_GenerateNew"
-                : "recovery_Renew";
+                ? "recovery_GenerateNewBtn"
+                : "recovery_RenewBtn";
             }
             @if (_mfaEnabled)
             {
@@ -119,7 +152,7 @@
             else
             {
                 <Tooltip Title="@Localizer["authenticator_EnableFirst"]" Placement="TooltipPlacement.Right">
-                    <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.RecoveryCodes()" Disabled>@Localizer[btnLabelKey]</Button>
+                    <Button Color="ButtonColor.Primary" Disabled>@Localizer[btnLabelKey]</Button>
                 </Tooltip>
             }
         </Content>

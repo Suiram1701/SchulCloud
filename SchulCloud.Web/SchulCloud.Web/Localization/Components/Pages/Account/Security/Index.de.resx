@@ -106,10 +106,10 @@
   <data name="password_Desc" xml:space="preserve">
     <value>Das Passwort wird zum Anmelden an diesem Konto verwendet. Um Ihr Konto zu schützen, halten Sie Ihr Passwort geheim und geben Sie es nicht an andere weiter. Verwenden Sie ein sicheres Passwort, um sich bei Ihrem Konto anzumelden. Ihr Passwort muss mindestens folgende Sicherheitsanforderungen erfüllen.</value>
   </data>
-  <data name="password_Change" xml:space="preserve">
+  <data name="password_ChangeBtn" xml:space="preserve">
     <value>Passwort ändern</value>
   </data>
-  <data name="password_Reset" xml:space="preserve">
+  <data name="password_ResetBtn" xml:space="preserve">
     <value>Passwort vergessen?</value>
   </data>
   <data name="mfaMethods" xml:space="preserve">
@@ -121,13 +121,13 @@
   <data name="mfa_Authenticator" xml:space="preserve">
     <value>Authentifizierungs-App</value>
   </data>
-  <data name="authenticator_Enable" xml:space="preserve">
-    <value>Authentifizierungs-App aktivieren</value>
+  <data name="authenticator_EnableBtn" xml:space="preserve">
+    <value>Authentifizierungs-App einrichten</value>
   </data>
   <data name="authenticator_Desc" xml:space="preserve">
     <value>Die 2FA-Authentifizierungs mittels einer Authentifizierungs-App nutzt eine App auf Ihrem Mobilgerät, um bei jeder Anmeldung einen temporären, einmalig gültigen Code zu generieren.</value>
   </data>
-  <data name="authenticator_Disable" xml:space="preserve">
+  <data name="authenticator_DisableBtn" xml:space="preserve">
     <value>Authentifizierungs-App deaktivieren</value>
   </data>
   <data name="authenticator_DisableMessage" xml:space="preserve">
@@ -142,23 +142,17 @@
   <data name="recovery_ValidCodes" xml:space="preserve">
     <value>{0} Codes sind Gültig</value>
   </data>
-  <data name="recovery_GenerateNew" xml:space="preserve">
+  <data name="recovery_GenerateNewBtn" xml:space="preserve">
     <value>Wiederherstellungscodes generieren</value>
   </data>
-  <data name="recovery_Renew" xml:space="preserve">
+  <data name="recovery_RenewBtn" xml:space="preserve">
     <value>Neue Wiederherstellungscodes generieren</value>
   </data>
   <data name="mfa_Recovery" xml:space="preserve">
     <value>Wiederherstellungscodes</value>
   </data>
-  <data name="email_Enable" xml:space="preserve">
-    <value>E-Mail Authentifizierung aktivieren</value>
-  </data>
   <data name="enable_Error" xml:space="preserve">
     <value>Beim der aktivieren ist ein Fehler aufgetreten.</value>
-  </data>
-  <data name="email_Disable" xml:space="preserve">
-    <value>E-Mail Authentifizierung deaktivieren</value>
   </data>
   <data name="disable_Error" xml:space="preserve">
     <value>Bei der deaktivierung ist ein Fehler aufgetreten.</value>
@@ -177,5 +171,20 @@
   </data>
   <data name="recovery_NoValidCodes_Tooltip" xml:space="preserve">
     <value>Es sind keine Wiederherstellungscodes verfügbar. Generieren Sie neue Wiederherstellungscodes, damit weiterhin eine Backup Option verfügbar ist.</value>
+  </data>
+  <data name="mfa_securityKey" xml:space="preserve">
+    <value>Sicherheitsschlüssel</value>
+  </data>
+  <data name="securityKey_desc" xml:space="preserve">
+    <value>Verwenden Sie die in Ihrem Konto hinterlegten Sicherheitsschlüssel für die 2FA-Authentifizierung benutzen.</value>
+  </data>
+  <data name="securityKey_ManageBtn" xml:space="preserve">
+    <value>Sicherheitsschlüssel verwalten</value>
+  </data>
+  <data name="enableBtn" xml:space="preserve">
+    <value>Aktivieren</value>
+  </data>
+  <data name="disableBtn" xml:space="preserve">
+    <value>Deaktivieren</value>
   </data>
 </root>
