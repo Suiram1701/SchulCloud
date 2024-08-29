@@ -36,19 +36,19 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
     /// <summary>
     /// Indicate whether the internal store supports passkey sign ins.
     /// </summary>
-    public virtual bool SupportsPasskeySignIn
+    public virtual bool SupportsUserPasskeySignIn
     {
         get
         {
             ThrowIfDisposed();
-            return Store is IUserPasskeysEnabledStore<TUser>;
+            return Store is IUserPasskeysStore<TUser>;
         }
     }
 
     /// <summary>
     /// Indicates whether the internal store support two factor via email.
     /// </summary>
-    public virtual bool SupportsTwoFactorEmail
+    public virtual bool SupportsUserTwoFactorEmail
     {
         get
         {
@@ -60,7 +60,7 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
     /// <summary>
     /// Indicates whether the internal store supports two factor via security keys.
     /// </summary>
-    public virtual bool SupportsTwoFactorSecurityKeys
+    public virtual bool SupportsUserTwoFactorSecurityKeys
     {
         get
         {
@@ -79,7 +79,7 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserPasskeysEnabledStore<TUser> store = GetPasskeysEnabledStore();
+        IUserPasskeysStore<TUser> store = GetPasskeysStore();
         return await store.GetPasskeysEnabledAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
@@ -94,10 +94,24 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserPasskeysEnabledStore<TUser> store = GetPasskeysEnabledStore();
+        IUserPasskeysStore<TUser> store = GetPasskeysStore();
         await store.SetPasskeysEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
 
         return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the count of available passkeys for a user.
+    /// </summary>
+    /// <param name="user">The user to get this from.</param>
+    /// <returns>The count of keys.</returns>
+    public virtual async Task<int> GetPasskeyCountAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserPasskeysStore<TUser> store = GetPasskeysStore();
+        return await store.GetPasskeyCountAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     public override async Task<IdentityResult> SetTwoFactorEnabledAsync(TUser user, bool enabled)
@@ -117,6 +131,9 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
 
             IUserTwoFactorEmailStore<TUser> twoFactorEmailStore = GetTwoFactorEmailStore();
             await twoFactorEmailStore.SetTwoFactorEmailEnabled(user, false, CancellationToken).ConfigureAwait(false);
+
+            IUserTwoFactorSecurityKeyStore<TUser> twoFactorSecurityKeyStore = GetTwoFactorSecurityKeyStore();
+            await twoFactorSecurityKeyStore.SetTwoFactorSecurityKeyEnabledAsync(user, false, CancellationToken).ConfigureAwait(false);
 
             IUserTwoFactorRecoveryCodeStore<TUser> twoFactorRecoveryStore = GetTwoFactorRecoveryCodeStore();
             await twoFactorRecoveryStore.ReplaceCodesAsync(user, [], CancellationToken).ConfigureAwait(false);
@@ -201,6 +218,20 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Gets the count of registered security keys that can be used for two factor.
+    /// </summary>
+    /// <param name="user">The user to get the count from.</param>
+    /// <returns>The count of keys.</returns>
+    public virtual async Task<int> GetTwoFactorSecurityKeysCountAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserTwoFactorSecurityKeyStore<TUser> store = GetTwoFactorSecurityKeyStore();
+        return await store.GetTwoFactorSecurityKeyCountAsync(user, CancellationToken).ConfigureAwait(false);
+    }
+
     /// <returns>The new recovery codes for the user.</returns>
     /// <inheritdoc />
     public override async Task<IEnumerable<string>?> GenerateNewTwoFactorRecoveryCodesAsync(TUser user, int number)
@@ -236,6 +267,31 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         return await base.RedeemTwoFactorRecoveryCodeAsync(user, HashRecoveryCode(userId, code));
     }
 
+    /// <summary>
+    /// Disables both Passkey sign in and security key 2fa authentication for a user.
+    /// </summary>
+    /// <param name="user">The user to disable it for.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> DisableSecurityKeyAuthenticationAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        if (SupportsUserPasskeySignIn)
+        {
+            IUserPasskeysStore<TUser> passkeysStore = GetPasskeysStore();
+            await passkeysStore.SetPasskeysEnabledAsync(user, false, CancellationToken).ConfigureAwait(false);
+        }
+
+        if (SupportsUserTwoFactorSecurityKeys)
+        {
+            IUserTwoFactorSecurityKeyStore<TUser> securityKeyStore = GetTwoFactorSecurityKeyStore();
+            await securityKeyStore.SetTwoFactorSecurityKeyEnabledAsync(user, false, CancellationToken).ConfigureAwait(false);
+        }
+
+        return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
+    }
+
     private static string HashRecoveryCode(string userId, string code)
     {
         byte[] keyBytes = Encoding.UTF8.GetBytes(userId);
@@ -244,11 +300,11 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         return Convert.ToBase64String(HMACSHA256.HashData(keyBytes, codeBytes));
     }
 
-    private IUserPasskeysEnabledStore<TUser> GetPasskeysEnabledStore()
+    private IUserPasskeysStore<TUser> GetPasskeysStore()
     {
-        if (Store is not IUserPasskeysEnabledStore<TUser> cast)
+        if (Store is not IUserPasskeysStore<TUser> cast)
         {
-            throw new NotSupportedException($"{nameof(IUserPasskeysEnabledStore<TUser>)} isn't supported by the store.");
+            throw new NotSupportedException($"{nameof(IUserPasskeysStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }

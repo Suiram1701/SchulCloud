@@ -15,7 +15,6 @@ using SchulCloud.Web.Services.EventArgs;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security;
 
-[StreamRendering(true)]
 [Route("/account/security/securityKeys")]
 public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
 {
@@ -41,7 +40,7 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
     private ApplicationUser _user = default!;
     private List<SecurityKey>? _securityKeys;
 
-    private readonly RegisterFido2CredentialModel _registerModel = new();
+    private RegisterFido2CredentialModel _registerModel = new();
     private IAsyncDisposable? _pendingRegistration;
     private RegisterState? _registerState;
 
@@ -85,6 +84,7 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
     private async Task RegisterModalClose_ClickAsync()
     {
         await _registerModal.HideAsync().ConfigureAwait(false);
+        _registerModel = new();
     }
 
     private async Task RegisterModal_ValidSubmitAsync()
@@ -97,6 +97,8 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
         CredentialCreateOptions options = await UserManager.CreateFido2CreationOptionsAsync(_user, _registerModel.IsPasskey).ConfigureAwait(false);
 
         _registerState = new(_registerModel.SecurityKeyName, _registerModel.IsPasskey, options);
+        _registerModel = new();
+
         _pendingRegistration = await WebAuthnService.StartCreateCredentialAsync(options, OnCredentialRegistrationCompletedAsync).ConfigureAwait(false);
     }
 
@@ -148,6 +150,11 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
         if (result.Succeeded)
         {
             _securityKeys?.Remove(securityKey);
+
+            if (_securityKeys?.Count == 0)     // Disable 
+            {
+                await UserManager.DisableSecurityKeyAuthenticationAsync(_user).ConfigureAwait(false);
+            }
         }
         else
         {

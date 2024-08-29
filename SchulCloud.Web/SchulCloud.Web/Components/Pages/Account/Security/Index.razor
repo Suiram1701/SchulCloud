@@ -38,15 +38,24 @@
     </AccordionItem>
     <AccordionItem>
         <TitleTemplate>
-            <SecurityMethodItemTitle IconName="passkey" Title="@Localizer["signIn_Passkeys"]" Enabled="_passkeysEnabled" />
+            <SecurityMethodItemTitle IconName="passkey" Title="@Localizer["signIn_Passkey"]" Enabled="@(_passkeysCount > 0 ? _passkeysEnabled : null)" />
         </TitleTemplate>
         <Content>
-            <p>@Localizer["passkeys_Desc"]</p>
+            <p>@Localizer["passkey_Desc"]</p>
 
             <div class="d-flex">
                 @if (!_passkeysEnabled)
                 {
-                    <Button Color="ButtonColor.Primary" @onclick="PasskeysEnable_ClickAsync">@Localizer["enableBtn"]</Button>
+                    @if (_passkeysCount > 0)
+                    {
+                        <Button Color="ButtonColor.Primary" @onclick="PasskeysEnable_ClickAsync">@Localizer["enableBtn"]</Button>
+                    }
+                    else
+                    {
+                        <Tooltip Title="@Localizer["passkey_AtLeastOne"]">
+                            <Button Color="ButtonColor.Primary" Disabled>@Localizer["enableBtn"]</Button>
+                        </Tooltip>
+                    }
                 }
                 else
                 {
@@ -110,17 +119,27 @@
     </AccordionItem>
     <AccordionItem>
         <TitleTemplate>
-            <SecurityMethodItemTitle IconName="passkey" Title="@Localizer["mfa_SecurityKey"]" Enabled="IsMfaMethodEnabled(_mfaSecurityKeyEnabled)" LastTimeUsed="null" />
+            <SecurityMethodItemTitle IconName="passkey" Title="@Localizer["mfa_SecurityKey"]"
+             Enabled="@(_securityKeysCount > 0 ? IsMfaMethodEnabled(_mfaSecurityKeyEnabled) : null)" LastTimeUsed="null" />
         </TitleTemplate>
         <Content>
-            <p>@Localizer["securityKey_Sesc"]</p>
+            <p>@Localizer["securityKey_Desc"]</p>
 
             <div class="d-flex">
                 @if (!_mfaSecurityKeyEnabled)
                 {
                     @if (_mfaEnabled)
                     {
-                        <Button Color="ButtonColor.Primary" @onclick="SecurityKeyEnable_ClickAsync">@Localizer["enableBtn"]</Button>
+                        @if (_securityKeysCount > 0)
+                        {
+                            <Button Color="ButtonColor.Primary" @onclick="SecurityKeyEnable_ClickAsync">@Localizer["enableBtn"]</Button>
+                        }
+                        else
+                        {
+                            <Tooltip Title="@Localizer["securityKey_AtLeastOne"]">
+                                <Button Color="ButtonColor.Primary" Disabled>@Localizer["enableBtn"]</Button>
+                            </Tooltip>
+                        }
                     }
                     else
                     {

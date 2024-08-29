@@ -18,7 +18,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     IUserFido2CredentialStore<Fido2Credential, TUser>,
     IUserTwoFactorEmailStore<TUser>,
     IUserTwoFactorSecurityKeyStore<TUser>,
-    IUserPasskeysEnabledStore<TUser>
+    IUserPasskeysStore<TUser>
     where TUser : SchulCloudUser
     where TRole : IdentityRole
     where TContext : DbContext
@@ -104,6 +104,16 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             user.TwoFactorEnabledFlags &= ~TwoFactorMethod.SecurityKey;
         }
         return Task.CompletedTask;
+    }
+
+    public async Task<int> GetTwoFactorSecurityKeyCountAsync(TUser user, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(user);
+
+        string userId = await GetUserIdAsync(user, ct).ConfigureAwait(false);
+        return await Credentials.CountAsync(cred => cred.UserId.Equals(userId), ct).ConfigureAwait(false);
     }
     #endregion
 
@@ -312,6 +322,16 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
 
         user.PasskeysEnabled = enabled;
         return Task.CompletedTask;
+    }
+
+    public async Task<int> GetPasskeyCountAsync(TUser user, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(user);
+
+        string userId = await GetUserIdAsync(user, ct).ConfigureAwait(false);
+        return await Credentials.CountAsync(cred => cred.UserId.Equals(userId), ct).ConfigureAwait(false);
     }
     #endregion
 }

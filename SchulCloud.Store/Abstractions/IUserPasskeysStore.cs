@@ -10,7 +10,7 @@ namespace SchulCloud.Store.Abstractions;
 /// An interface that provides a flag to determine whether passkeys sign ins is enabled for a user.
 /// </summary>
 /// <typeparam name="TUser">The type of user.</typeparam>
-public interface IUserPasskeysEnabledStore<TUser>
+public interface IUserPasskeysStore<TUser>
     where TUser : class
 {
     /// <summary>
@@ -28,4 +28,12 @@ public interface IUserPasskeysEnabledStore<TUser>
     /// <param name="enabled">The new flag.</param>
     /// <param name="ct">Cancellation token</param>
     public Task SetPasskeysEnabledAsync(TUser user, bool enabled, CancellationToken ct);
+
+    /// <summary>
+    /// Gets the count of registered passkeys of a user.
+    /// </summary>
+    /// <param name="user">The user to get the count from.</param>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>The count of registered keys.</returns>
+    public Task<int> GetPasskeyCountAsync(TUser user, CancellationToken ct);
 }

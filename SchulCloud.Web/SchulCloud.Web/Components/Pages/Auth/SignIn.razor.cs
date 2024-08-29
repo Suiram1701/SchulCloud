@@ -152,6 +152,7 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
         else
         {
             (signInResult, user) = await SecurityKeySignInAsync(Model.AuthenticatorDataAccessKey, Model.Persistent).ConfigureAwait(false);
+            Model.AuthenticatorDataAccessKey = null;
         }
 
         switch (signInResult)

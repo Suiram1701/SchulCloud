@@ -184,13 +184,19 @@
   <data name="disableBtn" xml:space="preserve">
     <value>Disable</value>
   </data>
-  <data name="securityKey_Sesc" xml:space="preserve">
+  <data name="securityKey_Desc" xml:space="preserve">
     <value>Use the security keys stored in your account for 2FA authentication.</value>
   </data>
-  <data name="signIn_Passkeys" xml:space="preserve">
+  <data name="signIn_Passkey" xml:space="preserve">
     <value>Passkeys</value>
   </data>
-  <data name="passkeys_Desc" xml:space="preserve">
+  <data name="passkey_Desc" xml:space="preserve">
     <value>Use passkeys stored in your account to log in without a username.</value>
+  </data>
+  <data name="passkey_AtLeastOne" xml:space="preserve">
+    <value>At least one passkey must be registered</value>
+  </data>
+  <data name="securityKey_AtLeastOne" xml:space="preserve">
+    <value>At least one security key must be registered</value>
   </data>
 </root>

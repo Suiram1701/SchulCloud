@@ -175,7 +175,7 @@
   <data name="mfa_SecurityKey" xml:space="preserve">
     <value>Sicherheitsschlüssel</value>
   </data>
-  <data name="securityKey_Sesc" xml:space="preserve">
+  <data name="securityKey_Desc" xml:space="preserve">
     <value>Verwenden Sie die in Ihrem Konto hinterlegten Sicherheitsschlüssel für die 2FA-Authentifizierung benutzen.</value>
   </data>
   <data name="securityKey_ManageBtn" xml:space="preserve">
@@ -187,10 +187,16 @@
   <data name="disableBtn" xml:space="preserve">
     <value>Deaktivieren</value>
   </data>
-  <data name="signIn_Passkeys" xml:space="preserve">
+  <data name="signIn_Passkey" xml:space="preserve">
     <value>Passkeys</value>
   </data>
-  <data name="passkeys_Desc" xml:space="preserve">
+  <data name="passkey_Desc" xml:space="preserve">
     <value>Verwenden Sie in ihrem Konto hinterlegte Passkeys für eine Anmeldung ohne Benutzernamen.</value>
+  </data>
+  <data name="passkey_AtLeastOne" xml:space="preserve">
+    <value>Es muss mindestens ein Passkey registriert sein</value>
+  </data>
+  <data name="securityKey_AtLeastOne" xml:space="preserve">
+    <value>Es muss mindestens ein Sicherheitsschlüssel registriert sein</value>
   </data>
 </root>

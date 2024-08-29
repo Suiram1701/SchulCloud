@@ -28,4 +28,12 @@ public interface IUserTwoFactorSecurityKeyStore<TUser>
     /// <param name="enabled">The new flag.</param>
     /// <param name="ct">Cancellation token</param>
     public Task SetTwoFactorSecurityKeyEnabledAsync(TUser user, bool enabled, CancellationToken ct);
+
+    /// <summary>
+    /// Gets the count of registered security keys for a user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>The count of keys.</returns>
+    public Task<int> GetTwoFactorSecurityKeyCountAsync(TUser user, CancellationToken ct);
 }
