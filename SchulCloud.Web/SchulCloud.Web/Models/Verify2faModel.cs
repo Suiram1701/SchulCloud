@@ -7,7 +7,7 @@ public class Verify2faModel : AuthenticatorModel
     /// <summary>
     /// A key to access auth data stored on the server.
     /// </summary>
-    public string? DataAccessKey { get; set; }
+    public string? AuthenticatorDataAccessKey { get; set; }
 
     /// <summary>
     /// Indicates whether the client should be remembered for further 2fa logins.

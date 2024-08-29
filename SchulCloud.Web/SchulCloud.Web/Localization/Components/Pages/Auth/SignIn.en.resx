@@ -100,19 +100,19 @@
   <data name="title" xml:space="preserve">
     <value>Sign in</value>
   </data>
-  <data name="formHeader" xml:space="preserve">
+  <data name="form_Header" xml:space="preserve">
     <value>Please sign in</value>
   </data>
-  <data name="formUserPlaceholder" xml:space="preserve">
+  <data name="form_UserPlaceholder" xml:space="preserve">
     <value>Email address or username</value>
   </data>
-  <data name="formPasswordPlaceholder" xml:space="preserve">
+  <data name="form_PasswordPlaceholder" xml:space="preserve">
     <value>password</value>
   </data>
-  <data name="formSubmit" xml:space="preserve">
+  <data name="form_SubmitBtn" xml:space="preserve">
     <value>sign in</value>
   </data>
-  <data name="formPersistent" xml:space="preserve">
+  <data name="form_Persistent" xml:space="preserve">
     <value>remain signed in</value>
   </data>
   <data name="signIn_Failed" xml:space="preserve">
@@ -127,7 +127,19 @@
   <data name="signIn_LockedOut_NotSpecified" xml:space="preserve">
     <value>The user is banned indefinitely.</value>
   </data>
-  <data name="formPasswordForgot" xml:space="preserve">
+  <data name="form_PasswordForgotBtn" xml:space="preserve">
     <value>Forgot Password?</value>
+  </data>
+  <data name="form_PasskeySignInBtn" xml:space="preserve">
+    <value>Sign in with a passkey</value>
+  </data>
+  <data name="securityKey_NotSupported" xml:space="preserve">
+    <value>Security keys are not supported by your current browser</value>
+  </data>
+  <data name="securityKey_ErrorMessage" xml:space="preserve">
+    <value>An error occurred while requesting the security key.</value>
+  </data>
+  <data name="securityKey_Error" xml:space="preserve">
+    <value>Error requesting security key</value>
   </data>
 </root>

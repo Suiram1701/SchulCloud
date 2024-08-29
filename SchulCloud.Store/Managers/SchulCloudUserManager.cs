@@ -34,15 +34,70 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
     public ExtendedTokenProviderOptions ExtendedTokenProviderOptions { get; set; } = tokenProviderOptionsAccessor.Value;
 
     /// <summary>
-    /// Indicates whether the store support two factor email.
+    /// Indicate whether the internal store supports passkey sign ins.
     /// </summary>
-    public virtual bool SupportsUserTwoFactorEmail
+    public virtual bool SupportsPasskeySignIn
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return Store is IUserPasskeysEnabledStore<TUser>;
+        }
+    }
+
+    /// <summary>
+    /// Indicates whether the internal store support two factor via email.
+    /// </summary>
+    public virtual bool SupportsTwoFactorEmail
     {
         get
         {
             ThrowIfDisposed();
             return Store is IUserTwoFactorEmailStore<TUser>;
         }
+    }
+
+    /// <summary>
+    /// Indicates whether the internal store supports two factor via security keys.
+    /// </summary>
+    public virtual bool SupportsTwoFactorSecurityKeys
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return Store is IUserTwoFactorSecurityKeyStore<TUser>;
+        }
+    }
+
+    /// <summary>
+    /// Gets a flag that indicates whether a user has passkey sign ins enabled.
+    /// </summary>
+    /// <param name="user">The user to get the flag from.</param>
+    /// <returns>The flag.</returns>
+    public virtual async Task<bool> GetPasskeySignInEnabledAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserPasskeysEnabledStore<TUser> store = GetPasskeysEnabledStore();
+        return await store.GetPasskeysEnabledAsync(user, CancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Sets the flag that indicates whether a user has passkeys sign ins enabled.
+    /// </summary>
+    /// <param name="user">The user to modify.</param>
+    /// <param name="enabled">The new flag.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> SetPasskeySignInEnabledAsync(TUser user, bool enabled)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserPasskeysEnabledStore<TUser> store = GetPasskeysEnabledStore();
+        await store.SetPasskeysEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
+
+        return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
     }
 
     public override async Task<IdentityResult> SetTwoFactorEnabledAsync(TUser user, bool enabled)
@@ -187,6 +242,15 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         byte[] codeBytes = Encoding.UTF8.GetBytes(code);
 
         return Convert.ToBase64String(HMACSHA256.HashData(keyBytes, codeBytes));
+    }
+
+    private IUserPasskeysEnabledStore<TUser> GetPasskeysEnabledStore()
+    {
+        if (Store is not IUserPasskeysEnabledStore<TUser> cast)
+        {
+            throw new NotSupportedException($"{nameof(IUserPasskeysEnabledStore<TUser>)} isn't supported by the store.");
+        }
+        return cast;
     }
 
     private IUserAuthenticatorKeyStore<TUser> GetAuthenticatorKeyStore()

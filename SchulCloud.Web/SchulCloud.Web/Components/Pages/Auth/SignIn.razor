@@ -1,40 +1,57 @@
 ﻿@using SchulCloud.Web.Constants
 
-@implements IDisposable
-
 <SchulCloudPageTitle Title="@Localizer["title"]" />
 
 <div class="container py-5 my-5">
     <div class="row mb-2">
         <div class="col" />
         <div class="col-6">
-            <h3>@Localizer["formHeader"]</h3>
+            <h3>@Localizer["form_Header"]</h3>
         </div>
         <div class="col" />
     </div>
     <div class="row">
         <div class="col" />
         <div class="col-6">
-            <form @formname="@_formName" class="@IsInvalidFormClass" method="post" action="@Routes.SignIn(returnUrl: ReturnUrl)">
+            <form @ref="_formRef" @formname="@_formName" class="@IsInvalidFormClass" method="post" action="@Routes.SignIn(returnUrl: ReturnUrl)">
                 <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive SSR Blazor doesn't place it by its own. *@
                 <AntiforgeryToken />
 
                 <FloatingTextInput Class="usr-group" InnerClass="@IsInvalidInputClass" @bind-Value="Model.User" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.User)}")"
-                                   FloatingLabel="@Localizer["formUserPlaceholder"]" Placeholder="exampleUser" autocomplete="username" required />
+                                   FloatingLabel="@Localizer["form_UserPlaceholder"]" Placeholder="exampleUser" autocomplete="username" required />
 
                 <FloatingPasswordInput Class="pwd-group" InnerClass="@IsInvalidInputClass" @bind-Value="Model.Password" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Password)}")"
-                                       FloatingLabel="@Localizer["formPasswordPlaceholder"]" Placeholder="password" autocomplete="current-password" required />
+                                       FloatingLabel="@Localizer["form_PasswordPlaceholder"]" Placeholder="password" autocomplete="current-password" required />
 
                 @if (IsInvalid())
                 {
                     <div class="@ExtendedBootstrapClass.InvalidFeedback d-block">@_errorMessage</div>
                 }
 
-                <CheckBoxInput Class="my-3" @bind-Value="Model.Persistent" name="@($"{nameof(Model)}.{nameof(Model.Persistent)}")" Label="@Localizer["formPersistent"]" />
+                <CheckBoxInput Class="my-3" @bind-Value="Model.Persistent" name="@($"{nameof(Model)}.{nameof(Model.Persistent)}")" Label="@Localizer["form_Persistent"]" />
 
-                <div class="@BootstrapClass.Flex @BootstrapClass.FlexColumn">
-                    <Button Class="mb-2" Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["formSubmit"]</Button>
-                    <Button Color="ButtonColor.Danger" Type="ButtonType.Button" @onclick="ForgotPasswordAsync_ClickAsync">@Localizer["formPasswordForgot"]</Button>
+                <div class="d-flex flex-column">
+                    @if (_webAuthnSupported)
+                    {
+                        <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.AuthenticatorDataAccessKey)}")" value="@Model.AuthenticatorDataAccessKey" />
+                        <Button Class="d-flex justify-content-center" Color="ButtonColor.Secondary" @onclick="StartPasskeySignIn_ClickAsync">
+                            <FontsIcon Name="passkey" />
+                            <span class="ms-2">@Localizer["form_PasskeySignInBtn"]</span>
+                        </Button>
+                    }
+                    else
+                    {
+                        <Tooltip Class="d-flex" Title="@Localizer["securityKey_NotSupported"]">
+                            <Button Class="flex-fill d-flex justify-content-center" Color="ButtonColor.Secondary" Disabled>
+                                <FontsIcon Name="passkey" />
+                                <span class="mx-2">@Localizer["form_PasskeySignInBtn"]</span>
+                                <Icon Name="IconName.ExclamationCircle" />
+                            </Button>
+                        </Tooltip>
+                    }
+
+                    <Button Class="my-2" Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["form_SubmitBtn"]</Button>
+                    <Button Color="ButtonColor.Danger" @onclick="ForgotPasswordAsync_ClickAsync">@Localizer["form_PasswordForgotBtn"]</Button>
                 </div>
             </form>
         </div>

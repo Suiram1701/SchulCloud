@@ -37,7 +37,7 @@
                 }
                 else
                 {
-                    <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.DataAccessKey)}")" value="@Model.DataAccessKey" />
+                    <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.AuthenticatorDataAccessKey)}")" value="@Model.AuthenticatorDataAccessKey" />
                 }
 
                 @if (Model.Method != TwoFactorMethod.Recovery)

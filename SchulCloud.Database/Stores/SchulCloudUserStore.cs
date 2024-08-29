@@ -17,7 +17,8 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     : UserStore<TUser, TRole, TContext>(context, describer),
     IUserFido2CredentialStore<Fido2Credential, TUser>,
     IUserTwoFactorEmailStore<TUser>,
-    IUserTwoFactorSecurityKeyStore<TUser>
+    IUserTwoFactorSecurityKeyStore<TUser>,
+    IUserPasskeysEnabledStore<TUser>
     where TUser : SchulCloudUser
     where TRole : IdentityRole
     where TContext : DbContext
@@ -219,34 +220,6 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         return Task.CompletedTask;
     }
 
-    public async Task<IEnumerable<byte[]>> GetCredentialPublicDeviceKeys(Fido2Credential credential, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        Fido2Credential cred = await Credentials
-            .Include(cred => cred.DevicePublicKeys)
-            .SingleAsync(cred => cred.Id.SequenceEqual(credential.Id), ct);
-        return cred.DevicePublicKeys.Select(pdk => pdk.PublicDeviceKey);
-    }
-
-    public Task AddCredentialPublicDeviceKey(Fido2Credential credential, byte[] publicDeviceKey, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(publicDeviceKey);
-
-        Fido2PublicDeviceKey pdk = new()
-        {
-            CredentialId = credential.Id,
-            PublicDeviceKey = publicDeviceKey,
-        };
-        credential.DevicePublicKeys.Add(pdk);
-        return Task.CompletedTask;
-    }
-
     public Task<DateTime> GetCredentialRegistrationDateAsync(Fido2Credential credential, CancellationToken ct)
     {
         ThrowIfDisposed();
@@ -265,7 +238,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         return Task.FromResult(credential.AaGuid);
     }
 
-    public async Task<Fido2Credential> CreateCredentialAsync(TUser user, string? securityKeyName, bool usernamelessAllowed, RegisteredPublicKeyCredential credential, CancellationToken ct)
+    public async Task<Fido2Credential> CreateCredentialAsync(TUser user, string? securityKeyName, bool isPasskey, RegisteredPublicKeyCredential credential, CancellationToken ct)
     {
         ThrowIfDisposed();
         ct.ThrowIfCancellationRequested();
@@ -278,7 +251,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             Id = credential.Id,
             UserId = userId,
             SecurityKeyName = securityKeyName,
-            IsPasskey = usernamelessAllowed,
+            IsPasskey = isPasskey,
             PublicKey = credential.PublicKey,
             SignCount = credential.SignCount,
             Transports = credential.Transports,
@@ -318,6 +291,27 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
 
         string userId = new Guid(userHandle).ToString();
         return await Credentials.AnyAsync(cred => cred.Id.SequenceEqual(credId) && cred.UserId.Equals(userId), ct);
+    }
+    #endregion
+
+    #region IUserPasskeysEnabledStore
+    public Task<bool> GetPasskeysEnabledAsync(TUser user, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(user);
+
+        return Task.FromResult(user.PasskeysEnabled);
+    }
+
+    public Task SetPasskeysEnabledAsync(TUser user, bool enabled, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(user);
+
+        user.PasskeysEnabled = enabled;
+        return Task.CompletedTask;
     }
     #endregion
 }

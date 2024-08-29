@@ -172,7 +172,7 @@
   <data name="recovery_NoValidCodes_Tooltip" xml:space="preserve">
     <value>No recovery codes are available. Generate new recovery codes so that a backup option is still available.</value>
   </data>
-  <data name="mfa_securityKey" xml:space="preserve">
+  <data name="mfa_SecurityKey" xml:space="preserve">
     <value>Security key</value>
   </data>
   <data name="securityKey_ManageBtn" xml:space="preserve">
@@ -184,7 +184,13 @@
   <data name="disableBtn" xml:space="preserve">
     <value>Disable</value>
   </data>
-  <data name="securityKey_desc" xml:space="preserve">
+  <data name="securityKey_Sesc" xml:space="preserve">
     <value>Use the security keys stored in your account for 2FA authentication.</value>
+  </data>
+  <data name="signIn_Passkeys" xml:space="preserve">
+    <value>Passkeys</value>
+  </data>
+  <data name="passkeys_Desc" xml:space="preserve">
+    <value>Use passkeys stored in your account to log in without a username.</value>
   </data>
 </root>

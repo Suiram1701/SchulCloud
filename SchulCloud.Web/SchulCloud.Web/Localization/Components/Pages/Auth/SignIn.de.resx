@@ -100,19 +100,19 @@
   <data name="title" xml:space="preserve">
     <value>Anmelden</value>
   </data>
-  <data name="formHeader" xml:space="preserve">
+  <data name="form_Header" xml:space="preserve">
     <value>Bitte anmelden</value>
   </data>
-  <data name="formUserPlaceholder" xml:space="preserve">
+  <data name="form_UserPlaceholder" xml:space="preserve">
     <value>E-Mail Adresse oder Benutzername</value>
   </data>
-  <data name="formPasswordPlaceholder" xml:space="preserve">
+  <data name="form_PasswordPlaceholder" xml:space="preserve">
     <value>Passwort</value>
   </data>
-  <data name="formPersistent" xml:space="preserve">
+  <data name="form_Persistent" xml:space="preserve">
     <value>Angemeldet bleiben</value>
   </data>
-  <data name="formSubmit" xml:space="preserve">
+  <data name="form_SubmitBtn" xml:space="preserve">
     <value>Anmelden</value>
   </data>
   <data name="signIn_Failed" xml:space="preserve">
@@ -127,7 +127,19 @@
   <data name="signIn_LockedOut_NotSpecified" xml:space="preserve">
     <value>Der Benutzer ist auf unbestimmte Zeit gesperrt.</value>
   </data>
-  <data name="formPasswordForgot" xml:space="preserve">
+  <data name="form_PasswordForgotBtn" xml:space="preserve">
     <value>Passwort vergessen?</value>
+  </data>
+  <data name="form_PasskeySignInBtn" xml:space="preserve">
+    <value>Mit einem Passkey Anmelden</value>
+  </data>
+  <data name="securityKey_NotSupported" xml:space="preserve">
+    <value>Sicherheitsschlüssel werden von Ihrem aktuellen Browser nicht unterstützt</value>
+  </data>
+  <data name="securityKey_ErrorMessage" xml:space="preserve">
+    <value>Beim Anfordern des Sicherheitsschlüssels ist ein Fehler aufgetreten.</value>
+  </data>
+  <data name="securityKey_Error" xml:space="preserve">
+    <value>Fehler beim Anfordern des Sicherheitsschlüssels</value>
   </data>
 </root>

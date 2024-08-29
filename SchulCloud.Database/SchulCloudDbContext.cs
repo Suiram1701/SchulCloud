@@ -34,13 +34,6 @@ public class SchulCloudDbContext(DbContextOptions options) : IdentityDbContext<S
             b.Property(c => c.RegDate).IsRequired();
             b.Property(c => c.AaGuid).IsRequired();
 
-            b.OwnsMany(c => c.DevicePublicKeys, pdkB =>
-            {
-                pdkB.WithOwner().HasForeignKey(pdk => pdk.CredentialId);
-
-                pdkB.ToTable("AspNetCredentialDeviceKeys");
-            });
-
             b.ToTable("AspNetCredentials");
         });
     }

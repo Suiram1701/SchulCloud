@@ -160,4 +160,7 @@
   <data name="registerModal_ErrorMessage" xml:space="preserve">
     <value>An error occurred while requesting the security key.</value>
   </data>
+  <data name="registerModal_SaveError" xml:space="preserve">
+    <value>An error occurred while saving the security key.</value>
+  </data>
 </root>

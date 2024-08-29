@@ -130,8 +130,7 @@ partial class SchulCloudUserManager<TUser, TCredential>
         AuthenticationExtensionsClientInputs extensions = new()
         {
             Extensions = true,
-            UserVerificationMethod = true,
-            DevicePubKey = new()
+            UserVerificationMethod = true
         };
         return fido2.GetAssertionOptions([.. existingKeys], GetFido2Options().UserVerificationRequirement, extensions);
     }
@@ -140,7 +139,7 @@ partial class SchulCloudUserManager<TUser, TCredential>
     /// Makes an fido2 assertion of the <paramref name="authenticatorResponse"/>.
     /// </summary>
     /// <remarks>
-    /// NOTE: <paramref name="user"/> and <paramref name="options"/> have to be the same as used in <see cref="CreateFido2CreationOptionsAsync(TUser, AuthenticatorSelection, AttestationConveyancePreference)"/>.
+    /// NOTE: <paramref name="user"/> and <paramref name="options"/> have to be the same as used in <see cref="CreateFido2AssertionOptionsAsync(TUser?)"/>.
     /// </remarks>
     /// <param name="user">The user that requested the assertion. If <c>null</c> the assertion was requested as usernameless.</param>
     /// <param name="authenticatorResponse">The raw response of the authenticator.</param>
@@ -148,9 +147,9 @@ partial class SchulCloudUserManager<TUser, TCredential>
     /// <returns>
     /// If <paramref name="user"/> was specified <c>user</c> will be the same instance otherwise it will be the from the credential determined user.
     /// <c>credential</c> is the credential that were used by the authenticator.
-    /// If <c>null</c> the assertion wasn't successful or the <paramref name="authenticatorResponse"/> isn't valid.
+    /// The credential used for the assertion. If <c>null</c> the assertion wasn't successful or the <paramref name="authenticatorResponse"/> isn't valid.
     /// </returns>
-    public virtual async Task<(TUser user, TCredential credential)?> MakeFido2AssertionAsync(TUser? user, AuthenticatorAssertionRawResponse authenticatorResponse, AssertionOptions options)
+    public virtual async Task<TCredential?> MakeFido2AssertionAsync(TUser? user, AuthenticatorAssertionRawResponse authenticatorResponse, AssertionOptions options)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(authenticatorResponse);
@@ -164,12 +163,6 @@ partial class SchulCloudUserManager<TUser, TCredential>
             return null;
         }
 
-        if (user is null && await store.GetCredentialIsPasskeyAsync(credential, CancellationToken).ConfigureAwait(false) is false)
-        {
-            return null;
-        }
-        user ??= await store.GetCredentialOwnerAsync(credential, CancellationToken).ConfigureAwait(false);
-
         async Task<bool> isOwnedByUserHandleCallback(IsUserHandleOwnerOfCredentialIdParams @params, CancellationToken ct)
         {
             return await store.IsCredentialOwnedByUserHandle(@params.CredentialId, @params.UserHandle, CancellationToken).ConfigureAwait(false);
@@ -177,18 +170,12 @@ partial class SchulCloudUserManager<TUser, TCredential>
 
         uint signCount = await store.GetCredentialSignCountAsync(credential, CancellationToken).ConfigureAwait(false);
         byte[] publicKey = await store.GetCredentialPublicKeyAsync(credential, CancellationToken).ConfigureAwait(false);
-        IEnumerable<byte[]> publicDeviceKeys = await store.GetCredentialPublicDeviceKeys(credential, CancellationToken).ConfigureAwait(false);
 
         try
         {
             // NOTE: Every verification error throws an exception.
-            VerifyAssertionResult result = await fido2.MakeAssertionAsync(authenticatorResponse, options, publicKey, [..publicDeviceKeys], signCount, isOwnedByUserHandleCallback, CancellationToken).ConfigureAwait(false);
-
+            VerifyAssertionResult result = await fido2.MakeAssertionAsync(authenticatorResponse, options, publicKey, [], signCount, isOwnedByUserHandleCallback, CancellationToken).ConfigureAwait(false);
             await store.SetCredentialSignCountAsync(credential, result.SignCount, CancellationToken).ConfigureAwait(false);
-            if (result.DevicePublicKey is not null)
-            {
-                await store.AddCredentialPublicDeviceKey(credential, result.DevicePublicKey, CancellationToken).ConfigureAwait(false);
-            }
         }
         catch (Fido2VerificationException ex)
         {
@@ -196,9 +183,11 @@ partial class SchulCloudUserManager<TUser, TCredential>
             return null;
         }
 
+        user ??= await store.GetCredentialOwnerAsync(credential, CancellationToken).ConfigureAwait(false);
+
         IdentityResult updateResult = await UpdateAsync(user).ConfigureAwait(false);
         return updateResult.Succeeded
-            ? (user, credential)
+            ? credential
             : null;
     }
 
@@ -244,6 +233,20 @@ partial class SchulCloudUserManager<TUser, TCredential>
         IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
 
         return await store.GetCredentialsByUserAsync(user, CancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the owner of a fido2 credential.
+    /// </summary>
+    /// <param name="credential">The credential.</param>
+    /// <returns>The owner of the credential.</returns>
+    public virtual async Task<TUser> GetFido2CredentialOwnerAsync(TCredential credential)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credential);
+
+        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
+        return await store.GetCredentialOwnerAsync(credential, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

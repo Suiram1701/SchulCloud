@@ -172,10 +172,10 @@
   <data name="recovery_NoValidCodes_Tooltip" xml:space="preserve">
     <value>Es sind keine Wiederherstellungscodes verfügbar. Generieren Sie neue Wiederherstellungscodes, damit weiterhin eine Backup Option verfügbar ist.</value>
   </data>
-  <data name="mfa_securityKey" xml:space="preserve">
+  <data name="mfa_SecurityKey" xml:space="preserve">
     <value>Sicherheitsschlüssel</value>
   </data>
-  <data name="securityKey_desc" xml:space="preserve">
+  <data name="securityKey_Sesc" xml:space="preserve">
     <value>Verwenden Sie die in Ihrem Konto hinterlegten Sicherheitsschlüssel für die 2FA-Authentifizierung benutzen.</value>
   </data>
   <data name="securityKey_ManageBtn" xml:space="preserve">
@@ -186,5 +186,11 @@
   </data>
   <data name="disableBtn" xml:space="preserve">
     <value>Deaktivieren</value>
+  </data>
+  <data name="signIn_Passkeys" xml:space="preserve">
+    <value>Passkeys</value>
+  </data>
+  <data name="passkeys_Desc" xml:space="preserve">
+    <value>Verwenden Sie in ihrem Konto hinterlegte Passkeys für eine Anmeldung ohne Benutzernamen.</value>
   </data>
 </root>

@@ -155,28 +155,30 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (!firstRender)
         {
-            if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
-            {
-                _webAuthnSupported = false;
-                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-            }
+            return;
+        }
+
+        if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
+        {
+            _webAuthnSupported = false;
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
         }
     }
 
     private async Task Verify2faAsync()
     {
-        SignInResult result = await (Model.Method switch
+        SignInResult verifyResult = await (Model.Method switch
         {
             TwoFactorMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
             TwoFactorMethod.Email => SignInManager.TwoFactorEmailSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
-            TwoFactorMethod.SecurityKey => VerifyTwoFactorSecurityKey(Model, Persistent, Model.RememberClient),
+            TwoFactorMethod.SecurityKey => VerifyTwoFactorSecurityKeyAsync(Model.AuthenticatorDataAccessKey, Persistent, Model.RememberClient),
             TwoFactorMethod.Recovery => SignInManager.TwoFactorRecoveryCodeSignInAsync(Model.TrimmedCode),
             _ => Task.FromResult(SignInResult.Failed)
         }).ConfigureAwait(false);
 
-        switch (result)
+        switch (verifyResult)
         {
             case { Succeeded: true }:
                 Uri returnUri = NavigationManager.ToAbsoluteUri(ReturnUrl);
@@ -190,7 +192,7 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
                     : Localizer["signIn_LockedOut_NotSpecified"];
                 break;
             default:
-                _errorMessage = Localizer["signIn_" + result];
+                _errorMessage = Localizer["signIn_" + verifyResult];
                 break;
         }
     }
@@ -253,7 +255,7 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
         if (args.Successful)
         {
             string key = RandomNumberGenerator.GetHexString(32);
-            Model.DataAccessKey = key;
+            Model.AuthenticatorDataAccessKey = key;
             StateHasChanged();
 
             string cacheKey = await GetSecurityKeyDataCacheKeyAsync(key).ConfigureAwait(false);
@@ -275,20 +277,20 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
         }
     }
 
-    private async Task<SignInResult> VerifyTwoFactorSecurityKey(Verify2faModel model, bool isPersistent, bool rememberClient)
+    private async Task<SignInResult> VerifyTwoFactorSecurityKeyAsync(string? dataAccessKey, bool isPersistent, bool rememberClient)
     {
-        if (string.IsNullOrWhiteSpace(model.DataAccessKey))
+        if (string.IsNullOrWhiteSpace(dataAccessKey))
         {
             return SignInResult.Failed;
         }
 
-        string cacheKey = await GetSecurityKeyDataCacheKeyAsync(model.DataAccessKey).ConfigureAwait(false);
+        string cacheKey = await GetSecurityKeyDataCacheKeyAsync(dataAccessKey).ConfigureAwait(false);
         if (!Cache.TryGetValue(cacheKey, out SecurityKeyAuthState? authState))
         {
             return SignInResult.Failed;
         }
 
-        Cache.Remove(model.DataAccessKey!);
+        Cache.Remove(dataAccessKey!);
         return await SignInManager.TwoFactorFido2CredentialSignInAsync(authState!.Options, authState.Response, isPersistent, rememberClient).ConfigureAwait(false);
     }
 

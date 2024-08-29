@@ -37,6 +37,7 @@ public sealed partial class Index : ComponentBase
     private RemoveDialog _removeDialog = default!;
 
     private ApplicationUser _user = default!;
+    private bool _passkeysEnabled;
     private bool _mfaEnabled;
     private bool _mfaEmailEnabled;
     private bool _mfaSecurityKeyEnabled;
@@ -50,7 +51,42 @@ public sealed partial class Index : ComponentBase
         AuthenticationState authenticationState = await AuthenticationState.ConfigureAwait(false);
         _user = (await UserManager.GetUserAsync(authenticationState.User).ConfigureAwait(false))!;
 
+        _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user).ConfigureAwait(false);
         await UpdateMfaStates().ConfigureAwait(false);
+    }
+
+    private async Task PasskeysEnable_ClickAsync()
+    {
+        IdentityResult enableResult = await UserManager.SetPasskeySignInEnabledAsync(_user, true).ConfigureAwait(false);
+        await InvokeAsync(() =>
+        {
+            if (enableResult.Succeeded)
+            {
+                _passkeysEnabled = true;
+                StateHasChanged();
+            }
+            else
+            {
+                ToastService.NotifyError(enableResult.Errors, Localizer["enable_Error"]);
+            }
+        }).ConfigureAwait(false);
+    }
+
+    private async Task PasskeysDisable_ClickAsync()
+    {
+        IdentityResult disableResult = await UserManager.SetPasskeySignInEnabledAsync(_user, false).ConfigureAwait(false);
+        await InvokeAsync(() =>
+        {
+            if (disableResult.Succeeded)
+            {
+                _passkeysEnabled = false;
+                StateHasChanged();
+            }
+            else
+            {
+                ToastService.NotifyError(disableResult.Errors, Localizer["disable_Error"]);
+            }
+        }).ConfigureAwait(false);
     }
 
     private async Task AuthenticatorDisable_ClickAsync()
@@ -82,34 +118,34 @@ public sealed partial class Index : ComponentBase
             return;
         }
 
-        IdentityResult result = await UserManager.SetTwoFactorEmailEnabledAsync(_user, true).ConfigureAwait(false);
+        IdentityResult enableResult = await UserManager.SetTwoFactorEmailEnabledAsync(_user, true).ConfigureAwait(false);
         await InvokeAsync(() =>
         {
-            if (result.Succeeded)
+            if (enableResult.Succeeded)
             {
                 _mfaEmailEnabled = true;
                 StateHasChanged();
             }
             else
             {
-                ToastService.NotifyError(result.Errors, Localizer["enable_Error"]);
+                ToastService.NotifyError(enableResult.Errors, Localizer["enable_Error"]);
             }
         }).ConfigureAwait(false);
     }
 
     private async Task EmailDisable_ClickAsync()
     {
-        IdentityResult result = await UserManager.SetTwoFactorEmailEnabledAsync(_user, false).ConfigureAwait(false);
+        IdentityResult disableResult = await UserManager.SetTwoFactorEmailEnabledAsync(_user, false).ConfigureAwait(false);
         await InvokeAsync(() =>
         {
-            if (result.Succeeded)
+            if (disableResult.Succeeded)
             {
                 _mfaEmailEnabled = false;
                 StateHasChanged();
             }
             else
             {
-                ToastService.NotifyError(result.Errors, Localizer["disable_Error"]);
+                ToastService.NotifyError(disableResult.Errors, Localizer["disable_Error"]);
             }
         }).ConfigureAwait(false);
     }

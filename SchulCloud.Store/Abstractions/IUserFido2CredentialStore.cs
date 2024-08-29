@@ -106,22 +106,6 @@ public interface IUserFido2CredentialStore<TCredential, TUser>
     public Task SetCredentialSignCountAsync(TCredential credential, uint count, CancellationToken ct);
 
     /// <summary>
-    /// Gets the public device keys of a credential.
-    /// </summary>
-    /// <param name="credential">The credential.</param>
-    /// <param name="ct">Cancellation token</param>
-    /// <returns>The public device keys.</returns>
-    public Task<IEnumerable<byte[]>> GetCredentialPublicDeviceKeys(TCredential credential, CancellationToken ct);
-
-    /// <summary>
-    /// Adds a public device key to a credential.
-    /// </summary>
-    /// <param name="credential">The credential to modify.</param>
-    /// <param name="publicDeviceKey">The public device key to add.</param>
-    /// <param name="ct">Cancellation token</param>
-    public Task AddCredentialPublicDeviceKey(TCredential credential, byte[] publicDeviceKey, CancellationToken ct);
-
-    /// <summary>
     /// Gets the registration date of a credential.
     /// </summary>
     /// <param name="credential">The credential.</param>
@@ -142,11 +126,11 @@ public interface IUserFido2CredentialStore<TCredential, TUser>
     /// </summary>
     /// <param name="user">The user that owns the credential.</param>
     /// <param name="securityKeyName">The displayed name of the credential.</param>
-    /// <param name="usernamelessAllowed">Indicates whether the credential is allowed to perform a usernameless sign in.</param>
+    /// <param name="isPasskey">Indicates whether the credential is registered as a passkey.</param>
     /// <param name="credential">The credential data.</param>
     /// <param name="ct">Cancellation token</param>
     /// <returns>The credential instance.</returns>
-    public Task<TCredential> CreateCredentialAsync(TUser user, string? securityKeyName, bool usernamelessAllowed, RegisteredPublicKeyCredential credential, CancellationToken ct);
+    public Task<TCredential> CreateCredentialAsync(TUser user, string? securityKeyName, bool isPasskey, RegisteredPublicKeyCredential credential, CancellationToken ct);
 
     /// <summary>
     /// Removes a credential.

@@ -36,6 +36,30 @@
             <Button Class="ms-2" Color="ButtonColor.Danger" Type="ButtonType.Link" To="@Routes.ResetPassword(returnUrl: NavigationManager.GetRelativeUri())">@Localizer["password_ResetBtn"]</Button>
         </Content>
     </AccordionItem>
+    <AccordionItem>
+        <TitleTemplate>
+            <SecurityMethodItemTitle IconName="passkey" Title="@Localizer["signIn_Passkeys"]" Enabled="_passkeysEnabled" />
+        </TitleTemplate>
+        <Content>
+            <p>@Localizer["passkeys_Desc"]</p>
+
+            <div class="d-flex">
+                @if (!_passkeysEnabled)
+                {
+                    <Button Color="ButtonColor.Primary" @onclick="PasskeysEnable_ClickAsync">@Localizer["enableBtn"]</Button>
+                }
+                else
+                {
+                    <Button Color="ButtonColor.Danger" @onclick="PasskeysDisable_ClickAsync">@Localizer["disableBtn"]</Button>
+                }
+
+                <Button Class="d-flex align-items-center ms-2" Color="ButtonColor.Secondary" Type="ButtonType.Link" To="@Routes.SecurityKeys()">
+                    <FontsIcon Name="security_key" />
+                    <span class="ms-2">@Localizer["securityKey_ManageBtn"]</span>
+                </Button>
+            </div>
+        </Content>
+    </AccordionItem>
 </Accordion>
 
 <h5 class="mt-5">@Localizer["mfaMethods"]</h5>
@@ -86,10 +110,10 @@
     </AccordionItem>
     <AccordionItem>
         <TitleTemplate>
-            <SecurityMethodItemTitle IconName="passkey" Title="@Localizer["mfa_securityKey"]" Enabled="IsMfaMethodEnabled(_mfaSecurityKeyEnabled)" LastTimeUsed="null" />
+            <SecurityMethodItemTitle IconName="passkey" Title="@Localizer["mfa_SecurityKey"]" Enabled="IsMfaMethodEnabled(_mfaSecurityKeyEnabled)" LastTimeUsed="null" />
         </TitleTemplate>
         <Content>
-            <p>@Localizer["securityKey_desc"]</p>
+            <p>@Localizer["securityKey_Sesc"]</p>
 
             <div class="d-flex">
                 @if (!_mfaSecurityKeyEnabled)

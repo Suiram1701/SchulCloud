@@ -8,19 +8,21 @@ namespace SchulCloud.Web.Models;
 public class SignInModel
 {
     /// <summary>
+    /// A key to access auth data stored on the server.
+    /// </summary>
+    public string? AuthenticatorDataAccessKey { get; set; }
+
+    /// <summary>
     /// The identifier of the user.
     /// </summary>
     /// <remarks>
     /// This could be the username or the email address.
     /// </remarks>
-    [Required]
     public string User { get; set; } = string.Empty;
 
     /// <summary>
     /// The password of the user.
     /// </summary>
-    [Required]
-    [DataType(DataType.Password)]
     public string Password { get; set; } = string.Empty;
 
     /// <summary>

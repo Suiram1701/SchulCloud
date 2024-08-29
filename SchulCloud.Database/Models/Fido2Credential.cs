@@ -55,8 +55,6 @@ public class Fido2Credential
 
     public byte[] AttestationClientDataJson { get; set; } = [];
 
-    internal ICollection<Fido2PublicDeviceKey> DevicePublicKeys { get; set; } = [];
-
     /// <summary>
     /// The format of the attestation.
     /// </summary>

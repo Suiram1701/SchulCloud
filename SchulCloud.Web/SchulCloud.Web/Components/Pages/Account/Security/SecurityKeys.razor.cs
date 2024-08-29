@@ -62,13 +62,15 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (!firstRender)
         {
-            if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
-            {
-                _webAuthnSupported = false;
-                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-            }
+            return;
+        }
+
+        if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
+        {
+            _webAuthnSupported = false;
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
         }
     }
 

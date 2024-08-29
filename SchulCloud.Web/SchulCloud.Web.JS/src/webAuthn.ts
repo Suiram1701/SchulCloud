@@ -26,7 +26,7 @@ export namespace webAuthn {
     }
 
     export function isSupported(): boolean {
-        return Object.hasOwn(window, 'PublicKeyCredential');
+        return navigator.credentials instanceof CredentialsContainer;
     }
 
     export function createCredential(objReference: DotNet.DotNetObject, options: PublicKeyCredentialCreationOptions): AbortController {

@@ -161,6 +161,6 @@
     <value>Beim Anfordern des Sicherheitsschlüssels ist ein Fehler aufgetreten.</value>
   </data>
   <data name="registerModal_SaveError" xml:space="preserve">
-    <value></value>
+    <value>Beim speichern des Sicherheitsschlüssels ist ein Fehler aufgetreten.</value>
   </data>
 </root>
