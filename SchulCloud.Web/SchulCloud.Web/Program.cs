@@ -89,7 +89,6 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            app.UseWebAssemblyDebugging();
         }
         else
         {
@@ -109,9 +108,7 @@ public class Program
         app.UseRequestLocalization();
 
         app.MapRazorComponents<App>()
-            .AddInteractiveServerRenderMode()
-            .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
+            .AddInteractiveServerRenderMode();
 
         app.Run();
     }
