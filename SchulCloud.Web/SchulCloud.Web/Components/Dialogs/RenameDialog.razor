@@ -1,15 +1,17 @@
-﻿<Modal @ref="_modal" Title="@_title">
-    <BodyTemplate>
-        <EditForm Model="_model" OnValidSubmit="ValidSubmitAsync">
-            <BsFieldCssProvider />
-            <Blazored.FluentValidation.FluentValidationValidator />
+﻿<MudDialog ContentStyle="width:350px;">
+    <DialogContent>
+        @if (!string.IsNullOrWhiteSpace(Message))
+        {
+            <div class="mb-3">@Message</div>
+        }
 
-            <FloatingTextInput @bind-Value="_model.NewName" FloatingLabel="@Localizer["newName"]" Placeholder="newName" required />
-
-            <div class="d-flex justify-content-end mt-2">
-                <Button Color="ButtonColor.Secondary" @onclick="Close_ClickAsync">@Localizer["close"]</Button>
-                <Button Class="ms-2" Color="ButtonColor.Primary" Type="ButtonType.Submit">@Localizer["rename"]</Button>
-            </div>
-        </EditForm>
-    </BodyTemplate>
-</Modal>
+        <MudForm @ref="_renameForm">
+            <MudTextField @bind-Value="_newName" Label="@Localizer["form_NewName"]" Placeholder="@OldName"
+                          Validation="@((string value) => RenameFormNewName_Validate(value))" RequiredError="@Localizer["form_NotEmpty"]" Required />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class="mr-2" OnClick="Cancel_Click">@Localizer["cancelBtn"]</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Rename_ClickAsync" Variant="Variant.Filled">@Localizer["renameBtn"]</MudButton>
+    </DialogActions>
+</MudDialog>

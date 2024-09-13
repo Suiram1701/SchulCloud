@@ -103,11 +103,8 @@
   <data name="downloadBtn" xml:space="preserve">
     <value>Codes herunterladen</value>
   </data>
-  <data name="generationError_Title" xml:space="preserve">
+  <data name="generationError" xml:space="preserve">
     <value>Bei dem Generieren der Codes ist ein Fehler aufgetreten.</value>
-  </data>
-  <data name="generationError_Message" xml:space="preserve">
-    <value>Aufgrund eines Fehlers konnten keiner Codes generiert werden. Laden Sie die Seite neu um es erneut zu versuchen.</value>
   </data>
   <data name="file_Introduction" xml:space="preserve">
     <value>Dies sind die Account Wiederherstellungscodes des {0} Account {1} ({2}). Bewahren Sie diese gut auf!</value>

@@ -1,9 +1,8 @@
-﻿using BlazorBootstrap;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
+using MudBlazor;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Models;
 
@@ -17,6 +16,9 @@ public sealed partial class ChangePassword : ComponentBase
     private IStringLocalizer<ChangePassword> Localizer { get; set; } = default!;
 
     [Inject]
+    private ISnackbar SnackbarService { get; set; } = default!;
+
+    [Inject]
     private UserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
@@ -24,9 +26,6 @@ public sealed partial class ChangePassword : ComponentBase
 
     [Inject]
     private IdentityErrorDescriber ErrorDescriber { get; set; } = default!;
-
-    [Inject]
-    private ToastService ToastService { get; set; } = default!;
     #endregion
 
     private ApplicationUser _user = default!;
@@ -41,7 +40,7 @@ public sealed partial class ChangePassword : ComponentBase
         _user = (await UserManager.GetUserAsync(state.User).ConfigureAwait(false))!;
     }
 
-    private async Task<IEnumerable<string>> ValidateCurrentPasswordAsync(EditContext context, FieldIdentifier identifier)
+    private async Task<IEnumerable<string>> ValidateCurrentPasswordAsync()
     {
         if (!await UserManager.CheckPasswordAsync(_user, _model.CurrentPassword).ConfigureAwait(false))
         {
@@ -56,12 +55,12 @@ public sealed partial class ChangePassword : ComponentBase
         IdentityResult result = await UserManager.ChangePasswordAsync(_user, _model.CurrentPassword, _model.NewPassword).ConfigureAwait(false);
         if (result.Succeeded)
         {
-            await InvokeAsync(() => ToastService.NotifySuccess(Localizer["successToast_Title"], Localizer["successToast_Message"])).ConfigureAwait(false);
+            SnackbarService.AddSuccess(Localizer["changeSuccess"]);
             NavigationManager.NavigateToSecurityIndex();
         }
         else
         {
-            await InvokeAsync(() => ToastService.NotifyError(result.Errors, Localizer["errorToast_Title"])).ConfigureAwait(false);
+            SnackbarService.AddError(result.Errors, Localizer["changeError"]);
         }
     }
 }

@@ -97,16 +97,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="defaultTitle" xml:space="preserve">
-    <value>Umbenennen</value>
-  </data>
-  <data name="newName" xml:space="preserve">
-    <value>Neuer Name</value>
-  </data>
-  <data name="close" xml:space="preserve">
+  <data name="cancelBtn" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
-  <data name="rename" xml:space="preserve">
-    <value>Umbenennen</value>
+  <data name="renameBtn" xml:space="preserve">
+    <value>Umbennen</value>
+  </data>
+  <data name="form_NotEmpty" xml:space="preserve">
+    <value>Das Feld darf nicht leer sein</value>
+  </data>
+  <data name="form_NewName" xml:space="preserve">
+    <value>Neuer Name</value>
+  </data>
+  <data name="form_NewName_AlreadyTaken" xml:space="preserve">
+    <value>Dieser Name wird bereits verwendet</value>
   </data>
 </root>

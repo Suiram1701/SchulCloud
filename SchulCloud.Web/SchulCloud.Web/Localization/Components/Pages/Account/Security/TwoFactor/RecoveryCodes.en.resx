@@ -109,11 +109,8 @@
   <data name="downloadBtn" xml:space="preserve">
     <value>Download codes</value>
   </data>
-  <data name="generationError_Title" xml:space="preserve">
+  <data name="generationError" xml:space="preserve">
     <value>An error occurred while generating the codes.</value>
-  </data>
-  <data name="generationError_Message" xml:space="preserve">
-    <value>Due to an error, no codes could be generated. Reload the page to try again.</value>
   </data>
   <data name="doneBtn" xml:space="preserve">
     <value>Back</value>

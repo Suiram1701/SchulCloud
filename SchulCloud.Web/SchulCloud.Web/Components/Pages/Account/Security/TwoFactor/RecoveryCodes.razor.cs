@@ -1,18 +1,18 @@
-﻿using BlazorBootstrap;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
+using MudBlazor;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Options;
 using System.Text;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security.TwoFactor;
 
-[Route("/account/security/2fa/recoveryCodes")]
+[Route("/account/security/twoFactor/recoveryCodes")]
 public sealed partial class RecoveryCodes : ComponentBase, IDisposable
 {
     #region Injections
@@ -23,6 +23,9 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
     private IJSRuntime JSRuntime { get; set; } = default!;
 
     [Inject]
+    private ISnackbar SnackbarService { get; set; } = default!;
+
+    [Inject]
     private IOptions<PresentationOptions> PresentationOptionsAccessor { get; set; } = default!;
 
     [Inject]
@@ -30,9 +33,6 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
 
     [Inject]
     private PersistentComponentState ComponentState { get; set; } = default!;
-
-    [Inject]
-    private ToastService ToastService { get; set; } = default!;
     #endregion
 
     private ApplicationUser _user = default!;
@@ -60,7 +60,7 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
             }
             else
             {
-                await InvokeAsync(() => ToastService.NotifyError(Localizer["generationError_Title"], Localizer["generationError_Message"]));
+                SnackbarService.AddError(Localizer["generationError"]);
             }
         }
 

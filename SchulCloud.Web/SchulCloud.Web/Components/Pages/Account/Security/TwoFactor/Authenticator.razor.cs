@@ -1,17 +1,16 @@
-﻿using BlazorBootstrap;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
+using MudBlazor;
 using QRCoder;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Models;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security.TwoFactor;
 
-[Route("/account/security/2fa/authenticator")]
+[Route("/account/security/twoFactor/authenticator")]
 public sealed partial class Authenticator : ComponentBase
 {
     #region Injections
@@ -22,14 +21,16 @@ public sealed partial class Authenticator : ComponentBase
     private IStringLocalizer<Authenticator> Localizer { get; set; } = default!;
 
     [Inject]
+    private ISnackbar SnackbarService { get; set; } = default!;
+
+    [Inject]
     private UserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
-
-    [Inject]
-    private ToastService ToastService { get; set; } = default!;
     #endregion
+
+    private MudForm _form = default!;
 
     private ApplicationUser _user = default!;
     private (string Base32Secret, string SvgRenderedQrCode)? _authenticatorInfo;
@@ -52,6 +53,42 @@ public sealed partial class Authenticator : ComponentBase
         _authenticatorInfo = await Cache.GetOrCreateAsync(await GetCacheKeyAsync().ConfigureAwait(false), CreateAuthenticatorInfoAsync);
     }
 
+    private async Task Form_IsValidChanged(bool valid)
+    {
+        if (!valid)
+        {
+            return;
+        }
+
+        IdentityResult enableResult = await UserManager.SetTwoFactorEnabledAsync(_user, true).ConfigureAwait(false);
+        if (enableResult.Succeeded)
+        {
+            Cache.Remove(await GetCacheKeyAsync());
+
+            SnackbarService.AddSuccess(Localizer["enableSuccess"]);
+            NavigationManager.NavigateToSecurityIndex();
+        }
+        else
+        {
+            SnackbarService.AddError(enableResult.Errors, Localizer["enableError"]);
+        }
+    }
+
+    private async Task<string?> Form_ValidateCodeAsync(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return Localizer["form_NotEmpty"];
+        }
+
+        string tokenProvider = UserManager.Options.Tokens.AuthenticatorTokenProvider;
+        if (!await UserManager.VerifyTwoFactorTokenAsync(_user, tokenProvider, value.Replace(" ", "")).ConfigureAwait(false))
+        {
+            return Localizer["form_CodeInvalid"];
+        }
+        return null;
+    }
+
     private async Task<string> GetCacheKeyAsync()
     {
         string userId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
@@ -65,7 +102,7 @@ public sealed partial class Authenticator : ComponentBase
         {
             entry.SlidingExpiration = TimeSpan.Zero;
 
-            await InvokeAsync(() => ToastService.NotifyError(result.Errors, Localizer["requestError_Title"]));
+            SnackbarService.AddError(result.Errors, Localizer["requestError"]);
             return null;
         }
 
@@ -84,29 +121,5 @@ public sealed partial class Authenticator : ComponentBase
         using QRCodeData data = QRCodeGenerator.GenerateQrCode(payload);
         using SvgQRCode svgQRCode = new(data);
         return (base32secret, svgQRCode.GetGraphic(6));
-    }
-
-    private async Task<IEnumerable<string>> ValidateCodeAsync(EditContext context, FieldIdentifier identifier)
-    {
-        string tokenProvider = UserManager.Options.Tokens.AuthenticatorTokenProvider;
-        if (string.IsNullOrWhiteSpace(_model.Code) || !await UserManager.VerifyTwoFactorTokenAsync(_user, tokenProvider, _model.TrimmedCode).ConfigureAwait(false))
-        {
-            return [Localizer["form_CodeInvalid"]];
-        }
-
-        IdentityResult result = await UserManager.SetTwoFactorEnabledAsync(_user, true).ConfigureAwait(false);
-        if (result.Succeeded)
-        {
-            Cache.Remove(await GetCacheKeyAsync().ConfigureAwait(false));
-
-            await InvokeAsync(() => ToastService.NotifySuccess(Localizer["enableSuccess_Title"], Localizer["enableSuccess_Message"])).ConfigureAwait(false);
-            NavigationManager.NavigateToSecurityIndex();
-        }
-        else
-        {
-            await InvokeAsync(() => ToastService.NotifyError(result.Errors, Localizer["enableError_Title"])).ConfigureAwait(false);
-        }
-
-        return [];
     }
 }

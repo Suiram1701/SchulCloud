@@ -1,10 +1,9 @@
-﻿using BlazorBootstrap;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using MudBlazor;
 using SchulCloud.Store.Managers;
 using SchulCloud.Web.Components.Dialogs;
 using SchulCloud.Web.Extensions;
@@ -19,6 +18,12 @@ public sealed partial class Index : ComponentBase, IDisposable
     private IStringLocalizer<Index> Localizer { get; set; } = default!;
 
     [Inject]
+    private ISnackbar SnackbarService { get; set; } = default!;
+
+    [Inject]
+    private IDialogService DialogService { get; set; } = default!;
+
+    [Inject]
     private IOptions<PasswordOptions> PasswordOptionsAccessor { get; set; } = default!;
 
     [Inject]
@@ -31,13 +36,8 @@ public sealed partial class Index : ComponentBase, IDisposable
     private IdentityErrorDescriber ErrorDescriber { get; set; } = default!;
 
     [Inject]
-    private ToastService ToastService { get; set; } = default!;
-
-    [Inject]
     private PersistentComponentState ComponentState { get; set; } = default!;
     #endregion
-
-    private RemoveDialog _removeDialog = default!;
 
     private PersistingComponentStateSubscription? _persistingSubscription;
 
@@ -75,7 +75,7 @@ public sealed partial class Index : ComponentBase, IDisposable
 
             _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user).ConfigureAwait(false);
             _passkeysCount = await UserManager.GetPasskeyCountAsync(_user).ConfigureAwait(false);
-            await UpdateMfaStates().ConfigureAwait(false);
+            await UpdateMfaStatesAsync().ConfigureAwait(false);
 
             _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
             {
@@ -90,150 +90,107 @@ public sealed partial class Index : ComponentBase, IDisposable
                 ComponentState.PersistAsJson("state", state);
 
                 return Task.CompletedTask;
-            }); 
+            });
         }
     }
 
-    private async Task PasskeysEnable_ClickAsync()
+    private async Task SetPasskeysEnabled_ClickAsync(bool enabled)
     {
-        if (_passkeysCount <= 0)
+        if (_passkeysCount <= 0 && enabled)
         {
             return;
         }
 
-        IdentityResult enableResult = await UserManager.SetPasskeySignInEnabledAsync(_user, true).ConfigureAwait(false);
-        await InvokeAsync(() =>
+        IdentityResult result = await UserManager.SetPasskeySignInEnabledAsync(_user, enabled).ConfigureAwait(false);
+        if (result.Succeeded)
         {
-            if (enableResult.Succeeded)
-            {
-                _passkeysEnabled = true;
-                StateHasChanged();
-            }
-            else
-            {
-                ToastService.NotifyError(enableResult.Errors, Localizer["enable_Error"]);
-            }
-        }).ConfigureAwait(false);
-    }
-
-    private async Task PasskeysDisable_ClickAsync()
-    {
-        IdentityResult disableResult = await UserManager.SetPasskeySignInEnabledAsync(_user, false).ConfigureAwait(false);
-        await InvokeAsync(() =>
+            _passkeysEnabled = enabled;
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+        }
+        else
         {
-            if (disableResult.Succeeded)
-            {
-                _passkeysEnabled = false;
-                StateHasChanged();
-            }
-            else
-            {
-                ToastService.NotifyError(disableResult.Errors, Localizer["disable_Error"]);
-            }
-        }).ConfigureAwait(false);
+            string messageKey = enabled
+                ? "enable_Error"
+                : "disable_Error";
+            SnackbarService.AddError(result.Errors, Localizer[messageKey]);
+        }
     }
 
     private async Task AuthenticatorDisable_ClickAsync()
     {
-        if (!await _removeDialog.ShowAsync(Localizer["authenticator_Disable"], Localizer["authenticator_DisableMessage"]).ConfigureAwait(false))
+        IDialogReference dialogReference = await DialogService.ShowConfirmDialogAsync(
+            Localizer["authenticator_DisableBtn"],
+            Localizer["authenticator_DisableMessage"],
+            confirmColor: Color.Error);
+        if (await dialogReference.GetReturnValueAsync<bool?>() ?? false)
         {
-            return;
-        }
-
-        IdentityResult result = await UserManager.SetTwoFactorEnabledAsync(_user, false).ConfigureAwait(false);
-        await InvokeAsync(async () =>
-        {
-            if (result.Succeeded)
-            {
-                await UpdateMfaStates().ConfigureAwait(false);
-                StateHasChanged();
-            }
-            else
-            {
-                ToastService.NotifyError(result.Errors, Localizer["disable_Error"]);
-            }
-        }).ConfigureAwait(false);
-    }
-
-    private async Task EmailEnable_ClickAsync()
-    {
-        if (!_mfaEnabled)
-        {
-            return;
-        }
-
-        IdentityResult enableResult = await UserManager.SetTwoFactorEmailEnabledAsync(_user, true).ConfigureAwait(false);
-        await InvokeAsync(() =>
-        {
-            if (enableResult.Succeeded)
-            {
-                _mfaEmailEnabled = true;
-                StateHasChanged();
-            }
-            else
-            {
-                ToastService.NotifyError(enableResult.Errors, Localizer["enable_Error"]);
-            }
-        }).ConfigureAwait(false);
-    }
-
-    private async Task EmailDisable_ClickAsync()
-    {
-        IdentityResult disableResult = await UserManager.SetTwoFactorEmailEnabledAsync(_user, false).ConfigureAwait(false);
-        await InvokeAsync(() =>
-        {
+            IdentityResult disableResult = await UserManager.SetTwoFactorEnabledAsync(_user, false).ConfigureAwait(false);
             if (disableResult.Succeeded)
             {
-                _mfaEmailEnabled = false;
-                StateHasChanged();
+                await UpdateMfaStatesAsync().ConfigureAwait(false);
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
             }
             else
             {
-                ToastService.NotifyError(disableResult.Errors, Localizer["disable_Error"]);
+                SnackbarService.AddError(disableResult.Errors, Localizer["disable_Error"]);
             }
-        }).ConfigureAwait(false);
+        }
     }
 
-    private async Task SecurityKeyEnable_ClickAsync()
+    private async Task SetEmailEnabled_ClickAsync(bool enabled)
     {
-        if (!_mfaEnabled || _securityKeysCount <= 0)
+        if (!_mfaEnabled && enabled)
         {
             return;
         }
 
-        IdentityResult enableResult = await UserManager.SetTwoFactorSecurityKeyEnabledAsync(_user, true).ConfigureAwait(false);
-        await InvokeAsync(() =>
+        IdentityResult result = await UserManager.SetTwoFactorEmailEnabledAsync(_user, enabled).ConfigureAwait(false);
+        if (result.Succeeded)
         {
-            if (enableResult.Succeeded)
-            {
-                _mfaSecurityKeyEnabled = true;
-                StateHasChanged();
-            }
-            else
-            {
-                ToastService.NotifyError(enableResult.Errors, Localizer["enable_Error"]);
-            }
-        }).ConfigureAwait(false);
+            _mfaEmailEnabled = enabled;
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+        }
+        else
+        {
+            string messageKey = enabled
+                ? "enable_Error"
+                : "disable_Error";
+            SnackbarService.AddError(result.Errors, Localizer[messageKey]);
+        }
     }
 
-    private async Task SecurityKeyDisable_ClickAsync()
+    private async Task SetSecurityKeyEnabled_ClickAsync(bool enabled)
     {
-        IdentityResult disableResult = await UserManager.SetTwoFactorSecurityKeyEnabledAsync(_user, false).ConfigureAwait(false);
-        await InvokeAsync(() =>
+        if ((!_mfaEnabled || _securityKeysCount <= 0) && enabled)
         {
-            if (disableResult.Succeeded)
-            {
-                _mfaSecurityKeyEnabled = false;
-                StateHasChanged();
-            }
-            else
-            {
-                ToastService.NotifyError(disableResult.Errors, Localizer["disable_Error"]);
-            }
-        }).ConfigureAwait(false);
+            return;
+        }
+
+        IdentityResult result = await UserManager.SetTwoFactorSecurityKeyEnabledAsync(_user, enabled).ConfigureAwait(false);
+        if (result.Succeeded)
+        {
+            _mfaSecurityKeyEnabled = enabled;
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+        }
+        else
+        {
+            string messageKey = enabled
+                ? "enable_Error"
+                : "disable_Error";
+            SnackbarService.AddError(result.Errors, Localizer[messageKey]);
+        }
     }
 
-    private async Task UpdateMfaStates()
+    private async Task GenerateNewRecoveryCodes_ClickAsync()
+    {
+        IDialogReference dialogReference = await DialogService.ShowConfirmDialogAsync(Localizer["recovery_RenewBtn"], Localizer["recovery_RenewMessage"]);
+        if (await dialogReference.GetReturnValueAsync<bool?>() ?? false)
+        {
+            NavigationManager.NavigateToRecoveryCodes();
+        }
+    }
+
+    private async Task UpdateMfaStatesAsync()
     {
         _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user).ConfigureAwait(false);
         if (_mfaEnabled)
@@ -244,8 +201,6 @@ public sealed partial class Index : ComponentBase, IDisposable
             _mfaRemainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user).ConfigureAwait(false);
         }
     }
-
-    private bool? IsMfaMethodEnabled(bool methodState) => _mfaEnabled ? methodState : null;
 
     public void Dispose()
     {

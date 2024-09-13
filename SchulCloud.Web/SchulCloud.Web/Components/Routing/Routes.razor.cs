@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using SchulCloud.Web.Components.Layouts;
 
 namespace SchulCloud.Web.Components.Routing;
 
@@ -12,8 +13,8 @@ public sealed partial class Routes : ComponentBase
     #endregion
 
     private Type LayoutType => _isAuthenticated
-        ? typeof(Layouts.MainLayout)
-        : typeof(Layouts.AnonLayout);
+        ? typeof(MainLayout)
+        : typeof(AnonymousLayout);
 
     private bool _isAuthenticated = false;
 

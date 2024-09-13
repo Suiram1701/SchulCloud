@@ -100,67 +100,76 @@
   <data name="registerBtn" xml:space="preserve">
     <value>Sicherheitsschlüssel hinzufügen</value>
   </data>
-  <data name="securityKey_isPasskey" xml:space="preserve">
+  <data name="securityKey_IsPasskey" xml:space="preserve">
     <value>Passkey</value>
   </data>
-  <data name="securityKey_added" xml:space="preserve">
+  <data name="securityKey_Added" xml:space="preserve">
     <value>Hinzugefügt am: {0}</value>
   </data>
-  <data name="securityKey_desc" xml:space="preserve">
+  <data name="securityKey_Desc" xml:space="preserve">
     <value>Beschreibung: {0}</value>
   </data>
-  <data name="securityKey_protocol" xml:space="preserve">
+  <data name="securityKey_Protocol" xml:space="preserve">
     <value>Verwendetes Protokoll: {0}</value>
   </data>
   <data name="securityKey_NoDesc" xml:space="preserve">
     <value>Von diesem Sicherheitsschlüssel konnte keine Beschreibung abgerufen werden.</value>
   </data>
-  <data name="securityKey_renameBtn" xml:space="preserve">
+  <data name="securityKey_RenameBtn" xml:space="preserve">
     <value>Umbenennen</value>
   </data>
-  <data name="securityKey_removeBtn" xml:space="preserve">
+  <data name="securityKey_RemoveBtn" xml:space="preserve">
     <value>Entfernen</value>
   </data>
   <data name="removeDialog" xml:space="preserve">
     <value>Sicherheitsschlüssel entfernen</value>
   </data>
-  <data name="removeDialogMessage" xml:space="preserve">
+  <data name="removeDialog_Message" xml:space="preserve">
     <value>Der Sicherheitsschlüssel wird dauerhaft von diesem Konto entfernt. Möchten Sie wirklich fortfahren?</value>
   </data>
-  <data name="securityKey_rename" xml:space="preserve">
+  <data name="renameDialog" xml:space="preserve">
     <value>Sicherheitsschlüssel umbenennen</value>
   </data>
   <data name="desc" xml:space="preserve">
     <value>Sicherheitsschlüssel sind Anmeldedaten die auf einem Computer/Mobilgerät oder einem Hardware-Schlüssel gespeichert werden. Ein Sicherheitsschlüssel kann, wenn aktiviert für Zwei-Faktor-Authentifizierung (2FA) genutzt werden.</value>
   </data>
-  <data name="desc_passkey" xml:space="preserve">
+  <data name="desc_Passkey" xml:space="preserve">
     <value>Ein Passkey ist ein Sicherheitsschlüssel, der für die benutzernamenlose Authentifizierung verwendet werden kann, da er bei seiner Erstellung eine erhöhte Sicherheit bietet.</value>
   </data>
-  <data name="browserNotSupported" xml:space="preserve">
+  <data name="webAuthn_NotSupported" xml:space="preserve">
     <value>Ihr Aktueller Browser unterstützt keine Sicherheitsschlüssel</value>
   </data>
-  <data name="registerModal" xml:space="preserve">
+  <data name="registerDialog" xml:space="preserve">
     <value>Sicherheitsschlüssel hinzufügen</value>
   </data>
-  <data name="registerModal_keyName" xml:space="preserve">
+  <data name="registerDialog_KeyName" xml:space="preserve">
     <value>Name des Sicherheitsschlüssels</value>
   </data>
-  <data name="registerModal_isPasskey" xml:space="preserve">
+  <data name="registerDialog_IsPasskey" xml:space="preserve">
     <value>Als Passkey hinzufügen</value>
   </data>
-  <data name="registerModal_close" xml:space="preserve">
+  <data name="registerDialog_CancelBtn" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
-  <data name="registerModal_register" xml:space="preserve">
+  <data name="registerDialog_RegisterBtn" xml:space="preserve">
     <value>Hinzufügen</value>
   </data>
-  <data name="registerModal_Error" xml:space="preserve">
+  <data name="registerDIalog_Error" xml:space="preserve">
     <value>Fehler beim Anfordern des Sicherheitsschlüssels</value>
   </data>
-  <data name="registerModal_ErrorMessage" xml:space="preserve">
-    <value>Beim Anfordern des Sicherheitsschlüssels ist ein Fehler aufgetreten.</value>
-  </data>
-  <data name="registerModal_SaveError" xml:space="preserve">
+  <data name="registerDialog_SaveError" xml:space="preserve">
     <value>Beim speichern des Sicherheitsschlüssels ist ein Fehler aufgetreten.</value>
+  </data>
+  <data name="form_NotEmpty" xml:space="preserve">
+    <value>Das Feld darf nicht leer sein</value>
+  </data>
+  <data name="registerModal_KeyName_AlreadyExists" xml:space="preserve">
+    <value>Ein anderer Sicherheitsschlüssel mit demselben Namen existiert bereits.</value>
+  </data>
+  <data name="renameDialog_Error" xml:space="preserve">
+    <value>Fehler beim ändern des Namens</value>
+  </data>
+  <data name="removeDialog_Error" xml:space="preserve">
+    <value>Fehler beim Entfernen des Sicherheitsschlüssels</value>
   </data>
 </root>

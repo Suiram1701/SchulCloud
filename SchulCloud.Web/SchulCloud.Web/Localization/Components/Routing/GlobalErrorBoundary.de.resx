@@ -97,13 +97,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="toastTitle" xml:space="preserve">
-    <value>Fehler</value>
-  </data>
-  <data name="toastProdMessage" xml:space="preserve">
+  <data name="toastProd" xml:space="preserve">
     <value>Während der Ausführung ist ein Fehler aufgetreten. Sollte dieser Fehler weiterhin auftreten wenden Sie sich bitte an den zuständigen Administrator und übergeben Sie folgende Fehlerdetails: TraceId = {0}; SpanId = {1}</value>
   </data>
-  <data name="toastTitleEx" xml:space="preserve">
+  <data name="toastEx" xml:space="preserve">
     <value>Unbehandelte Ausnahme</value>
   </data>
 </root>

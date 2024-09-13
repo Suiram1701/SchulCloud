@@ -100,13 +100,13 @@
   <data name="title" xml:space="preserve">
     <value>2FA authentication</value>
   </data>
-  <data name="form_AuthenticatorCode_Placeholder" xml:space="preserve">
+  <data name="form_AuthenticatorCode" xml:space="preserve">
     <value>Authentication code</value>
   </data>
   <data name="form_SubmitBtn" xml:space="preserve">
     <value>Sign in</value>
   </data>
-  <data name="form_Persistent" xml:space="preserve">
+  <data name="form_RememberClient" xml:space="preserve">
     <value>Remember this device for 2FA authentication</value>
   </data>
   <data name="signIn_LockedOut_NotSpecified" xml:space="preserve">
@@ -136,52 +136,43 @@
   <data name="method_Recovery" xml:space="preserve">
     <value>Recovery codes</value>
   </data>
-  <data name="form_RecoveryCode_Placeholder" xml:space="preserve">
+  <data name="form_RecoveryCode" xml:space="preserve">
     <value>Recovery code</value>
   </data>
   <data name="desc_Recovery" xml:space="preserve">
     <value>Enter a valid user recovery code to complete the authentication. The "remain signed in" and "Remember this device" functions are not available here.</value>
   </data>
   <data name="desc_Email" xml:space="preserve">
-    <value>Click "Send Code" to send a confirmation request to the account email address. Enter the received code to complete the authentication.</value>
+    <value>Click the icon to the right of the input to send a verification request to the account email address. Enter the code received to complete the authentication.</value>
   </data>
   <data name="method_Email" xml:space="preserve">
     <value>Email authentication</value>
   </data>
-  <data name="form_SendEmailCodeBtn" xml:space="preserve">
-    <value>Send code</value>
-  </data>
-  <data name="form_EmailCode_Placeholder" xml:space="preserve">
+  <data name="form_EmailCode" xml:space="preserve">
     <value>Confirmation code</value>
   </data>
-  <data name="emailConfirmation_TimeoutMessage" xml:space="preserve">
+  <data name="emailConfirmation_Timeout" xml:space="preserve">
     <value>A verification code has already been sent to this user. Please try again in {0}.</value>
   </data>
-  <data name="emailConfirmation_Timeout" xml:space="preserve">
-    <value>Confirmation code cannot be sent.</value>
-  </data>
   <data name="emailConfirmation" xml:space="preserve">
-    <value>Confirmation code sent</value>
-  </data>
-  <data name="emailConfirmationMessage" xml:space="preserve">
     <value>The verification code was sent to {0}.</value>
   </data>
   <data name="form_AuthenticateBtn" xml:space="preserve">
     <value>Authenticate</value>
   </data>
-  <data name="securityKey_NotSupported" xml:space="preserve">
+  <data name="webAuthn_NotSupported" xml:space="preserve">
     <value>Security keys are not supported by your current browser</value>
   </data>
   <data name="method_SecurityKey" xml:space="preserve">
     <value>Security key</value>
   </data>
-  <data name="securityKey_Error" xml:space="preserve">
+  <data name="webAuthn_Error" xml:space="preserve">
     <value>Error requesting security key</value>
-  </data>
-  <data name="securityKey_ErrorMessage" xml:space="preserve">
-    <value>An error occurred while requesting the security key.</value>
   </data>
   <data name="desc_SecurityKey" xml:space="preserve">
     <value>Click "Authenticate" to request authentication with a security key.</value>
+  </data>
+  <data name="form_NotEmpty" xml:space="preserve">
+    <value>The field must not be empty</value>
   </data>
 </root>

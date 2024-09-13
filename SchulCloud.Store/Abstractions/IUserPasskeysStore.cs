@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SchulCloud.Store.Abstractions;
+﻿namespace SchulCloud.Store.Abstractions;
 
 /// <summary>
 /// An interface that provides a flag to determine whether passkeys sign ins is enabled for a user.

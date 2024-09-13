@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using MudBlazor;
 using SchulCloud.Web.Constants;
 using static SchulCloud.Web.Constants.JSNames;
 using static System.Net.Mime.MediaTypeNames;
@@ -8,27 +9,6 @@ namespace SchulCloud.Web.Extensions;
 
 internal static class JSRuntimeExtensions
 {
-    /// <summary>
-    /// Sets the displayed color theme.
-    /// </summary>
-    /// <param name="runtime">The js runtime of the client.</param>
-    /// <param name="theme">The theme to set.</param>
-    public static async ValueTask SetColorThemeAsync(this IJSRuntime runtime, Enums.ColorTheme theme)
-    {
-        ArgumentNullException.ThrowIfNull(runtime);
-        await runtime.InvokeVoidAsync($"{ColorTheme}.set", theme.ToString().ToLower());
-    }
-
-    /// <summary>
-    /// Indicates whether the client supports <see cref="Enums.ColorTheme.Auto"/>.
-    /// </summary>
-    /// <param name="runtime">The js runtime of the client.</param>
-    public static async ValueTask<bool> IsColorAutoColorThemeAvailableAsync(this IJSRuntime runtime)
-    {
-        ArgumentNullException.ThrowIfNull(runtime);
-        return await runtime.InvokeAsync<bool>($"{ColorTheme}.autoThemeAvailable");
-    }
-
     /// <summary>
     /// Downloads a specified stream to the client.
     /// </summary>
@@ -70,6 +50,6 @@ internal static class JSRuntimeExtensions
     public static async ValueTask FormSubmitAsync(this IJSRuntime runtime, ElementReference reference)
     {
         ArgumentNullException.ThrowIfNull(runtime);
-        await runtime.InvokeVoidAsync($"{ElementHelpers}.formSubmit", reference).ConfigureAwait(false);
+        await runtime.InvokeVoidAsyncIgnoreErrors($"{ElementHelpers}.formSubmit", reference).ConfigureAwait(false);
     }
 }

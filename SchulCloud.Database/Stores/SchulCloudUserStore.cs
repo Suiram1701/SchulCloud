@@ -6,10 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using SchulCloud.Database.Enums;
 using SchulCloud.Database.Models;
 using SchulCloud.Store.Abstractions;
-using System.Net;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace SchulCloud.Database.Stores;
 

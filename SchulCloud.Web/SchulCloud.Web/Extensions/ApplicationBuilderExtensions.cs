@@ -1,6 +1,8 @@
 ﻿using Fido2NetLib;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
+using MudBlazor;
+using MudBlazor.Services;
 using SchulCloud.Store;
 using SchulCloud.Web.Options;
 using SchulCloud.Web.Services;
@@ -21,7 +23,7 @@ public static class ApplicationBuilderExtensions
             .Configure<IdentityOptions>(builder.Configuration.GetSection("Identity"))
             .Configure<EmailSenderOptions>(builder.Configuration.GetSection("Identity:EmailSender"))
             .Configure<DataProtectionTokenProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:DataProtectionTokenProvider"))
-            .Configure<AuthenticationCodeProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:AuthenticationCodeTokenProvider")); 
+            .Configure<AuthenticationCodeProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:AuthenticationCodeTokenProvider"));
 
         // Visual presentation
         builder.Services
@@ -38,6 +40,13 @@ public static class ApplicationBuilderExtensions
                 ];
             })
             .Configure<RequestLocalizationOptions>(builder.Configuration.GetSection("RequestLocalization"));
+
+        // MudBlazor
+        builder.Services
+            .Configure<SnackbarConfiguration>(builder.Configuration.GetSection("Mud:Snackbar"))
+            .Configure<ResizeOptions>(builder.Configuration.GetSection("Mud:Resize"))
+            .Configure<ResizeObserverOptions>(builder.Configuration.GetSection("Mud:ResizeObserver"))
+            .Configure<PopoverOptions>(builder.Configuration.GetSection("Mud:Popover"));
 
         // Other
         builder.Services

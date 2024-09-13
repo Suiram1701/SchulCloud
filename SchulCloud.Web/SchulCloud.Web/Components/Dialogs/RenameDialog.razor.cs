@@ -1,13 +1,9 @@
-﻿using BlazorBootstrap;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
-using SchulCloud.Web.Models;
+using MudBlazor;
 
 namespace SchulCloud.Web.Components.Dialogs;
 
-/// <summary>
-/// A dialog that shows a modal to change a name.
-/// </summary>
 public sealed partial class RenameDialog : ComponentBase
 {
     #region Injections
@@ -15,48 +11,52 @@ public sealed partial class RenameDialog : ComponentBase
     private IStringLocalizer<RenameDialog> Localizer { get; set; } = default!;
     #endregion
 
-    private Modal _modal = default!;
-    private string? _title = string.Empty;
+    [CascadingParameter]
+    private MudDialogInstance DialogInstance { get; set; } = default!;
 
-    private RenameModel _model = new();
-    private TaskCompletionSource<string?>? _completionSource;
+    private MudForm _renameForm = default!;
+    private string _newName = string.Empty;
 
-    /// <summary>
-    /// Shows the dialog.
-    /// </summary>
-    /// <param name="oldName">The old name of the item.</param>
-    /// <param name="excludedNames">Names that are already token and should also be excluded.</param>
-    /// <param name="title">The title of the dialog.</param>
-    /// <returns>The new name. If <c>null</c> the user cancelled the dialog.</returns>
-    public async Task<string?> ShowAsync(string? oldName, IEnumerable<string?>? excludedNames = null, string? title = null)
+    [Parameter]
+    public string Title { get; set; } = default!;
+
+    [Parameter]
+    public string Message { get; set; } = default!;
+
+    [Parameter]
+    public string? OldName { get; set; }
+
+    [Parameter]
+    public IEnumerable<string>? ExcludedNames { get; set; }
+
+    private void Cancel_Click() => DialogInstance.Cancel();
+
+    private async Task Rename_ClickAsync()
     {
-        _title = title ?? Localizer["defaultTitle"];
-        _model = new()
+        await _renameForm.Validate();
+        if (_renameForm.Errors.Length == 0)
         {
-            OldName = oldName,
-            NewName = oldName,
-            ExcludedNames = excludedNames ?? []
-        };
-
-        await _modal.ShowAsync().ConfigureAwait(false);
-
-        _completionSource = new();
-        return await _completionSource.Task.ConfigureAwait(false);
+            DialogInstance.Close(DialogResult.Ok(_newName));
+        }
     }
 
-    private async Task Close_ClickAsync()
+    private string? RenameFormNewName_Validate(string value)
     {
-        await _modal.HideAsync().ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return Localizer["form_NotEmpty"];
+        }
+        else if (ExcludedNames is not null)
+        {
+            foreach (string name in ExcludedNames)
+            {
+                if (name.Equals(value))
+                {
+                    return Localizer["form_NewName_AlreadyTaken"];
+                }
+            }
+        }
 
-        _completionSource!.SetResult(null);
-        _completionSource = null;
-    }
-
-    private async Task ValidSubmitAsync()
-    {
-        await _modal.HideAsync().ConfigureAwait(false);
-
-        _completionSource!.SetResult(_model!.NewName);
-        _completionSource = null;
+        return null;
     }
 }

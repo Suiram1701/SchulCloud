@@ -1,11 +1,9 @@
-﻿using BlazorBootstrap;
-using Humanizer;
-using Microsoft.AspNetCore.Authorization;
+﻿using Humanizer;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
+using MudBlazor;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Models;
 using SchulCloud.Web.Services.Interfaces;
@@ -18,6 +16,9 @@ public sealed partial class ResetPassword : ComponentBase
     #region Injections
     [Inject]
     private IStringLocalizer<ResetPassword> Localizer { get; set; } = default!;
+
+    [Inject]
+    private ISnackbar SnackbarService { get; set; } = default!;
 
     [Inject]
     private Identity.EmailSenders.IEmailSender<ApplicationUser> EmailSender { get; set; } = default!;
@@ -33,13 +34,9 @@ public sealed partial class ResetPassword : ComponentBase
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
-
-    [Inject]
-    private ToastService ToastService { get; set; } = default!;
     #endregion
 
     private ApplicationUser? _user;
-    private readonly PasswordResetUserModel _userModel = new();
     private readonly PasswordResetModel _model = new();
 
     [CascadingParameter]
@@ -75,43 +72,33 @@ public sealed partial class ResetPassword : ComponentBase
             return;
         }
 
-        if (!await ResetLimiter.CanRequestPasswordResetAsync(_user).ConfigureAwait(false))
+        if (await ResetLimiter.CanRequestPasswordResetAsync(_user).ConfigureAwait(false))
         {
-            DateTimeOffset? expiration = await ResetLimiter.GetPasswordResetExpirationTimeAsync(_user).ConfigureAwait(false);
-            ToastService.Notify(new(ToastType.Info, Localizer["sent_Timeout"], Localizer["sent_TimeoutMessage", expiration.Humanize()])
-            {
-                AutoHide = true,
-            });
-        }
-        else
-        {
+            // Show the snackbar before the email is sent for better user experience (sending the mail is time expensive).
+            string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(_user).ConfigureAwait(false);
+            SnackbarService.AddInfo(Localizer["sent", anonymizedAddress]);
+
             string resetToken = await UserManager.GeneratePasswordResetTokenAsync(_user).ConfigureAwait(false);
-
-            // Show the Toast before the email is sent for better user experience (sending the mail is time expensive).
-            await InvokeAsync(async () =>
-            {
-                string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(_user).ConfigureAwait(false);
-                ToastService.Notify(new(ToastType.Info, Localizer["sent"], Localizer["sentMessage", anonymizedAddress])
-                {
-                    AutoHide = true
-                });
-            }).ConfigureAwait(false);
-
             Uri resetUri = NavigationManager.ToAbsoluteUri(Routes.ResetPassword(userId: UserId, token: resetToken, returnUrl: ReturnUrl));
 
             string userEmail = (await UserManager.GetEmailAsync(_user).ConfigureAwait(false))!;
             await EmailSender.SendPasswordResetLinkAsync(_user, userEmail, resetUri.AbsoluteUri).ConfigureAwait(false);
         }
+        else
+        {
+            DateTimeOffset? expiration = await ResetLimiter.GetPasswordResetExpirationTimeAsync(_user).ConfigureAwait(false);
+            SnackbarService.AddInfo(Localizer["sent_Timeout", expiration.Humanize()]);
+        }
     }
 
-    private async Task<IEnumerable<string>> ValidateUserAsync(EditContext context, FieldIdentifier identifier)
+    private async Task<IEnumerable<string>> ValidateUserAsync()
     {
-        _user = await UserManager.FindByEmailAsync(_userModel.User).ConfigureAwait(false);
-        _user ??= await UserManager.FindByNameAsync(_userModel.User).ConfigureAwait(false);
+        _user = await UserManager.FindByEmailAsync(_model.User).ConfigureAwait(false);
+        _user ??= await UserManager.FindByNameAsync(_model.User).ConfigureAwait(false);
 
         if (_user is null)
         {
-            return [Localizer["userForm_NotFound"]];
+            return [Localizer["userForm_UserNotFound"]];
         }
 
         UserId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
@@ -130,16 +117,14 @@ public sealed partial class ResetPassword : ComponentBase
         string decodedToken = Uri.UnescapeDataString(ChangeToken);
 
         IdentityResult result = await UserManager.ResetPasswordAsync(_user, decodedToken, _model.NewPassword).ConfigureAwait(false);
-        if (!result.Succeeded)
+        if (result.Succeeded)
         {
-            await InvokeAsync(() => ToastService.NotifyError(result.Errors, Localizer["errorToastTitle"]));
+            SnackbarService.AddSuccess(Localizer["success"]);
+            NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.SignIn());
         }
         else
         {
-            await InvokeAsync(() => ToastService.NotifySuccess(Localizer["toastTitle"], Localizer["successToastMessage"]));
-
-            Uri returnUri = NavigationManager.ToAbsoluteUri(ReturnUrl ?? Routes.SignIn());
-            NavigationManager.NavigateTo(returnUri.PathAndQuery);
+            SnackbarService.AddError(result.Errors, Localizer["error"]);
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿using BlazorBootstrap;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using MudBlazor;
 using SchulCloud.Web.Extensions;
 using System.Diagnostics;
 
@@ -25,7 +25,7 @@ public partial class GlobalErrorBoundary : ErrorBoundaryBase
     private IStringLocalizer<GlobalErrorBoundary> Localizer { get; set; } = default!;
 
     [Inject]
-    private ToastService ToastService { get; set; } = default!;
+    private ISnackbar SnackbarService { get; set; } = default!;
     #endregion
 
     protected override Task OnErrorAsync(Exception exception)
@@ -34,14 +34,14 @@ public partial class GlobalErrorBoundary : ErrorBoundaryBase
 
         if (HostEnvironment.IsDevelopment())
         {
-            ToastService.NotifyError(exception, Localizer["toastTitleEx"]);
+            SnackbarService.AddError(exception, Localizer["toastEx"]);
         }
         else
         {
             Activity? activity = Activity.Current;
             string traceId = activity?.TraceId.ToString() ?? "N/A";
             string spanId = activity?.SpanId.ToString() ?? "N/A";
-            ToastService.NotifyError(Localizer["toastTitle"], Localizer["toastProdMessage", traceId, spanId]);
+            SnackbarService.AddError(Localizer["toastProd", traceId, spanId]);
         }
 
         return Task.CompletedTask;

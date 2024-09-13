@@ -1,60 +1,41 @@
-﻿@using SchulCloud.Web.Constants
+﻿<SchulCloudPageTitle Title="@Localizer["title"]" />
 
-<SchulCloudPageTitle Title="@Localizer["title"]" />
+<MudPaper Class="mt-15 px-3 py-3">
+    <MudText Class="mb-5" Typo="Typo.h4" Align="Align.Center">@Localizer["header"]</MudText>
 
-<div class="container py-5 my-5">
-    <div class="row mb-2">
-        <div class="col" />
-        <div class="col-6">
-            <h3>@Localizer["form_Header"]</h3>
-        </div>
-        <div class="col" />
-    </div>
-    <div class="row">
-        <div class="col" />
-        <div class="col-6">
-            <form @ref="_formRef" @formname="@_formName" class="@IsInvalidFormClass" method="post" action="@Routes.SignIn(returnUrl: ReturnUrl)">
-                <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive SSR Blazor doesn't place it by its own. *@
-                <AntiforgeryToken />
+    <form @ref="_formRef" @formname="@_formName" method="post">
+        <AntiforgeryToken />
+        <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive rendering Blazor doesn't place it by its own. *@
 
-                <FloatingTextInput Class="usr-group" InnerClass="@IsInvalidInputClass" @bind-Value="Model.User" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.User)}")"
-                                   FloatingLabel="@Localizer["form_UserPlaceholder"]" Placeholder="exampleUser" autocomplete="username" required />
+        @if (_webAuthnSupported)
+        {
+            <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.AuthenticatorDataAccessKey)}")" value="@Model.AuthenticatorDataAccessKey" />
+        }
 
-                <FloatingPasswordInput Class="pwd-group" InnerClass="@IsInvalidInputClass" @bind-Value="Model.Password" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Password)}")"
-                                       FloatingLabel="@Localizer["form_PasswordPlaceholder"]" Placeholder="password" autocomplete="current-password" required />
+        <MudTextField @bind-Value="Model.User" @bind-Value:after="Input_Changed" For="@(() => Model.User)" name="@($"{nameof(Model)}.{nameof(Model.User)}")"
+                      Class="mb-2" Label="@Localizer["form_User"]" Error="IsInvalid" RequiredError="@Localizer["form_NotEmpty"]" Required autocomplete="username" />
 
-                @if (IsInvalid())
-                {
-                    <div class="@ExtendedBootstrapClass.InvalidFeedback d-block">@_errorMessage</div>
-                }
+        <PasswordField @bind-Value="Model.Password" @bind-Value:after="Input_Changed" For="@(() => Model.Password)" name="@($"{nameof(Model)}.{nameof(Model.Password)}")"
+                       Label="@Localizer["form_Password"]" Error="IsInvalid" RequiredError="@Localizer["form_NotEmpty"]" Required autocomplete="password" />
 
-                <CheckBoxInput Class="my-3" @bind-Value="Model.Persistent" name="@($"{nameof(Model)}.{nameof(Model.Persistent)}")" Label="@Localizer["form_Persistent"]" />
+        @if (IsInvalid)
+        {
+            <MudText Class="mt-2" Typo="Typo.subtitle1" Color="Color.Error">@_errorMessage</MudText>
+        }
 
-                <div class="d-flex flex-column">
-                    @if (_webAuthnSupported)
-                    {
-                        <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.AuthenticatorDataAccessKey)}")" value="@Model.AuthenticatorDataAccessKey" />
-                        <Button Class="d-flex justify-content-center" Color="ButtonColor.Secondary" @onclick="StartPasskeySignIn_ClickAsync">
-                            <FontsIcon Name="passkey" />
-                            <span class="ms-2">@Localizer["form_PasskeySignInBtn"]</span>
-                        </Button>
-                    }
-                    else
-                    {
-                        <Tooltip Class="d-flex" Title="@Localizer["securityKey_NotSupported"]">
-                            <Button Class="flex-fill d-flex justify-content-center" Color="ButtonColor.Secondary" Disabled>
-                                <FontsIcon Name="passkey" />
-                                <span class="mx-2">@Localizer["form_PasskeySignInBtn"]</span>
-                                <Icon Name="IconName.ExclamationCircle" />
-                            </Button>
-                        </Tooltip>
-                    }
+        <MudCheckBox Class="mt-2" @bind-Value="Model.Persistent" For="@(() => Model.Persistent)" name="@($"{nameof(Model)}.{nameof(Model.Persistent)}")" Label="@Localizer["form_Persistent"]" />
 
-                    <Button Class="my-2" Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["form_SubmitBtn"]</Button>
-                    <Button Color="ButtonColor.Danger" @onclick="ForgotPasswordAsync_ClickAsync">@Localizer["form_PasswordForgotBtn"]</Button>
-                </div>
-            </form>
-        </div>
-        <div class="col" />
-    </div>
-</div>
+        <MudStack Class="mt-3">
+            <MudButton Color="Color.Tertiary" ButtonType="ButtonType.Submit" Variant="Variant.Filled">@Localizer["form_SubmitBtn"]</MudButton>
+
+            <MudTooltip RootClass="mud-width-full" Text="@Localizer["webAuthn_NotSupported"]" Disabled="_webAuthnSupported">
+                <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="StartPasskeySignIn_ClickAsync"
+                           StartIcon="@MaterialSymbols.Outlined.Passkey" IconSize="Size.Large" Disabled="!_webAuthnSupported" FullWidth>
+                           @Localizer["form_PasskeySignInBtn"]
+                </MudButton>
+            </MudTooltip>
+
+            <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ForgotPasswordAsync_ClickAsync">@Localizer["form_ForgotPasswordBtn"]</MudButton>
+        </MudStack>
+    </form>
+</MudPaper>

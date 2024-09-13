@@ -3,6 +3,7 @@ using FluentValidation;
 using MailKit.Client;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
 using SchulCloud.ServiceDefaults;
@@ -13,8 +14,7 @@ using SchulCloud.Web.Identity;
 using SchulCloud.Web.Identity.EmailSenders;
 using SchulCloud.Web.Identity.Managers;
 using SchulCloud.Web.Services;
-using SchulCloud.Web.Utils;
-using SchulCloud.Web.Utils.Interfaces;
+using SchulCloud.Web.Services.Interfaces;
 
 namespace SchulCloud.Web;
 
@@ -74,14 +74,14 @@ public class Program
         builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
         builder.Services.AddRazorComponents()
-            .AddInteractiveServerComponents()
-            .AddInteractiveWebAssemblyComponents();
+            .AddInteractiveServerComponents();
         builder.Services.AddCascadingAuthenticationState();
 
         builder.Services
-            .AddBlazorBootstrap()
+            .AddMudServices()
             .AddBlazoredLocalStorage()
-            .AddScoped<ICookieHelper, CookieHelper>();
+            .AddScoped<CookieService>()
+            .AddScoped<IUserPreferencesStore, CookieUserPreferencesStore>();
 
         WebApplication app = builder.Build();
         app.MapDefaultEndpoints();

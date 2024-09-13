@@ -1,8 +1,6 @@
-﻿using BlazorBootstrap;
-using Fido2NetLib;
+﻿using Fido2NetLib;
 using Humanizer;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -10,8 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
+using MudBlazor;
 using SchulCloud.Store.Managers;
-using SchulCloud.Web.Constants;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Identity.Managers;
 using SchulCloud.Web.Models;
@@ -26,10 +24,13 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
 {
     #region Injections
     [Inject]
+    private IMemoryCache Cache { get; set; } = default!;
+
+    [Inject]
     private IStringLocalizer<SignIn> Localizer { get; set; } = default!;
 
     [Inject]
-    private IMemoryCache Cache { get; set; } = default!;
+    private ISnackbar SnackbarService { get; set; } = default!;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -47,25 +48,22 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
     private NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject]
-    private ToastService ToastService { get; set; } = default!;
-
-    [Inject]
     private WebAuthnService WebAuthnService { get; set; } = default!;
 
     [Inject]
     private PersistentComponentState ComponentState { get; set; } = default!;
     #endregion
 
-    private const string _formName = "signIn";
-
     private ElementReference _formRef = default!;
-
+    private const string _formName = "signInForm";
     private string? _errorMessage;
     private PersistingComponentStateSubscription? _persistingSubscription;
 
     private bool _webAuthnSupported = true;
     private AssertionOptions? _assertionOptions;
     private IAsyncDisposable? _pendingAssertion;
+
+    private bool IsInvalid => _errorMessage is not null;
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -98,15 +96,18 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
 
             if (HttpMethods.IsPost(HttpContext.Request.Method))
             {
-                await SignInAsync().ConfigureAwait(false);
-
-                _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
+                bool result = await SignInAsync().ConfigureAwait(false);
+                if (!result)
                 {
-                    ComponentState.PersistAsJson(nameof(Model), Model);
-                    ComponentState.PersistAsJson(nameof(_errorMessage), _errorMessage);
+                    // Persist state from initial HTTP request to interactivity begin.
+                    _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
+                    {
+                        ComponentState.PersistAsJson(nameof(Model), Model);
+                        ComponentState.PersistAsJson(nameof(_errorMessage), _errorMessage);
 
-                    return Task.CompletedTask;
-                });
+                        return Task.CompletedTask;
+                    });
+                }
             }
         }
         else
@@ -121,60 +122,19 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        if (firstRender)
         {
-            return;
-        }
-
-        if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
-        {
-            _webAuthnSupported = false;
-            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
+            {
+                _webAuthnSupported = false;
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            }
         }
     }
 
-    private async Task SignInAsync()
+    private void Input_Changed()
     {
-        SignInResult signInResult;
-        ApplicationUser? user;
-        if (string.IsNullOrWhiteSpace(Model.AuthenticatorDataAccessKey))
-        {
-            user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
-            user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
-            if (user is null)
-            {
-                _errorMessage = Localizer["signIn_" + SignInResult.Failed];
-                return;
-            }
-
-            signInResult = await SignInManager.PasswordSignInAsync(user, Model.Password, Model.Persistent, lockoutOnFailure: true).ConfigureAwait(false);
-        }
-        else
-        {
-            (signInResult, user) = await SecurityKeySignInAsync(Model.AuthenticatorDataAccessKey, Model.Persistent).ConfigureAwait(false);
-            Model.AuthenticatorDataAccessKey = null;
-        }
-
-        switch (signInResult)
-        {
-            case { Succeeded: true }:
-                Uri returnUri = NavigationManager.ToAbsoluteUri(ReturnUrl);
-                NavigationManager.NavigateTo(returnUri.PathAndQuery);     // prevent a redirect to another domain by using only the path and query part.
-                break;
-            case { RequiresTwoFactor: true }:
-                NavigationManager.NavigateToVerify2fa(persistent: Model.Persistent, returnUrl: ReturnUrl, forceLoad: true);
-                break;
-            case { IsLockedOut: true }:
-                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(user!).ConfigureAwait(false)).Value;
-
-                _errorMessage = lockOutEnd.Offset < TimeSpan.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
-                    ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
-                    : Localizer["signIn_LockedOut_NotSpecified"];
-                break;
-            default:
-                _errorMessage = Localizer["signIn_" + signInResult];
-                break;
-        }
+        _errorMessage = null;
     }
 
     private async Task ForgotPasswordAsync_ClickAsync()
@@ -216,16 +176,57 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
             }
 
-            try
-            {
-                await JSRuntime.FormSubmitAsync(_formRef).ConfigureAwait(false);
-            }
-            catch (JSDisconnectedException) { }
+            await JSRuntime.FormSubmitAsync(_formRef).ConfigureAwait(false);
         }
         else
         {
-            ToastService.NotifyError(Localizer["securityKey_Error"], args.ErrorMessage ?? Localizer["securityKey_ErrorMessage"]);
+            SnackbarService.AddError(args.ErrorMessage ?? Localizer["webAuthn_Error"]);
         }
+    }
+
+    private async Task<bool> SignInAsync()
+    {
+        SignInResult signInResult;
+        ApplicationUser? user;
+        if (string.IsNullOrWhiteSpace(Model.AuthenticatorDataAccessKey))
+        {
+            user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
+            user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
+            if (user is null)
+            {
+                _errorMessage = Localizer["signIn_" + SignInResult.Failed];
+                return false;
+            }
+
+            signInResult = await SignInManager.PasswordSignInAsync(user, Model.Password, Model.Persistent, lockoutOnFailure: true).ConfigureAwait(false);
+        }
+        else
+        {
+            (signInResult, user) = await SecurityKeySignInAsync(Model.AuthenticatorDataAccessKey, Model.Persistent).ConfigureAwait(false);
+            Model.AuthenticatorDataAccessKey = null;
+        }
+
+        switch (signInResult)
+        {
+            case { Succeeded: true }:
+                NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.PagesIndex());
+                break;
+            case { RequiresTwoFactor: true }:
+                NavigationManager.NavigateToVerify2fa(persistent: Model.Persistent, returnUrl: ReturnUrl, forceLoad: true);
+                break;
+            case { IsLockedOut: true }:
+                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(user!).ConfigureAwait(false)).Value;
+
+                _errorMessage = lockOutEnd.Offset <= TimeSpan.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
+                    ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
+                    : Localizer["signIn_LockedOut_NotSpecified"];
+                break;
+            default:
+                _errorMessage = Localizer["signIn_" + signInResult];
+                break;
+        }
+
+        return signInResult.Succeeded;
     }
 
     private async Task<(SignInResult result, ApplicationUser? user)> SecurityKeySignInAsync(string? dataAccessKey, bool isPersistent)
@@ -249,21 +250,6 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
     {
         return $"signIn_securityKeyData_{key}";
     }
-
-    private void Input_Changed()
-    {
-        _errorMessage = null;
-    }
-
-    private bool IsInvalid() => _errorMessage is not null;
-
-    private string IsInvalidFormClass => IsInvalid()
-        ? "form-invalid"
-        : string.Empty;
-
-    private string IsInvalidInputClass => IsInvalid()
-        ? ExtendedBootstrapClass.IsInvalid
-        : string.Empty;
 
     public async ValueTask DisposeAsync()
     {

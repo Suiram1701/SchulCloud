@@ -199,4 +199,16 @@
   <data name="securityKey_AtLeastOne" xml:space="preserve">
     <value>At least one security key must be registered</value>
   </data>
+  <data name="method_usedLast" xml:space="preserve">
+    <value>Last used: {0}</value>
+  </data>
+  <data name="method_Enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="method_Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="recovery_RenewMessage" xml:space="preserve">
+    <value>Generating new recovery codes will invalidate all existing ones. Are you sure you want to continue?</value>
+  </data>
 </root>

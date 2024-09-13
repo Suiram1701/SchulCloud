@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.1184077">
+  <PropertyGroup />
   <ItemGroup>
     <OutputFiles Include=".\dist\*.js" />
   </ItemGroup>

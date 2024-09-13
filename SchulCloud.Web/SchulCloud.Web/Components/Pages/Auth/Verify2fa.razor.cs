@@ -1,5 +1,4 @@
-﻿using BlazorBootstrap;
-using Fido2NetLib;
+﻿using Fido2NetLib;
 using Humanizer;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -8,8 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
+using MudBlazor;
 using SchulCloud.Store.Managers;
-using SchulCloud.Web.Constants;
 using SchulCloud.Web.Enums;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Identity.Managers;
@@ -18,7 +17,6 @@ using SchulCloud.Web.Services;
 using SchulCloud.Web.Services.EventArgs;
 using SchulCloud.Web.Services.Interfaces;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace SchulCloud.Web.Components.Pages.Auth;
 
@@ -27,10 +25,13 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
 {
     #region Injections
     [Inject]
+    private IMemoryCache Cache { get; set; } = default!;
+
+    [Inject]
     private IStringLocalizer<Verify2fa> Localizer { get; set; } = default!;
 
     [Inject]
-    private IMemoryCache Cache { get; set; } = default!;
+    private ISnackbar SnackbarService { get; set; } = default!;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -54,18 +55,14 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
     private NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject]
-    private ToastService ToastService { get; set; } = default!;
-
-    [Inject]
     private WebAuthnService WebAuthnService { get; set; } = default!;
 
     [Inject]
     private PersistentComponentState ComponentState { get; set; } = default!;
     #endregion
 
-    private const string _formName = "verify2fa";
-
     private ElementReference _formRef = default!;
+    private const string _formName = "verify2fa";
 
     private ApplicationUser _user = default!;
     private bool _mfaEmailEnabled;
@@ -77,6 +74,8 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
     private bool _webAuthnSupported = true;
     private AssertionOptions? _assertionOptions;
     private IAsyncDisposable? _pendingAssertion;
+
+    private bool IsInvalid => _errorMessage is not null;
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -155,46 +154,19 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        if (firstRender)
         {
-            return;
-        }
-
-        if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
-        {
-            _webAuthnSupported = false;
-            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
+            {
+                _webAuthnSupported = false;
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            }
         }
     }
 
-    private async Task Verify2faAsync()
+    private void Input_Changed()
     {
-        SignInResult verifyResult = await (Model.Method switch
-        {
-            TwoFactorMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
-            TwoFactorMethod.Email => SignInManager.TwoFactorEmailSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
-            TwoFactorMethod.SecurityKey => VerifyTwoFactorSecurityKeyAsync(Model.AuthenticatorDataAccessKey, Persistent, Model.RememberClient),
-            TwoFactorMethod.Recovery => SignInManager.TwoFactorRecoveryCodeSignInAsync(Model.TrimmedCode),
-            _ => Task.FromResult(SignInResult.Failed)
-        }).ConfigureAwait(false);
-
-        switch (verifyResult)
-        {
-            case { Succeeded: true }:
-                Uri returnUri = NavigationManager.ToAbsoluteUri(ReturnUrl);
-                NavigationManager.NavigateTo(returnUri.PathAndQuery);     // prevent a redirect to another domain by using only the path and query part.
-                break;
-            case { IsLockedOut: true }:
-                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(_user).ConfigureAwait(false)).Value;
-
-                _errorMessage = lockOutEnd.UtcDateTime <= DateTime.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
-                    ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
-                    : Localizer["signIn_LockedOut_NotSpecified"];
-                break;
-            default:
-                _errorMessage = Localizer["signIn_" + verifyResult];
-                break;
-        }
+        _errorMessage = null;
     }
 
     private async Task SendEmailAuthenticationCode_ClickAsync()
@@ -207,10 +179,8 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
         if (!await Limiter.CanRequestTwoFactorEmailCodeAsync(_user).ConfigureAwait(false))
         {
             DateTimeOffset? expiration = await Limiter.GetTwoFactorEmailCodeExpirationTimeAsync(_user).ConfigureAwait(false);
-            ToastService.Notify(new(ToastType.Info, Localizer["emailConfirmation_Timeout"], Localizer["emailConfirmation_TimeoutMessage", expiration.Humanize()])
-            {
-                AutoHide = true,
-            });
+
+            SnackbarService.AddInfo(Localizer["emailConfirmation_Timeout", expiration.Humanize()]);
         }
         else
         {
@@ -225,14 +195,8 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
             }
 
             // Show the Toast before the email is sent for better user experience (sending the mail is time expensive).
-            await InvokeAsync(async () =>
-            {
-                string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(user).ConfigureAwait(false);
-                ToastService.Notify(new(ToastType.Info, Localizer["emailConfirmation"], Localizer["emailConfirmationMessage", anonymizedAddress])
-                {
-                    AutoHide = true
-                });
-            }).ConfigureAwait(false);
+            string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(user).ConfigureAwait(false);
+            SnackbarService.AddInfo(Localizer["emailConfirmation", anonymizedAddress]);
 
             string email = (await UserManager.GetEmailAsync(user).ConfigureAwait(false))!;
             await EmailSender.Send2faEmailCodeAsync(user, email, code).ConfigureAwait(false);
@@ -273,7 +237,36 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
         }
         else
         {
-            ToastService.NotifyError(Localizer["securityKey_Error"], args.ErrorMessage ?? Localizer["securityKey_ErrorMessage"]);
+            SnackbarService.AddError(args.ErrorMessage ?? Localizer["webAuthn_Error"]);
+        }
+    }
+
+    private async Task Verify2faAsync()
+    {
+        SignInResult verifyResult = await (Model.Method switch
+        {
+            TwoFactorMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
+            TwoFactorMethod.Email => SignInManager.TwoFactorEmailSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
+            TwoFactorMethod.SecurityKey => VerifyTwoFactorSecurityKeyAsync(Model.AuthenticatorDataAccessKey, Persistent, Model.RememberClient),
+            TwoFactorMethod.Recovery => SignInManager.TwoFactorRecoveryCodeSignInAsync(Model.TrimmedCode),
+            _ => Task.FromResult(SignInResult.Failed)
+        }).ConfigureAwait(false);
+
+        switch (verifyResult)
+        {
+            case { Succeeded: true }:
+                NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.PagesIndex());
+                break;
+            case { IsLockedOut: true }:
+                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(_user).ConfigureAwait(false)).Value;
+
+                _errorMessage = lockOutEnd.Offset <= TimeSpan.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
+                    ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
+                    : Localizer["signIn_LockedOut_NotSpecified"];
+                break;
+            default:
+                _errorMessage = Localizer["signIn_" + verifyResult];
+                break;
         }
     }
 
@@ -299,15 +292,6 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
         string userId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
         return $"twoFactor_securityKeyData_{userId}_{key}";
     }
-
-    private void Input_Changed()
-    {
-        _errorMessage = null;
-    }
-
-    private bool IsInvalid() => _errorMessage is not null;
-
-    private string IsInvalidInputClass => IsInvalid() ? ExtendedBootstrapClass.IsInvalid : string.Empty;
 
     public async ValueTask DisposeAsync()
     {

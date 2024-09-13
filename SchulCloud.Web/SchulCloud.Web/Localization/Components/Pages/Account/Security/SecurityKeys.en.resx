@@ -100,67 +100,76 @@
   <data name="registerBtn" xml:space="preserve">
     <value>Add security key</value>
   </data>
-  <data name="securityKey_isPasskey" xml:space="preserve">
+  <data name="securityKey_IsPasskey" xml:space="preserve">
     <value>Passkey</value>
   </data>
-  <data name="securityKey_added" xml:space="preserve">
+  <data name="securityKey_Added" xml:space="preserve">
     <value>Added on: {0}</value>
   </data>
-  <data name="securityKey_desc" xml:space="preserve">
+  <data name="securityKey_Desc" xml:space="preserve">
     <value>Description: {0}</value>
   </data>
   <data name="securityKey_NoDesc" xml:space="preserve">
     <value>No description could be retrieved from this security key.</value>
   </data>
-  <data name="securityKey_protocol" xml:space="preserve">
+  <data name="securityKey_Protocol" xml:space="preserve">
     <value>Protocol used: {0}</value>
   </data>
-  <data name="securityKey_removeBtn" xml:space="preserve">
+  <data name="securityKey_RemoveBtn" xml:space="preserve">
     <value>Remove</value>
   </data>
-  <data name="securityKey_renameBtn" xml:space="preserve">
+  <data name="securityKey_RenameBtn" xml:space="preserve">
     <value>Rename</value>
   </data>
   <data name="removeDialog" xml:space="preserve">
     <value>Remove security key</value>
   </data>
-  <data name="removeDialogMessage" xml:space="preserve">
+  <data name="removeDialog_Message" xml:space="preserve">
     <value>The security key will be permanently removed from this account. Are you sure you want to continue?</value>
   </data>
-  <data name="securityKey_rename" xml:space="preserve">
+  <data name="renameDialog" xml:space="preserve">
     <value>Rename security key</value>
   </data>
   <data name="desc" xml:space="preserve">
     <value>Security keys are login credentials stored on a computer/mobile device or a hardware key. A security key can, if enabled, be used for two-factor authentication (2FA).</value>
   </data>
-  <data name="desc_passkey" xml:space="preserve">
+  <data name="desc_Passkey" xml:space="preserve">
     <value>A passkey is a security key that can be used for usernameless authentication because it provides increased security when created.</value>
   </data>
-  <data name="registerModal_register" xml:space="preserve">
+  <data name="registerDialog_RegisterBtn" xml:space="preserve">
     <value>Add</value>
   </data>
-  <data name="browserNotSupported" xml:space="preserve">
+  <data name="webAuthn_NotSupported" xml:space="preserve">
     <value>Your current browser does not support security keys</value>
   </data>
-  <data name="registerModal_keyName" xml:space="preserve">
+  <data name="registerDialog_KeyName" xml:space="preserve">
     <value>Name of the security key</value>
   </data>
-  <data name="registerModal_isPasskey" xml:space="preserve">
+  <data name="registerDialog_IsPasskey" xml:space="preserve">
     <value>Add as passkey</value>
   </data>
-  <data name="registerModal_close" xml:space="preserve">
+  <data name="registerDialog_CancelBtn" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="registerModal" xml:space="preserve">
+  <data name="registerDialog" xml:space="preserve">
     <value>Add security key</value>
   </data>
-  <data name="registerModal_Error" xml:space="preserve">
+  <data name="registerDIalog_Error" xml:space="preserve">
     <value>Error requesting security key</value>
   </data>
-  <data name="registerModal_ErrorMessage" xml:space="preserve">
-    <value>An error occurred while requesting the security key.</value>
-  </data>
-  <data name="registerModal_SaveError" xml:space="preserve">
+  <data name="registerDialog_SaveError" xml:space="preserve">
     <value>An error occurred while saving the security key.</value>
+  </data>
+  <data name="form_NotEmpty" xml:space="preserve">
+    <value>The field must not be empty</value>
+  </data>
+  <data name="registerModal_KeyName_AlreadyExists" xml:space="preserve">
+    <value>Another security key with the same name already exists.</value>
+  </data>
+  <data name="renameDialog_Error" xml:space="preserve">
+    <value>Error changing name</value>
+  </data>
+  <data name="removeDialog_Error" xml:space="preserve">
+    <value>Error removing security key</value>
   </data>
 </root>

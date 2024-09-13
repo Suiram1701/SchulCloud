@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SchulCloud.Web.Models;
+﻿namespace SchulCloud.Web.Models;
 
 /// <summary>
 /// A model that represents sign in information to a user

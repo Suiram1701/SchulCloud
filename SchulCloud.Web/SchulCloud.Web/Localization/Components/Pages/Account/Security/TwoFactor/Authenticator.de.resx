@@ -109,25 +109,25 @@
   <data name="enableGuide_2" xml:space="preserve">
     <value>Die Authentifizierungs-App generiert nun einen {0}-stelligen Code. Geben Sie diesen Code in das entsprechende Bestätigugnsfeld ein und klicken Sie auf „Aktivieren“. Sollte der Code korrekt sein, wird die Zwei-Faktor-Authentifizierung aktiviert.</value>
   </data>
-  <data name="form_Code_Placeholder" xml:space="preserve">
+  <data name="form_Code" xml:space="preserve">
     <value>Authentifizierungscode</value>
   </data>
-  <data name="form_Submit" xml:space="preserve">
+  <data name="form_SubmitBtn" xml:space="preserve">
     <value>Aktivieren</value>
   </data>
-  <data name="requestError_Title" xml:space="preserve">
+  <data name="requestError" xml:space="preserve">
     <value>Beim Erneuern des Codes ist ein Fehler Aufgetreten.</value>
   </data>
   <data name="form_CodeInvalid" xml:space="preserve">
-    <value>Der Code ist ungültig.</value>
+    <value>Der Code ist ungültig</value>
   </data>
-  <data name="enableSuccess_Title" xml:space="preserve">
+  <data name="enableSuccess" xml:space="preserve">
     <value>2FA-Authentifizierung aktiviert</value>
   </data>
-  <data name="enableSuccess_Message" xml:space="preserve">
-    <value>Die Authentifizierungs-App kann nun als 2FA Authentifizierungs-Methode genutzt werden.</value>
-  </data>
-  <data name="enableError_Title" xml:space="preserve">
+  <data name="enableError" xml:space="preserve">
     <value>Bei der Aktivierung der 2FA ist ein Fehler aufgetreten.</value>
+  </data>
+  <data name="form_NotEmpty" xml:space="preserve">
+    <value>Das Feld darf nicht Leer sein</value>
   </data>
 </root>

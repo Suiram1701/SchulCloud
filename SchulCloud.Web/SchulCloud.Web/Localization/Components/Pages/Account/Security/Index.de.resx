@@ -199,4 +199,16 @@
   <data name="securityKey_AtLeastOne" xml:space="preserve">
     <value>Es muss mindestens ein Sicherheitsschlüssel registriert sein</value>
   </data>
+  <data name="method_usedLast" xml:space="preserve">
+    <value>Zuletzt verwendet: {0}</value>
+  </data>
+  <data name="method_Enabled" xml:space="preserve">
+    <value>Aktiviert</value>
+  </data>
+  <data name="method_Disabled" xml:space="preserve">
+    <value>Deaktiviert</value>
+  </data>
+  <data name="recovery_RenewMessage" xml:space="preserve">
+    <value>Durch das Generieren neuer Wiederherstellungscodes werden alle bestehenden ungültig. Wollen Sie wirklich fortfahren?</value>
+  </data>
 </root>

@@ -52,7 +52,7 @@ public class SchulCloudSignInManager<TUser, TCredential>(
         {
             return (SignInResult.Failed, null);
         }
-        
+
         if (await PreSignInCheck(user).ConfigureAwait(false) is SignInResult error)
         {
             return (error, null);

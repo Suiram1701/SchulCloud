@@ -100,13 +100,13 @@
   <data name="title" xml:space="preserve">
     <value>2FA-Authentifizierung</value>
   </data>
-  <data name="form_AuthenticatorCode_Placeholder" xml:space="preserve">
+  <data name="form_AuthenticatorCode" xml:space="preserve">
     <value>Authentifizierungscode</value>
   </data>
   <data name="form_SubmitBtn" xml:space="preserve">
     <value>Anmelden</value>
   </data>
-  <data name="form_Persistent" xml:space="preserve">
+  <data name="form_RememberClient" xml:space="preserve">
     <value>Dieses Gerät für 2FA-Authentifizierungen merken</value>
   </data>
   <data name="signIn_LockedOut" xml:space="preserve">
@@ -127,7 +127,7 @@
   <data name="signIn_Failed" xml:space="preserve">
     <value>Der eingegebene Code ist nicht gültig.</value>
   </data>
-  <data name="form_RecoveryCode_Placeholder" xml:space="preserve">
+  <data name="form_RecoveryCode" xml:space="preserve">
     <value>Wiederherstellungscode</value>
   </data>
   <data name="desc_Recovery" xml:space="preserve">
@@ -142,46 +142,37 @@
   <data name="methods" xml:space="preserve">
     <value>Authentifizierungsmethoden</value>
   </data>
-  <data name="form_EmailCode_Placeholder" xml:space="preserve">
+  <data name="form_EmailCode" xml:space="preserve">
     <value>Bestätigungscode</value>
   </data>
   <data name="desc_Email" xml:space="preserve">
-    <value>Klicken Sie auf „Code senden“, um eine Bestätigung Anfrage an die E-Mail-Adresse des Kontos zu senden. Geben Sie den erhaltenen Code ein, um die Authentifizierung abzuschließen.</value>
+    <value>Klicken Sie auf das Symbol rechts neben der Eingabe, um eine Bestätigungsanfrage an die E-Mail-Adresse des Kontos zu senden. Geben Sie den erhaltenen Code ein, um die Authentifizierung abzuschließen.</value>
   </data>
   <data name="method_Email" xml:space="preserve">
     <value>E-Mail Authentifizierung</value>
   </data>
-  <data name="form_SendEmailCodeBtn" xml:space="preserve">
-    <value>Code senden</value>
-  </data>
   <data name="emailConfirmation_Timeout" xml:space="preserve">
-    <value>Bestätigungscode kann nicht gesendet werden.</value>
-  </data>
-  <data name="emailConfirmation_TimeoutMessage" xml:space="preserve">
     <value>An diesen Benutzer wurde bereits ein Bestätigungscode gesendet. Versuchen Sie es in {0} noch einmal.</value>
   </data>
   <data name="emailConfirmation" xml:space="preserve">
-    <value>Bestätigungscode gesendet</value>
-  </data>
-  <data name="emailConfirmationMessage" xml:space="preserve">
     <value>Der Bestätigungscode wurde an {0} gesendet.</value>
   </data>
   <data name="form_AuthenticateBtn" xml:space="preserve">
     <value>Authentifizieren</value>
   </data>
-  <data name="securityKey_NotSupported" xml:space="preserve">
+  <data name="webAuthn_NotSupported" xml:space="preserve">
     <value>Sicherheitsschlüssel werden von Ihrem aktuellen Browser nicht unterstützt</value>
   </data>
-  <data name="securityKey_Error" xml:space="preserve">
+  <data name="webAuthn_Error" xml:space="preserve">
     <value>Fehler beim Anfordern des Sicherheitsschlüssels</value>
-  </data>
-  <data name="securityKey_ErrorMessage" xml:space="preserve">
-    <value>Beim Anfordern des Sicherheitsschlüssels ist ein Fehler aufgetreten.</value>
   </data>
   <data name="desc_SecurityKey" xml:space="preserve">
     <value>Klicken Sie auf "Authentifizieren", um die Authentifizierung mit einem Sicherheitsschlüssel anzufordern.</value>
   </data>
   <data name="method_SecurityKey" xml:space="preserve">
     <value>Sicherheitsschlüssel</value>
+  </data>
+  <data name="form_NotEmpty" xml:space="preserve">
+    <value>Das Feld darf nicht Leer sein</value>
   </data>
 </root>

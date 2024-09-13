@@ -1,205 +1,252 @@
 ﻿@using Humanizer
 @using Microsoft.AspNetCore.Identity
-@using SchulCloud.Web.Components.Account
 @using SchulCloud.Web.Extensions
 
-<h5 class="mt-4">@Localizer["signInMethods"]</h5>
-<Accordion>
-    <AccordionItem>
-        <TitleTemplate>
-            <SecurityMethodItemTitle IconName="password" Title="@Localizer["signIn_Password"]" />
-        </TitleTemplate>
-        <Content>
-            @{
-                string? ShowWhenTrue(bool condition, Func<IdentityError> errorProvider)
-                {
-                    if (condition)
-                    {
-                        @errorProvider().Description
-                    }
-                    return null;
-                }
-                PasswordOptions options = PasswordOptionsAccessor.Value;
-            }
+<MudText Typo="Typo.h6">@Localizer["signInMethods"]</MudText>
+<MudExpansionPanels>
 
-            <p>@Localizer["password_Desc"]</p>
-            <p class="lh-base">
+    @* Password sign in *@
+    <MudExpansionPanel>
+        <TitleContent>
+            <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
+                <MudIcon Icon="@MaterialSymbols.Outlined.Password" />
+                <MudText Class="ml-2">@Localizer["signIn_Password"]</MudText>
+                <MudSpacer />
+
+                <MudText Class="mr-2">@Localizer["method_usedLast", DateTime.UtcNow.Humanize()]</MudText>
+            </MudStack>
+        </TitleContent>
+        <ChildContent>
+            <MudText Typo="Typo.body1">@Localizer["password_Desc"]</MudText>
+            <MudText Class="mt-2 mb-3" Typo="Typo.body2">
+                @{
+                    string? ShowWhenTrue(bool condition, Func<IdentityError> errorProvider)
+                    {
+                        if (condition)
+                        {
+                            @errorProvider().Description
+                        }
+                        return null;
+                    }
+                    PasswordOptions options = PasswordOptionsAccessor.Value;
+                }
+
                 @ErrorDescriber.PasswordTooShort(options.RequiredLength).Description<br />
                 @ErrorDescriber.PasswordRequiresUniqueChars(options.RequiredUniqueChars).Description<br />
                 @ShowWhenTrue(options.RequireNonAlphanumeric, ErrorDescriber.PasswordRequiresNonAlphanumeric)<br />
                 @ShowWhenTrue(options.RequireLowercase, ErrorDescriber.PasswordRequiresLower)<br />
                 @ShowWhenTrue(options.RequireUppercase, ErrorDescriber.PasswordRequiresUpper)<br />
                 @ShowWhenTrue(options.RequireDigit, ErrorDescriber.PasswordRequiresDigit)
-            </p>
+            </MudText>
 
-            <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.ChangePassword()">@Localizer["password_ChangeBtn"]</Button>
-            <Button Class="ms-2" Color="ButtonColor.Danger" Type="ButtonType.Link" To="@Routes.ResetPassword(returnUrl: NavigationManager.GetRelativeUri())">@Localizer["password_ResetBtn"]</Button>
-        </Content>
-    </AccordionItem>
-    <AccordionItem>
-        <TitleTemplate>
-            <SecurityMethodItemTitle IconName="passkey" Title="@Localizer["signIn_Passkey"]" Enabled="@(_passkeysCount > 0 ? _passkeysEnabled : null)" />
-        </TitleTemplate>
-        <Content>
-            <p>@Localizer["passkey_Desc"]</p>
+            <MudButton Color="Color.Primary" Href="@Routes.ChangePassword()">@Localizer["password_ChangeBtn"]</MudButton>
+            <MudButton Class="ml-2" Color="Color.Error" Href="@Routes.ResetPassword(returnUrl: NavigationManager.GetRelativeUri())">
+                @Localizer["password_ResetBtn"]
+            </MudButton>
+        </ChildContent>
+    </MudExpansionPanel>
 
-            <div class="d-flex">
-                @if (!_passkeysEnabled)
+    @* Passkey sign in *@
+    <MudExpansionPanel>
+        <TitleContent>
+            <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
+                <MudIcon Icon="@MaterialSymbols.Outlined.Passkey" />
+                <MudText Class="ml-2">@Localizer["signIn_Passkey"]</MudText>
+
+                @if (_passkeysEnabled)
                 {
-                    @if (_passkeysCount > 0)
-                    {
-                        <Button Color="ButtonColor.Primary" @onclick="PasskeysEnable_ClickAsync">@Localizer["enableBtn"]</Button>
-                    }
-                    else
-                    {
-                        <Tooltip Title="@Localizer["passkey_AtLeastOne"]">
-                            <Button Color="ButtonColor.Primary" Disabled>@Localizer["enableBtn"]</Button>
-                        </Tooltip>
-                    }
+                    <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@Localizer["method_Enabled"]</MudChip>
                 }
                 else
                 {
-                    <Button Color="ButtonColor.Danger" @onclick="PasskeysDisable_ClickAsync">@Localizer["disableBtn"]</Button>
+                    <MudChip T="string" Color="Color.Error" Size="Size.Small">@Localizer["method_Disabled"]</MudChip>
                 }
+                <MudSpacer />
 
-                <Button Class="d-flex align-items-center ms-2" Color="ButtonColor.Secondary" Type="ButtonType.Link" To="@Routes.SecurityKeys()">
-                    <FontsIcon Name="security_key" />
-                    <span class="ms-2">@Localizer["securityKey_ManageBtn"]</span>
-                </Button>
-            </div>
-        </Content>
-    </AccordionItem>
-</Accordion>
+                <MudText Class="mr-2">@Localizer["method_usedLast", DateTime.UtcNow.Humanize()]</MudText>
+            </MudStack>
+        </TitleContent>
+        <ChildContent>
+            <MudText Class="mb-3" Typo="Typo.body1">@Localizer["passkey_Desc"]</MudText>
 
-<h5 class="mt-5">@Localizer["mfaMethods"]</h5>
-<p class="mt-2">@Localizer["mfa_Desc"]</p>
-<Accordion>
-    <AccordionItem>
-        <TitleTemplate>
-            <SecurityMethodItemTitle IconName="qr_code_scanner" Title="@Localizer["mfa_Authenticator"]" Enabled="_mfaEnabled" LastTimeUsed="DateTime.Now.AddHours(-3)" />
-        </TitleTemplate>
-        <Content>
-            <p>@Localizer["authenticator_Desc"]</p>
-
-            @if (!_mfaEnabled)
+            @if (_passkeysEnabled)
             {
-                <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.Authenticator()">@Localizer["authenticator_EnableBtn"]</Button>
+                <MudButton Color="Color.Error" OnClick="@(async () => await SetPasskeysEnabled_ClickAsync(false))">@Localizer["disableBtn"]</MudButton>
             }
             else
             {
-                <Button Color="ButtonColor.Danger" @onclick="AuthenticatorDisable_ClickAsync">@Localizer["authenticator_DisableBtn"]</Button>
+                <MudTooltip Text="@Localizer["passkey_AtLeastOne"]" Disabled="@(_passkeysCount > 0)">
+                    <MudButton Color="Color.Primary" OnClick="@(async () => await SetPasskeysEnabled_ClickAsync(true))" Disabled="@(_passkeysCount <= 0)">
+                        @Localizer["enableBtn"]
+                    </MudButton>
+                </MudTooltip>
             }
-        </Content>
-    </AccordionItem>
-    <AccordionItem>
-        <TitleTemplate>
-            <SecurityMethodItemTitle IconName="mail" Title="@Localizer["mfa_Email"]" Enabled="IsMfaMethodEnabled(_mfaEmailEnabled)" LastTimeUsed="DateTime.Now.AddYears(-1)" />
-        </TitleTemplate>
-        <Content>
-            <p>@Localizer["email_Desc"]</p>
 
-            @if (!_mfaEmailEnabled)
-            {
+            <MudButton Class="ml-2" Color="Color.Secondary" Href="@Routes.SecurityKeys()">
+                @Localizer["securityKey_ManageBtn"]
+            </MudButton>
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+<MudText Class="mt-7" Typo="Typo.h6">@Localizer["mfaMethods"]</MudText>
+<MudText Class="my-2" Typo="Typo.body1">@Localizer["mfa_Desc"]</MudText>
+
+<MudExpansionPanels>
+
+    @* App 2FA *@
+    <MudExpansionPanel>
+        <TitleContent>
+            <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
+                <MudIcon Icon="@MaterialSymbols.Outlined.QrCodeScanner" />
+                <MudText Class="ml-2">@Localizer["mfa_Authenticator"]</MudText>
+
                 @if (_mfaEnabled)
                 {
-                    <Button Color="ButtonColor.Primary" @onclick="EmailEnable_ClickAsync">@Localizer["enableBtn"]</Button>
+                    <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@Localizer["method_Enabled"]</MudChip>
                 }
                 else
                 {
-                    <Tooltip Title="@Localizer["authenticator_EnableFirst"]">
-                        <Button Color="ButtonColor.Primary" Disabled>@Localizer["enableBtn"]</Button>
-                    </Tooltip>
+                    <MudChip T="string" Color="Color.Error" Size="Size.Small">@Localizer["method_Disabled"]</MudChip>
                 }
-            }
-            else
-            {
-                <Button Color="ButtonColor.Danger" @onclick="EmailDisable_ClickAsync">@Localizer["disableBtn"]</Button>
-            }
-        </Content>
-    </AccordionItem>
-    <AccordionItem>
-        <TitleTemplate>
-            <SecurityMethodItemTitle IconName="passkey" Title="@Localizer["mfa_SecurityKey"]"
-             Enabled="@(_securityKeysCount > 0 ? IsMfaMethodEnabled(_mfaSecurityKeyEnabled) : null)" LastTimeUsed="null" />
-        </TitleTemplate>
-        <Content>
-            <p>@Localizer["securityKey_Desc"]</p>
+                <MudSpacer />
 
-            <div class="d-flex">
-                @if (!_mfaSecurityKeyEnabled)
-                {
-                    @if (_mfaEnabled)
-                    {
-                        @if (_securityKeysCount > 0)
-                        {
-                            <Button Color="ButtonColor.Primary" @onclick="SecurityKeyEnable_ClickAsync">@Localizer["enableBtn"]</Button>
-                        }
-                        else
-                        {
-                            <Tooltip Title="@Localizer["securityKey_AtLeastOne"]">
-                                <Button Color="ButtonColor.Primary" Disabled>@Localizer["enableBtn"]</Button>
-                            </Tooltip>
-                        }
-                    }
-                    else
-                    {
-                        <Tooltip Title="@Localizer["authenticator_EnableFirst"]">
-                            <Button Color="ButtonColor.Primary" Disabled>@Localizer["enableBtn"]</Button>
-                        </Tooltip>
-                    }
-                }
-                else
-                {
-                    <Button Color="ButtonColor.Danger" @onclick="SecurityKeyDisable_ClickAsync">@Localizer["disableBtn"]</Button>
-                }
+                <MudText Class="mr-2">@Localizer["method_usedLast", DateTime.UtcNow.Humanize()]</MudText>
+            </MudStack>
+        </TitleContent>
+        <ChildContent>
+            <MudText Class="mb-3" Typo="Typo.body1">@Localizer["authenticator_Desc"]</MudText>
 
-                <Button Class="d-flex align-items-center ms-2" Color="ButtonColor.Secondary" Type="ButtonType.Link" To="@Routes.SecurityKeys()">
-                    <FontsIcon Name="security_key" />
-                    <span class="ms-2">@Localizer["securityKey_ManageBtn"]</span>
-                </Button>
-            </div>
-        </Content>
-    </AccordionItem>
-    <AccordionItem>
-        <TitleTemplate>
-            <SecurityMethodItemTitle IconName="pin" Title="@Localizer["mfa_Recovery"]" Enabled="@(_mfaEnabled ? (_mfaRemainingRecoveryCodes > 0) : null)">
-                <AdditionalBadges>
-                    @if (_mfaEnabled)
-                    {
-                        @if (_mfaRemainingRecoveryCodes > 0)
-                        {
-                            <Badge Class="ms-2" Color="BadgeColor.Info">@Localizer["recovery_ValidCodes", _mfaRemainingRecoveryCodes]</Badge>
-                        }
-                        else
-                        {
-                            <Tooltip Title="@Localizer["recovery_NoValidCodes_Tooltip"]" Placement="TooltipPlacement.Right">
-                                <Badge Class="ms-2" Color="BadgeColor.Warning">@Localizer["recovery_NoValidCodes"]</Badge>
-                            </Tooltip>
-                        }
-                    }
-                </AdditionalBadges>
-            </SecurityMethodItemTitle>
-        </TitleTemplate>
-        <Content>
-            <p>@Localizer["recovery_Desc"]</p>
-
-            @{
-                string btnLabelKey = _mfaRemainingRecoveryCodes == 0
-                ? "recovery_GenerateNewBtn"
-                : "recovery_RenewBtn";
-            }
             @if (_mfaEnabled)
             {
-                <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.RecoveryCodes()">@Localizer[btnLabelKey]</Button>
+                <MudButton Color="Color.Error" OnClick="AuthenticatorDisable_ClickAsync">@Localizer["authenticator_DisableBtn"]</MudButton>
             }
             else
             {
-                <Tooltip Title="@Localizer["authenticator_EnableFirst"]" Placement="TooltipPlacement.Right">
-                    <Button Color="ButtonColor.Primary" Disabled>@Localizer[btnLabelKey]</Button>
-                </Tooltip>
+                <MudButton Color="Color.Primary" Href="@Routes.Authenticator()">@Localizer["authenticator_EnableBtn"]</MudButton>
             }
-        </Content>
-    </AccordionItem>
-</Accordion>
+        </ChildContent>
+    </MudExpansionPanel>
 
-<RemoveDialog @ref="_removeDialog" />
+    @* Email 2FA *@
+    <MudExpansionPanel>
+        <TitleContent>
+            <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
+                <MudIcon Icon="@MaterialSymbols.Outlined.Mail" />
+                <MudText Class="ml-2">@Localizer["mfa_Email"]</MudText>
+
+                @if (_mfaEmailEnabled)
+                {
+                    <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@Localizer["method_Enabled"]</MudChip>
+                }
+                else if (_mfaEnabled)
+                {
+                    <MudChip T="string" Color="Color.Error" Size="Size.Small">@Localizer["method_Disabled"]</MudChip>
+                }
+                <MudSpacer />
+
+                <MudText Class="mr-2">@Localizer["method_usedLast", DateTime.UtcNow.Humanize()]</MudText>
+            </MudStack>
+        </TitleContent>
+        <ChildContent>
+            <MudText Class="mb-3" Typo="Typo.body1">@Localizer["email_Desc"]</MudText>
+
+            @if (_mfaEmailEnabled)
+            {
+                <MudButton Color="Color.Error" OnClick="@(async () => await SetEmailEnabled_ClickAsync(false))">@Localizer["disableBtn"]</MudButton>
+            }
+            else
+            {
+                <MudTooltip Text="@Localizer["authenticator_EnableFirst"]" Disabled="_mfaEnabled">
+                    <MudButton Color="Color.Primary" OnClick="@(async () => await SetEmailEnabled_ClickAsync(true))" Disabled="!_mfaEnabled">@Localizer["enableBtn"]</MudButton>
+                </MudTooltip>
+            }
+        </ChildContent>
+    </MudExpansionPanel>
+
+    @* Security key 2FA *@
+    <MudExpansionPanel>
+        <TitleContent>
+            <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
+                <MudIcon Icon="@MaterialSymbols.Outlined.Passkey" />
+                <MudText Class="ml-2">@Localizer["mfa_SecurityKey"]</MudText>
+
+                @if (_mfaSecurityKeyEnabled)
+                {
+                    <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@Localizer["method_Enabled"]</MudChip>
+                }
+                else if (_mfaEnabled)
+                {
+                    <MudChip T="string" Color="Color.Error" Size="Size.Small">@Localizer["method_Disabled"]</MudChip>
+                }
+                <MudSpacer />
+
+                <MudText Class="mr-2">@Localizer["method_usedLast", DateTime.UtcNow.Humanize()]</MudText>
+            </MudStack>
+        </TitleContent>
+        <ChildContent>
+            <MudText Class="mb-3" Typo="Typo.body1">@Localizer["securityKey_Desc"]</MudText>
+
+            @if (_mfaSecurityKeyEnabled)
+            {
+                <MudButton Color="Color.Error" OnClick="@(async () => await SetSecurityKeyEnabled_ClickAsync(false))">@Localizer["disableBtn"]</MudButton>
+            }
+            else
+            {
+                <MudTooltip Text="@Localizer["authenticator_EnableFirst"]" Disabled="_mfaEnabled">
+                    <MudTooltip Text="@Localizer["securityKey_AtLeastOne"]" Disabled="@(_securityKeysCount > 0)">
+                        <MudButton Color="Color.Primary" OnClick="@(async () => await SetSecurityKeyEnabled_ClickAsync(true))" Disabled="@(!_mfaEnabled || _securityKeysCount == 0)">
+                            @Localizer["enableBtn"]
+                        </MudButton>
+                    </MudTooltip>
+                </MudTooltip>
+            }
+
+            <MudButton Class="ml-2" Color="Color.Secondary" Href="@Routes.SecurityKeys()">
+                @Localizer["securityKey_ManageBtn"]
+            </MudButton>
+        </ChildContent>
+    </MudExpansionPanel>
+
+    @* Recovery code 2FA *@
+    <MudExpansionPanel>
+        <TitleContent>
+            <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
+                <MudIcon Icon="@MaterialSymbols.Outlined.Pin" />
+                <MudText Class="ml-2">@Localizer["mfa_Recovery"]</MudText>
+
+                @if (_mfaRemainingRecoveryCodes > 0)
+                {
+                    <MudChip T="string" Color="Color.Info" Size="Size.Small">@Localizer["recovery_ValidCodes", _mfaRemainingRecoveryCodes]</MudChip>
+                }
+                else if (_mfaEnabled)
+                {
+                    <MudTooltip Text="@Localizer["recovery_NoValidCodes_Tooltip"]">
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">@Localizer["recovery_NoValidCodes"]</MudChip>
+                    </MudTooltip>
+                }
+                <MudSpacer />
+
+                <MudText Class="mr-2">@Localizer["method_usedLast", DateTime.UtcNow.Humanize()]</MudText>
+            </MudStack>
+        </TitleContent>
+        <ChildContent>
+            <MudText Class="mb-3" Typo="Typo.body1">@Localizer["recovery_Desc"]</MudText>
+
+            <MudTooltip Text="@Localizer["authenticator_EnableFirst"]" Disabled="_mfaEnabled">
+                @if (_mfaRemainingRecoveryCodes == 0)
+                {
+                    <MudButton Color="Color.Primary" Href="@Routes.RecoveryCodes()" Disabled="!_mfaEnabled">
+                        @Localizer["recovery_GenerateNewBtn"]
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton Color="Color.Primary" OnClick="GenerateNewRecoveryCodes_ClickAsync" Disabled="!_mfaEnabled">
+                        @Localizer["recovery_RenewBtn"]
+                    </MudButton>
+                }
+            </MudTooltip>
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>

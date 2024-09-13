@@ -1,0 +1,19 @@
+﻿@inherits LayoutComponentBase
+@layout Layouts.MainLayout
+
+<SchulCloudPageTitle Title="@Localizer["title"]" />
+
+<MudText Class="mb-2" Typo="Typo.h4" Align="Align.Center">@Localizer["tabHeader"]</MudText>
+
+<MudPaper Class="mb-5" Elevation="1">
+    <MudStack AlignItems="AlignItems.Center" Row>
+        <MudNavLink ActiveClass="@ActiveNavLinkClasses" Href="@Routes.SecurityIndex()" Match="NavLinkMatch.All">
+            <MudText Align="Align.Center">@Localizer["tabOverview"]</MudText>
+        </MudNavLink>
+        <MudNavLink ActiveClass="@ActiveNavLinkClasses" Href="@Routes.SecurityKeys()">
+            <MudText Align="Align.Center">@Localizer["tabSecurityKeys"]</MudText>
+        </MudNavLink>
+    </MudStack>
+</MudPaper>
+
+@Body

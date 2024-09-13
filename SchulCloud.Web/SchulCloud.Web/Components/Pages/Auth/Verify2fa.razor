@@ -1,112 +1,93 @@
-﻿@using SchulCloud.Web.Constants
-@using SchulCloud.Web.Enums
-@using System.Text.Json
+﻿@using SchulCloud.Web.Enums
 
 <SchulCloudPageTitle Title="@Localizer["title"]" />
 
-<div class="container py-5 my-5">
-    <div class="row text-center mb-2">
-        <h3 class="mb-3">@Localizer["title"]</h3>
-        <p>@Localizer["desc"]</p>
-        <p>@Localizer["desc_" + Model.Method]</p>
-    </div>
-    <div class="row mt-3">
-        <div class="col" />
-        <div class="col-6">
-            <form @ref="_formRef" @formname="@_formName" class="d-flex flex-column" method="post" action="@Routes.Verify2fa(persistent: Persistent, returnUrl: ReturnUrl)">
-                <AntiforgeryToken />
-                <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive rendering Blazor doesn't place it by its own. *@
-                <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.Method)}")" value="@Model.Method" />
+<MudPaper Class="mt-15 px-3 py-3">
+    <MudText Typo="Typo.h4" Align="Align.Center">@Localizer["title"]</MudText>
 
-                @if (Model.Method != TwoFactorMethod.SecurityKey)
+    <MudText Class="my-2" Typo="Typo.body1" Align="Align.Center">@Localizer["desc"]</MudText>
+    <MudText Class="mb-3" Typo="Typo.body2" Align="Align.Center">@Localizer[$"desc_{Model.Method}"]</MudText>
+
+    <form @ref="_formRef" @formname="@_formName" method="post">
+        <AntiforgeryToken />
+        <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive rendering Blazor doesn't place it by its own. *@
+        <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.Method)}")" value="@Model.Method" />
+
+        @if (Model.Method != TwoFactorMethod.SecurityKey)
+        {
+            Adornment sendMailAdornment = Model.Method == TwoFactorMethod.Email
+                ? Adornment.End
+                : Adornment.None;
+
+            <MudTextField @bind-Value="@Model.Code" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Code)}")"
+                          Label="@Localizer[$"form_{Model.Method}Code"]" Error="IsInvalid" RequiredError="@Localizer["form_NotEmpty"]" Required autocomplete="off"
+                          Adornment="sendMailAdornment" AdornmentIcon="@MaterialSymbols.Outlined.Send" OnAdornmentClick="SendEmailAuthenticationCode_ClickAsync">
+            </MudTextField>
+
+            @if (IsInvalid)
+            {
+                <MudText Class="mt-2" Typo="Typo.subtitle1" Color="Color.Error">@_errorMessage</MudText>
+            }
+        }
+        else
+        {
+            <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.AuthenticatorDataAccessKey)}")" value="@Model.AuthenticatorDataAccessKey" />
+        }
+
+        @if (Model.Method != TwoFactorMethod.Recovery)
+        {
+            <MudCheckBox Class="mt-2" @bind-Value="Model.RememberClient" name="@($"{nameof(Model)}.{nameof(Model.RememberClient)}")" Label="@Localizer["form_RememberClient"]" />
+        }
+
+        <MudSelect Class="mb-3 mt-4" @bind-Value="Model.Method" Label="@Localizer["methods"]" Variant="Variant.Outlined">
+            @{
+                HashSet<TwoFactorMethod> methods = new(Enum.GetValues<TwoFactorMethod>());
+                if (!_mfaEmailEnabled)
                 {
-                    <InputGroup>
-                        <FloatingTextInput InnerClass="@IsInvalidInputClass" @bind-Value="@Model.Code" @bind-Value:after="Input_Changed" name="@($"{nameof(Model)}.{nameof(Model.Code)}")"
-                                           FloatingLabel="@Localizer[$"form_{Model.Method}Code_Placeholder"]" Placeholder="code" autocomplete="off" required />
-
-                        @if (Model.Method == TwoFactorMethod.Email)
-                        {
-                            <Button Color="ButtonColor.Secondary" Outline @onclick="SendEmailAuthenticationCode_ClickAsync">@Localizer["form_SendEmailCode"]</Button>
-                        }
-                    </InputGroup>
-
-                    @if (IsInvalid())
-                    {
-                        <div class="@ExtendedBootstrapClass.InvalidFeedback d-block">@_errorMessage</div>
-                    }
+                    methods.Remove(TwoFactorMethod.Email);
                 }
-                else
+                if (!_mfaSecurityKeyEnabled)
                 {
-                    <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.AuthenticatorDataAccessKey)}")" value="@Model.AuthenticatorDataAccessKey" />
+                    methods.Remove(TwoFactorMethod.SecurityKey);
                 }
-
-                @if (Model.Method != TwoFactorMethod.Recovery)
+            }
+            @foreach (TwoFactorMethod method in methods)
+            {
+                string iconName = method switch
                 {
-                    <CheckBoxInput Class="mt-2" @bind-Value="Model.RememberClient" name="@($"{nameof(Model)}.{nameof(Model.RememberClient)}")" Label="@Localizer["form_Persistent"]" />
+                    TwoFactorMethod.Authenticator => MaterialSymbols.Outlined.QrCodeScanner,
+                    TwoFactorMethod.Email => MaterialSymbols.Outlined.Mail,
+                    TwoFactorMethod.SecurityKey => MaterialSymbols.Outlined.Passkey,
+                    TwoFactorMethod.Recovery => MaterialSymbols.Outlined.Pin,
+                    _ => string.Empty
+                };
+
+                <MudSelectItem Value="method">
+                    <MudStack Spacing="1" Row>
+                        <MudIcon Icon="@iconName" />
+                        <MudText Class="ml-2" Inline>@Localizer[$"method_{method}"]</MudText>
+                    </MudStack>
+                </MudSelectItem>
+            }
+        </MudSelect>
+
+        @if (Model.Method != TwoFactorMethod.SecurityKey)
+        {
+            <MudButton Color="Color.Tertiary" ButtonType="ButtonType.Submit" Variant="Variant.Filled" FullWidth>@Localizer["form_SubmitBtn"]</MudButton>
+        }
+        else
+        {
+            <MudTooltip RootClass="mud-width-full" Text="@Localizer["webAuthn_NotSupported"]" Disabled="_webAuthnSupported">
+                @{
+                    string endIcon = !_webAuthnSupported
+                        ? MaterialSymbols.Outlined.Warning
+                        : string.Empty;
                 }
-
-                <Dropdown Class="mt-3 mb-2" Color="DropdownColor.Secondary">
-                    @{
-                        string GetIconName(TwoFactorMethod method) => method switch
-                        {
-                            TwoFactorMethod.Authenticator => "qr_code_scanner",
-                            TwoFactorMethod.Email => "mail",
-                            TwoFactorMethod.SecurityKey => "passkey",
-                            TwoFactorMethod.Recovery => "pin",
-                            _ => throw new NotImplementedException()
-                        };
-                    }
-                    <DropdownToggleButton Class="d-flex align-items-center">
-                        <FontsIcon Name="@GetIconName(Model.Method)" />
-                        <span class="ms-2">@Localizer["method_" + Model.Method]</span>
-                    </DropdownToggleButton>
-
-                    <DropdownMenu>
-                        <DropdownHeader>@Localizer["methods"]</DropdownHeader>
-
-                        @{
-                            HashSet<TwoFactorMethod> methods = new(Enum.GetValues<TwoFactorMethod>());
-                            if (!_mfaEmailEnabled)
-                            {
-                                methods.Remove(TwoFactorMethod.Email);
-                            }
-                            if (!_mfaSecurityKeyEnabled)
-                            {
-                                methods.Remove(TwoFactorMethod.SecurityKey);
-                            }
-                        }
-                        @foreach (TwoFactorMethod method in methods)
-                        {
-                            <DropdownItem Type="DropdownItemType.Button" Class="d-flex align-items-center" Active="Model.Method.Equals(method)" @onclick="() => Model.Method = method">
-                                <FontsIcon Name="@GetIconName(method)" />
-                                <span class="ms-2">@Localizer["method_" + method]</span>
-                            </DropdownItem>
-                        }
-                    </DropdownMenu>
-                </Dropdown>
-
-                @if (Model.Method != TwoFactorMethod.SecurityKey)
-                {
-                    <Button Color="ButtonColor.Success" Type="ButtonType.Submit">@Localizer["form_SubmitBtn"]</Button>
-                }
-                else
-                {
-                    if (_webAuthnSupported)
-                    {
-                        <Button Color="ButtonColor.Success" @onclick="StartSecurityKeyAuthentication_ClickAsync">@Localizer["form_AuthenticateBtn"]</Button>
-                    }
-                    else
-                    {
-                        <Tooltip Class="d-flex" Title="@Localizer["securityKey_NotSupported"]">
-                            <Button Class="flex-fill d-flex flex-nowrap justify-content-center" Color="ButtonColor.Success" Disabled>
-                                <span>@Localizer["form_AuthenticateBtn"]</span>
-                                <Icon Class="ms-2" Name="IconName.ExclamationCircle" />
-                            </Button>
-                        </Tooltip>
-                    }
-                }
-            </form>
-        </div>
-        <div class="col" />
-    </div>
-</div>
+                <MudButton Color="Color.Primary" OnClick="StartSecurityKeyAuthentication_ClickAsync" Disabled="!_webAuthnSupported"
+                           EndIcon="@endIcon" Variant="Variant.Filled" FullWidth>
+                    @Localizer["form_AuthenticateBtn"]
+                </MudButton>
+            </MudTooltip>
+        }
+    </form>
+</MudPaper>

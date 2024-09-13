@@ -4,7 +4,7 @@
 @using SchulCloud.Web.Options;
 
 <GlobalErrorBoundary>
-    <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
+    <Router AppAssembly="typeof(Program).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="routeData" DefaultLayout="LayoutType">
                 <NotAuthorized>
@@ -18,6 +18,8 @@
                     }
                 </NotAuthorized>
             </AuthorizeRouteView>
+
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
         </Found>
         <NotFound>
             <LayoutView Layout="LayoutType">

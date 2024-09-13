@@ -1,56 +1,53 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="container-fluid h-100">
-    <div class="row flex-nowrap h-100">
-        <div class="col-auto d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary h-100" style="min-width: 230px">
-            <a class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none" href="@Routes.PagesIndex()">@PresentationOptions.Value.ApplicationName</a>
-            <hr />
+<MudThemeProvider IsDarkMode />
 
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li>
-                    <NavLink class="d-flex align-items-center nav-link" href="@Routes.PagesIndex()" Match="NavLinkMatch.All">
-                        <FontsIcon Name="dashboard" />
-                        <span class="ms-2">@Localizer["menuDashboard"]</span>
-                    </NavLink>
-                </li>
-            </ul>
+<MudLayout>
+    <MudAppBar Elevation="1" Dense>
+        <MudIconButton Icon="@MaterialSymbols.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleMenu_Click" />
+        <MudText Class="ml-5" Typo="Typo.h5">@PresentationOptionsAccessor.Value.ApplicationName</MudText>
+        <MudSpacer />
 
-            <hr />
-            <Dropdown>
-                <DropdownToggleButton Class="d-flex align-items-center">
-                    <FontsIcon Name="account_circle" />     @* This will be later replaced with the real user image. *@
-                    <strong class="ms-2">@UserManager.GetUserName(_userPrincipial)</strong>
-                </DropdownToggleButton>
+        <MudMenu AnchorOrigin="Origin.BottomRight">
+            <ActivatorContent>
+                <MudButton>
+                    @{
+                        string username = UserManager.GetUserName(_userPrincipial)!;
+                    }
+                    <MudAvatar Size="Size.Medium">@NameToDisplayedAvatar(username)</MudAvatar>
+                    <MudText Class="ml-2" Typo="Typo.subtitle1"><b>@username</b></MudText>
 
-                <DropdownMenu>
-                    <DropdownItem Type="DropdownItemType.Link" To="@Routes.AccountIndex()" Active="@IsActive(Routes.AccountIndex())" Class="d-flex align-items-center">
-                        <FontsIcon Name="person" />
-                        <span class="ms-2">@Localizer["account"]</span>
-                    </DropdownItem>
+                    <MudIcon Icon="@MaterialSymbols.Outlined.ArrowDropDown" />
+                </MudButton>
+            </ActivatorContent>
+            <ChildContent>
+                <MudMenuItem Href="@Routes.AccountIndex()" Icon="@MaterialSymbols.Outlined.AccountCircle">
+                    <MudText Class="ml-n5">@Localizer["accountNav_Account"]</MudText>
+                </MudMenuItem>
+                <MudMenuItem Href="@Routes.Settings()" Icon="@MaterialSymbols.Outlined.Settings">
+                    <MudText Class="ml-n5">@Localizer["accountNav_Settings"]</MudText>
+                </MudMenuItem>
+                <MudMenuItem Href="@Routes.SecurityIndex()" Icon="@MaterialSymbols.Outlined.Security">
+                    <MudText Class="ml-n5">@Localizer["accountNav_Security"]</MudText>
+                </MudMenuItem>
 
-                    <DropdownItem Type="DropdownItemType.Link" To="@Routes.SecurityIndex()" Active="@IsActive(Routes.SecurityIndex())" Class="d-flex align-items-center">
-                        <FontsIcon Name="security" />
-                        <span class="ms-2">@Localizer["accountSecurity"]</span>
-                    </DropdownItem>
-
-                    <DropdownItem Type="DropdownItemType.Link" To="@Routes.Settings()" Active="@IsActive(Routes.Settings())" Class="d-flex align-items-center">
-                        <FontsIcon Name="settings" />
-                        <span class="ms-2">@Localizer["accountSettings"]</span>
-                    </DropdownItem>
-
-                    <DropdownDivider />
-                    <DropdownItem Type="DropdownItemType.Link" To="@Routes.SignOut()" Class="d-flex align-items-center">
-                        <FontsIcon Name="logout" />
-                        <span class="ms-2">@Localizer["accountSignOut"]</span>
-                     </DropdownItem>
-                </DropdownMenu>
-            </Dropdown>
-        </div>
-
-        <div class="col">
-            <main class="h-auto">
-                @Body
-            </main>
-        </div>
-    </div>
-</div>
+                <MudDivider />
+                <MudMenuItem Href="@Routes.SignOut()" Icon="@MaterialSymbols.Outlined.Logout" ForceLoad>
+                    <MudText Class="ml-n5">@Localizer["accountNav_SignOut"]</MudText>
+                </MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    </MudAppBar>
+    <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="DrawerVariant.Mini">
+        <MudNavMenu Rounded>
+            <MudNavLink Href="@Routes.PagesIndex()" Match="NavLinkMatch.All" Icon="@MaterialSymbols.Outlined.Dashboard">
+                @Localizer["navMenu_Dashboard"]
+            </MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+    <MudMainContent Class="pt-16 px-2">
+        <MudContainer>
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>

@@ -6,13 +6,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SchulCloud.Store.Abstractions;
 using SchulCloud.Store.Options;
-using System;
-using System.Collections.Generic;
-using System.IO.Pipelines;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SchulCloud.Store.Managers;
 
@@ -59,7 +52,7 @@ partial class SchulCloudUserManager<TUser, TCredential>
             UserVerificationMethod = true,
             CredProps = true
         };
-        return fido2.RequestNewCredential(fido2User, [..existingKeys], options.ToAuthenticatorSelection(residentKey), options.AttestationConveyancePreference, extensions);
+        return fido2.RequestNewCredential(fido2User, [.. existingKeys], options.ToAuthenticatorSelection(residentKey), options.AttestationConveyancePreference, extensions);
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
@@ -16,16 +15,14 @@ public sealed partial class MainLayout : LayoutComponentBase
     private IStringLocalizer<MainLayout> Localizer { get; set; } = default!;
 
     [Inject]
-    private IOptionsSnapshot<PresentationOptions> PresentationOptions { get; set; } = default!;
+    private IOptions<PresentationOptions> PresentationOptionsAccessor { get; set; } = default!;
 
     [Inject]
     private UserManager<ApplicationUser> UserManager { get; set; } = default!;
-
-    [Inject]
-    private NavigationManager NavigationManager { get; set; } = default!;
     #endregion
 
     private ClaimsPrincipal _userPrincipial = default!;
+    private bool _drawerOpen = false;
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
@@ -36,9 +33,10 @@ public sealed partial class MainLayout : LayoutComponentBase
         _userPrincipial = state.User;
     }
 
-    private bool IsActive(string path)
+    private void ToggleMenu_Click()
     {
-        Uri uri = new(NavigationManager.Uri);
-        return uri.AbsolutePath.Equals(path);
+        _drawerOpen = !_drawerOpen;
     }
+
+    private static string NameToDisplayedAvatar(string username) => string.Concat(username.Split(' ', 2).Select(part => part.First()));
 }

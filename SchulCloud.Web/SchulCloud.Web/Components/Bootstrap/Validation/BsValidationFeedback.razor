@@ -1,8 +1,0 @@
-﻿@implements IDisposable
-
-@foreach (string message in EditContext.GetValidationMessages(Identifier!.Value))
-{
-    <div class="@ExtendedBootstrapClass.InvalidFeedback">
-        @message
-    </div>
-}

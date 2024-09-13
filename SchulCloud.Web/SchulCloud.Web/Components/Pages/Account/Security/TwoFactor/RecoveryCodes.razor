@@ -1,27 +1,19 @@
 ﻿<SchulCloudPageTitle Title="@Localizer["title"]" />
 
-<div class="container mt-5">
-    <div class="row text-center mb-2">
-        <h3 class="mb-3">@Localizer["title"]</h3>
-        <p>@Localizer["desc"]</p>
-    </div>
-    <div class="row">
-        <div class="col" />
-        <div class="col-6 text-center">
-            @foreach (string code in _recoveryCodes)
-            {
-                <b class="mt-1">@(code)</b>
-                <br />
-            }
-        </div>
-        <div class="col" />
-    </div>
-    <div class="row mt-4">
-        <div class="col" />
-        <div class="col-6 d-flex">
-            <Button Color="ButtonColor.Secondary" Type="ButtonType.Button" @onclick="Download_ClickAsync">@Localizer["downloadBtn"]</Button>
-            <Button Class="flex-fill ms-2" Color="ButtonColor.Primary" Type="ButtonType.Link" To="@Routes.SecurityIndex()">@Localizer["doneBtn"]</Button>
-        </div>
-        <div class="col" />
-    </div>
-</div>
+<MudPaper Class="px-3 py-3">
+    <MudText Class="mb-2" Typo="Typo.h6" Align="Align.Center">@Localizer["title"]</MudText>
+    <MudText Typo="Typo.subtitle1" Align="Align.Center">@Localizer["desc"]</MudText>
+
+    <MudText HtmlTag="div" Class="my-5" Align="Align.Center">
+        @foreach (string code in _recoveryCodes)
+        {
+            <b class="mt-1">@(code)</b>
+            <br />
+        }
+    </MudText>
+
+    <MudStack Justify="Justify.Center" Row>
+        <MudButton Color="Color.Secondary" OnClick="Download_ClickAsync">@Localizer["downloadBtn"]</MudButton>
+        <MudButton Color="Color.Primary" Href="@Routes.SecurityIndex()">@Localizer["doneBtn"]</MudButton>
+    </MudStack>
+</MudPaper>

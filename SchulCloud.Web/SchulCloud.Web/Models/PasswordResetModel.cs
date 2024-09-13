@@ -10,6 +10,11 @@ namespace SchulCloud.Web.Models;
 public class PasswordResetModel
 {
     /// <summary>
+    /// The name or the email of the user.
+    /// </summary>
+    public string User { get; set; } = string.Empty;
+
+    /// <summary>
     /// The new password.
     /// </summary>
     public string NewPassword { get; set; } = default!;
@@ -42,6 +47,12 @@ public class PasswordResetModel
 
         private async Task ValidateNewPasswordAsync(string password, ValidationContext<PasswordResetModel> context, CancellationToken ct)
         {
+            if (string.IsNullOrEmpty(password))
+            {
+                context.AddFailure(context.PropertyPath);
+                return;
+            }
+
             IdentityResult result = await _passwordValidator.ValidateAsync(_userManager, null!, password);
             if (!result.Succeeded)
             {
