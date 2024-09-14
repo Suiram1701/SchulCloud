@@ -36,30 +36,30 @@ public class SchulCloudSignInManager<TUser, TCredential>(
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(response);
 
-        TCredential? credential = await _userManager.MakeFido2AssertionAsync(null, response, options).ConfigureAwait(false);
+        TCredential? credential = await _userManager.MakeFido2AssertionAsync(null, response, options);
         if (credential is null)
         {
             return (SignInResult.Failed, null);
         }
 
         // Checks whether user and credential support passkeys.
-        TUser user = await _userManager.GetFido2CredentialOwnerAsync(credential).ConfigureAwait(false);
-        if (!await _userManager.GetPasskeySignInEnabledAsync(user).ConfigureAwait(false))
+        TUser user = await _userManager.GetFido2CredentialOwnerAsync(credential);
+        if (!await _userManager.GetPasskeySignInEnabledAsync(user))
         {
             return (SignInResult.Failed, null);
         }
-        else if (!await _userManager.GetFido2CredentialIsPasskey(credential).ConfigureAwait(false))
+        else if (!await _userManager.GetFido2CredentialIsPasskey(credential))
         {
             return (SignInResult.Failed, null);
         }
 
-        if (await PreSignInCheck(user).ConfigureAwait(false) is SignInResult error)
+        if (await PreSignInCheck(user) is SignInResult error)
         {
             return (error, null);
         }
 
         SignInResult result = credential is not null
-            ? await SignInOrTwoFactorAsync(user, isPersistent, loginProvider: "pka", bypassTwoFactor: true).ConfigureAwait(false)     // 'pka' means Passkey Authentication
+            ? await SignInOrTwoFactorAsync(user, isPersistent, loginProvider: "pka", bypassTwoFactor: true)     // 'pka' means Passkey Authentication
             : SignInResult.Failed;
         return (result, user);
     }
@@ -90,20 +90,20 @@ public class SchulCloudSignInManager<TUser, TCredential>(
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(response);
 
-        TwoFactorInfo? twoFactorInfo = await GetTwoFactorInfoAsync().ConfigureAwait(false);
+        TwoFactorInfo? twoFactorInfo = await GetTwoFactorInfoAsync();
         if (twoFactorInfo is null)
         {
             return SignInResult.Failed;
         }
 
-        if (await PreSignInCheck(twoFactorInfo.User).ConfigureAwait(false) is SignInResult error)
+        if (await PreSignInCheck(twoFactorInfo.User) is SignInResult error)
         {
             return error;
         }
 
-        TCredential? credential = await _userManager.MakeFido2AssertionAsync(twoFactorInfo.User, response, options).ConfigureAwait(false);
+        TCredential? credential = await _userManager.MakeFido2AssertionAsync(twoFactorInfo.User, response, options);
         return credential is not null
-            ? await DoTwoFactorSignInAsync(twoFactorInfo, isPersistent, rememberClient).ConfigureAwait(false)
+            ? await DoTwoFactorSignInAsync(twoFactorInfo, isPersistent, rememberClient)
             : SignInResult.Failed;
     }
 
@@ -138,7 +138,7 @@ public class SchulCloudSignInManager<TUser, TCredential>(
 
         if (_userManager.SupportsUserLockout)
         {
-            await ResetLockout(info.User).ConfigureAwait(false);
+            await ResetLockout(info.User);
         }
 
         // Cleanup external cookie

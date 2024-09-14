@@ -41,16 +41,16 @@ public sealed partial class Authenticator : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authenticationState = await AuthenticationState.ConfigureAwait(false);
-        _user = (await UserManager.GetUserAsync(authenticationState.User).ConfigureAwait(false))!;
+        AuthenticationState authenticationState = await AuthenticationState;
+        _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
-        if (await UserManager.GetTwoFactorEnabledAsync(_user).ConfigureAwait(false))
+        if (await UserManager.GetTwoFactorEnabledAsync(_user))
         {
             NavigationManager.NavigateToSecurityIndex();
             return;
         }
 
-        _authenticatorInfo = await Cache.GetOrCreateAsync(await GetCacheKeyAsync().ConfigureAwait(false), CreateAuthenticatorInfoAsync);
+        _authenticatorInfo = await Cache.GetOrCreateAsync(await GetCacheKeyAsync(), CreateAuthenticatorInfoAsync);
     }
 
     private async Task Form_IsValidChanged(bool valid)
@@ -60,7 +60,7 @@ public sealed partial class Authenticator : ComponentBase
             return;
         }
 
-        IdentityResult enableResult = await UserManager.SetTwoFactorEnabledAsync(_user, true).ConfigureAwait(false);
+        IdentityResult enableResult = await UserManager.SetTwoFactorEnabledAsync(_user, true);
         if (enableResult.Succeeded)
         {
             Cache.Remove(await GetCacheKeyAsync());
@@ -82,7 +82,7 @@ public sealed partial class Authenticator : ComponentBase
         }
 
         string tokenProvider = UserManager.Options.Tokens.AuthenticatorTokenProvider;
-        if (!await UserManager.VerifyTwoFactorTokenAsync(_user, tokenProvider, value.Replace(" ", "")).ConfigureAwait(false))
+        if (!await UserManager.VerifyTwoFactorTokenAsync(_user, tokenProvider, value.Replace(" ", "")))
         {
             return Localizer["form_CodeInvalid"];
         }
@@ -91,13 +91,13 @@ public sealed partial class Authenticator : ComponentBase
 
     private async Task<string> GetCacheKeyAsync()
     {
-        string userId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
+        string userId = await UserManager.GetUserIdAsync(_user);
         return $"authenticatorEnableData_{userId}";
     }
 
     private async Task<(string, string)?> CreateAuthenticatorInfoAsync(ICacheEntry entry)
     {
-        IdentityResult result = await UserManager.ResetAuthenticatorKeyAsync(_user).ConfigureAwait(false);
+        IdentityResult result = await UserManager.ResetAuthenticatorKeyAsync(_user);
         if (!result.Succeeded)
         {
             entry.SlidingExpiration = TimeSpan.Zero;
@@ -107,9 +107,9 @@ public sealed partial class Authenticator : ComponentBase
         }
 
         entry.SlidingExpiration = TimeSpan.FromMinutes(10);
-        string base32secret = (await UserManager.GetAuthenticatorKeyAsync(_user).ConfigureAwait(false))!;
+        string base32secret = (await UserManager.GetAuthenticatorKeyAsync(_user))!;
 
-        string userName = (await UserManager.GetUserNameAsync(_user).ConfigureAwait(false))!;
+        string userName = (await UserManager.GetUserNameAsync(_user))!;
         PayloadGenerator.OneTimePassword payload = new()
         {
             Issuer = UserManager.Options.Tokens.AuthenticatorIssuer,

@@ -55,7 +55,7 @@ public sealed partial class Index : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authenticationState = await AuthenticationState.ConfigureAwait(false);
+        AuthenticationState authenticationState = await AuthenticationState;
         if (ComponentState.TryTakeFromJson("state", out SecurityState? state))
         {
             state!.Deconstruct(
@@ -67,15 +67,15 @@ public sealed partial class Index : ComponentBase, IDisposable
                 out _mfaSecurityKeyEnabled,
                 out _mfaRemainingRecoveryCodes);
 
-            _user = (await UserManager.GetUserAsync(authenticationState.User).ConfigureAwait(false))!;
+            _user = (await UserManager.GetUserAsync(authenticationState.User))!;
         }
         else
         {
-            _user = (await UserManager.GetUserAsync(authenticationState.User).ConfigureAwait(false))!;
+            _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
-            _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user).ConfigureAwait(false);
-            _passkeysCount = await UserManager.GetPasskeyCountAsync(_user).ConfigureAwait(false);
-            await UpdateMfaStatesAsync().ConfigureAwait(false);
+            _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user);
+            _passkeysCount = await UserManager.GetPasskeyCountAsync(_user);
+            await UpdateMfaStatesAsync();
 
             _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
             {
@@ -101,11 +101,10 @@ public sealed partial class Index : ComponentBase, IDisposable
             return;
         }
 
-        IdentityResult result = await UserManager.SetPasskeySignInEnabledAsync(_user, enabled).ConfigureAwait(false);
+        IdentityResult result = await UserManager.SetPasskeySignInEnabledAsync(_user, enabled);
         if (result.Succeeded)
         {
             _passkeysEnabled = enabled;
-            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
         }
         else
         {
@@ -124,11 +123,10 @@ public sealed partial class Index : ComponentBase, IDisposable
             confirmColor: Color.Error);
         if (await dialogReference.GetReturnValueAsync<bool?>() ?? false)
         {
-            IdentityResult disableResult = await UserManager.SetTwoFactorEnabledAsync(_user, false).ConfigureAwait(false);
+            IdentityResult disableResult = await UserManager.SetTwoFactorEnabledAsync(_user, false);
             if (disableResult.Succeeded)
             {
-                await UpdateMfaStatesAsync().ConfigureAwait(false);
-                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+                await UpdateMfaStatesAsync();
             }
             else
             {
@@ -144,11 +142,10 @@ public sealed partial class Index : ComponentBase, IDisposable
             return;
         }
 
-        IdentityResult result = await UserManager.SetTwoFactorEmailEnabledAsync(_user, enabled).ConfigureAwait(false);
+        IdentityResult result = await UserManager.SetTwoFactorEmailEnabledAsync(_user, enabled);
         if (result.Succeeded)
         {
             _mfaEmailEnabled = enabled;
-            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
         }
         else
         {
@@ -166,11 +163,10 @@ public sealed partial class Index : ComponentBase, IDisposable
             return;
         }
 
-        IdentityResult result = await UserManager.SetTwoFactorSecurityKeyEnabledAsync(_user, enabled).ConfigureAwait(false);
+        IdentityResult result = await UserManager.SetTwoFactorSecurityKeyEnabledAsync(_user, enabled);
         if (result.Succeeded)
         {
             _mfaSecurityKeyEnabled = enabled;
-            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
         }
         else
         {
@@ -192,13 +188,13 @@ public sealed partial class Index : ComponentBase, IDisposable
 
     private async Task UpdateMfaStatesAsync()
     {
-        _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user).ConfigureAwait(false);
+        _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user);
         if (_mfaEnabled)
         {
-            _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user).ConfigureAwait(false);
-            _securityKeysCount = await UserManager.GetTwoFactorSecurityKeysCountAsync(_user).ConfigureAwait(false);
-            _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user).ConfigureAwait(false);
-            _mfaRemainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user).ConfigureAwait(false);
+            _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user);
+            _securityKeysCount = await UserManager.GetTwoFactorSecurityKeysCountAsync(_user);
+            _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
+            _mfaRemainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user);
         }
     }
 

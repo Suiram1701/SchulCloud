@@ -80,6 +80,6 @@ public partial class PasswordField
     private async Task ToggleVisibility_ClickAsync()
     {
         PasswordVisible = !PasswordVisible;
-        await OnPasswordVisibleChanged.InvokeAsync(PasswordVisible).ConfigureAwait(false);
+        await OnPasswordVisibleChanged.InvokeAsync(PasswordVisible);
     }
 }

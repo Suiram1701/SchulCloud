@@ -19,7 +19,7 @@ public class WebAuthnService(IJSRuntime runtime)
     /// <returns>The result.</returns>
     public async ValueTask<bool> IsSupportedAsync(CancellationToken ct = default)
     {
-        return await _runtime.InvokeAsync<bool>($"{WebAuthn}.isSupported").ConfigureAwait(false);
+        return await _runtime.InvokeAsync<bool>($"{WebAuthn}.isSupported");
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public class WebAuthnService(IJSRuntime runtime)
         ArgumentNullException.ThrowIfNull(ct);
 
         WebAuthnOperation<AuthenticatorAttestationRawResponse> operation = new(completedCallback);
-        IJSObjectReference abortControllerRef = await _runtime.InvokeAsync<IJSObjectReference>($"{WebAuthn}.createCredential", ct, operation.OperationReference, options).ConfigureAwait(false);
+        IJSObjectReference abortControllerRef = await _runtime.InvokeAsync<IJSObjectReference>($"{WebAuthn}.createCredential", ct, operation.OperationReference, options);
         operation.AbortControllerRef = abortControllerRef;
 
         return operation;
@@ -62,7 +62,7 @@ public class WebAuthnService(IJSRuntime runtime)
         ArgumentNullException.ThrowIfNull(ct);
 
         WebAuthnOperation<AuthenticatorAssertionRawResponse> operation = new(completedCallback);
-        IJSObjectReference abortControllerRef = await _runtime.InvokeAsync<IJSObjectReference>($"{WebAuthn}.getCredential", ct, operation.OperationReference, options).ConfigureAwait(false);
+        IJSObjectReference abortControllerRef = await _runtime.InvokeAsync<IJSObjectReference>($"{WebAuthn}.getCredential", ct, operation.OperationReference, options);
         operation.AbortControllerRef = abortControllerRef;
 
         return operation;
@@ -88,13 +88,13 @@ public class WebAuthnService(IJSRuntime runtime)
             WebAuthnCompletedEventArgs<TResult> eventArgs = new(result, errorMessage);
             _completedCallback.Invoke(this, eventArgs);
 
-            await DisposeAsync().ConfigureAwait(false);
+            await DisposeAsync();
         }
 
         public async ValueTask DisposeAsync()
         {
-            await AbortControllerRef.InvokeVoidAsync("abort", "Operation disposed by server").ConfigureAwait(false);
-            await AbortControllerRef.DisposeAsync().ConfigureAwait(false);
+            await AbortControllerRef.InvokeVoidAsync("abort", "Operation disposed by server");
+            await AbortControllerRef.DisposeAsync();
 
             OperationReference.Dispose();
         }

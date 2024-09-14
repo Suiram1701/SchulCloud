@@ -88,15 +88,15 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
         if (HttpContext is not null)
         {
             // Make sure that every auth cookie is cleaned up if present.
-            AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
-            if (SignInManager.IsSignedIn(state.User) || (await HttpContext.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme).ConfigureAwait(false)).Principal is not null)
+            AuthenticationState state = await AuthenticationState;
+            if (SignInManager.IsSignedIn(state.User) || (await HttpContext.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme)).Principal is not null)
             {
-                await SignInManager.SignOutAsync().ConfigureAwait(false);
+                await SignInManager.SignOutAsync();
             }
 
             if (HttpMethods.IsPost(HttpContext.Request.Method))
             {
-                bool result = await SignInAsync().ConfigureAwait(false);
+                bool result = await SignInAsync();
                 if (!result)
                 {
                     // Persist state from initial HTTP request to interactivity begin.
@@ -124,10 +124,10 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
     {
         if (firstRender)
         {
-            if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
+            if (!await WebAuthnService.IsSupportedAsync())
             {
                 _webAuthnSupported = false;
-                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+                StateHasChanged();
             }
         }
     }
@@ -139,11 +139,11 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
 
     private async Task ForgotPasswordAsync_ClickAsync()
     {
-        ApplicationUser? user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
-        user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
+        ApplicationUser? user = await UserManager.FindByEmailAsync(Model.User);
+        user ??= await UserManager.FindByNameAsync(Model.User);
 
         string? userId = user is not null
-            ? await UserManager.GetUserIdAsync(user).ConfigureAwait(false)
+            ? await UserManager.GetUserIdAsync(user)
             : null;
 
         string resetUrl = Routes.ResetPassword(userId: userId, returnUrl: ReturnUrl);
@@ -157,8 +157,8 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
             return;
         }
 
-        _assertionOptions = await UserManager.CreateFido2AssertionOptionsAsync(null).ConfigureAwait(false);
-        _pendingAssertion = await WebAuthnService.StartGetCredentialAsync(_assertionOptions, OnGetCredentialCompletedCallback).ConfigureAwait(false);
+        _assertionOptions = await UserManager.CreateFido2AssertionOptionsAsync(null);
+        _pendingAssertion = await WebAuthnService.StartGetCredentialAsync(_assertionOptions, OnGetCredentialCompletedCallback);
     }
 
     private async void OnGetCredentialCompletedCallback(object? sender, WebAuthnCompletedEventArgs<AuthenticatorAssertionRawResponse> args)
@@ -176,7 +176,7 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
             }
 
-            await JSRuntime.FormSubmitAsync(_formRef).ConfigureAwait(false);
+            await JSRuntime.FormSubmitAsync(_formRef);
         }
         else
         {
@@ -190,19 +190,19 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
         ApplicationUser? user;
         if (string.IsNullOrWhiteSpace(Model.AuthenticatorDataAccessKey))
         {
-            user = await UserManager.FindByEmailAsync(Model.User).ConfigureAwait(false);
-            user ??= await UserManager.FindByNameAsync(Model.User).ConfigureAwait(false);
+            user = await UserManager.FindByEmailAsync(Model.User);
+            user ??= await UserManager.FindByNameAsync(Model.User);
             if (user is null)
             {
                 _errorMessage = Localizer["signIn_" + SignInResult.Failed];
                 return false;
             }
 
-            signInResult = await SignInManager.PasswordSignInAsync(user, Model.Password, Model.Persistent, lockoutOnFailure: true).ConfigureAwait(false);
+            signInResult = await SignInManager.PasswordSignInAsync(user, Model.Password, Model.Persistent, lockoutOnFailure: true);
         }
         else
         {
-            (signInResult, user) = await SecurityKeySignInAsync(Model.AuthenticatorDataAccessKey, Model.Persistent).ConfigureAwait(false);
+            (signInResult, user) = await SecurityKeySignInAsync(Model.AuthenticatorDataAccessKey, Model.Persistent);
             Model.AuthenticatorDataAccessKey = null;
         }
 
@@ -215,7 +215,7 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
                 NavigationManager.NavigateToVerify2fa(persistent: Model.Persistent, returnUrl: ReturnUrl, forceLoad: true);
                 break;
             case { IsLockedOut: true }:
-                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(user!).ConfigureAwait(false)).Value;
+                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(user!)).Value;
 
                 _errorMessage = lockOutEnd.Offset <= TimeSpan.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
                     ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
@@ -243,7 +243,7 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
         }
 
         Cache.Remove(dataAccessKey!);
-        return await SignInManager.Fido2PasskeySignInAsync(authState!.Options, authState.Response, isPersistent).ConfigureAwait(false);
+        return await SignInManager.Fido2PasskeySignInAsync(authState!.Options, authState.Response, isPersistent);
     }
 
     private static string GetSecurityKeyDataCacheKey(string key)
@@ -255,7 +255,7 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
     {
         if (_pendingAssertion is not null)
         {
-            await _pendingAssertion.DisposeAsync().ConfigureAwait(false);
+            await _pendingAssertion.DisposeAsync();
         }
 
         _persistingSubscription?.Dispose();

@@ -34,14 +34,14 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
         string code = GenerateRandomToken();
         AuthenticationTokenModel model = new(DateTimeOffset.UtcNow.Add(_options.TokenLifeSpan), HashCode(purpose, code));
 
-        IdentityResult result = await manager.SetAuthenticationTokenAsync(user, _providerName, GetTokenName(purpose), JsonSerializer.Serialize(model)).ConfigureAwait(false);
+        IdentityResult result = await manager.SetAuthenticationTokenAsync(user, _providerName, GetTokenName(purpose), JsonSerializer.Serialize(model));
         if (!result.Succeeded)
         {
-            LogTokenCreationError(purpose, result.Errors.Select(error => error.Description));
+            LogCodeCreationError(purpose, result.Errors.Select(error => error.Description));
             return null!;
         }
 
-        LogTokenCreated(purpose);
+        LogCodeCreated(purpose);
         return code;
     }
 
@@ -56,7 +56,7 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
             return false;
         }
 
-        string? rawToken = await manager.GetAuthenticationTokenAsync(user, _providerName, GetTokenName(purpose)).ConfigureAwait(false);
+        string? rawToken = await manager.GetAuthenticationTokenAsync(user, _providerName, GetTokenName(purpose));
         if (rawToken is null || JsonSerializer.Deserialize<AuthenticationTokenModel>(rawToken) is not AuthenticationTokenModel model)
         {
             return false;
@@ -64,18 +64,18 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
 
         if (model.ExpirationTime <= DateTimeOffset.UtcNow)
         {
-            if (await TryRemoveTokenAsync(manager, user, purpose).ConfigureAwait(false))
+            if (await TryRemoveTokenAsync(manager, user, purpose))
             {
-                LogTokenRemoved("Expired", purpose);
+                LogCodeRemoved("Expired", purpose);
             }
             return false;
         }
 
         if (model.CodeHash?.Equals(HashCode(purpose, token)) ?? false)
         {
-            if (await TryRemoveTokenAsync(manager, user, purpose).ConfigureAwait(false))
+            if (await TryRemoveTokenAsync(manager, user, purpose))
             {
-                LogTokenRemoved("Used", purpose);
+                LogCodeRemoved("Used", purpose);
             }
             return true;
         }
@@ -94,10 +94,10 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
 
     private async Task<bool> TryRemoveTokenAsync(UserManager<TUser> manager, TUser user, string purpose)
     {
-        IdentityResult removeResult = await manager.RemoveAuthenticationTokenAsync(user, _providerName, GetTokenName(purpose)).ConfigureAwait(false);
+        IdentityResult removeResult = await manager.RemoveAuthenticationTokenAsync(user, _providerName, GetTokenName(purpose));
         if (!removeResult.Succeeded && _logger.IsEnabled(LogLevel.Error))
         {
-            LogTokenRemovedError(purpose, removeResult.Errors.Select(error => error.Description));
+            LogCodeRemovedError(purpose, removeResult.Errors.Select(error => error.Description));
         }
 
         return removeResult.Succeeded;
@@ -130,15 +130,15 @@ public partial class AuthenticationCodeTokenProvider<TUser>(ILogger<Authenticati
 
     private record AuthenticationTokenModel(DateTimeOffset ExpirationTime, string? CodeHash);
 
-    [LoggerMessage(LogLevel.Debug, "Authentication token with purpose '{purpose}' created and stored.")]
-    private partial void LogTokenCreated(string purpose);
+    [LoggerMessage(LogLevel.Debug, "Authentication code with purpose '{purpose}' created and stored.")]
+    private partial void LogCodeCreated(string purpose);
 
-    [LoggerMessage(LogLevel.Debug, "Authentication token with purpose '{purpose}' removed with cause '{cause}'.")]
-    private partial void LogTokenRemoved(string cause, string purpose);
+    [LoggerMessage(LogLevel.Debug, "Authentication code with purpose '{purpose}' removed with cause '{cause}'.")]
+    private partial void LogCodeRemoved(string cause, string purpose);
 
-    [LoggerMessage(LogLevel.Error, "An error occurred while creating an authentication token with purpose '{purpose}'. {errors}")]
-    private partial void LogTokenCreationError(string purpose, IEnumerable<string> errors);
+    [LoggerMessage(LogLevel.Error, "An error occurred while creating an authentication code with purpose '{purpose}'. {errors}")]
+    private partial void LogCodeCreationError(string purpose, IEnumerable<string> errors);
 
-    [LoggerMessage(LogLevel.Error, "An error occurred while removing an authentication token with purpose '{purpose}'. {errors}")]
-    private partial void LogTokenRemovedError(string purpose, IEnumerable<string> errors);
+    [LoggerMessage(LogLevel.Error, "An error occurred while removing an authentication code with purpose '{purpose}'. {errors}")]
+    private partial void LogCodeRemovedError(string purpose, IEnumerable<string> errors);
 }

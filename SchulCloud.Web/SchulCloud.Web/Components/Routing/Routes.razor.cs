@@ -23,7 +23,7 @@ public sealed partial class Routes : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
+        AuthenticationState state = await AuthenticationState;
         _isAuthenticated = SignInManager.IsSignedIn(state.User);
     }
 }

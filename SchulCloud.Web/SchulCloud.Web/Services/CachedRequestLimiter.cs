@@ -25,12 +25,8 @@ public class CachedRequestLimiter<TUser>(IMemoryCache cache, IOptions<RequestLim
     {
         ArgumentNullException.ThrowIfNull(user, nameof(user));
 
-        string cacheKey = await GetCacheKeyAsync(user, purpose).ConfigureAwait(false);
-        if (_cache.TryGetValue(cacheKey, out _))
-        {
-            return false;
-        }
-        else
+        string cacheKey = await GetCacheKeyAsync(user, purpose);
+        if (!_cache.TryGetValue(cacheKey, out _))
         {
             if (!_options.Timeouts.TryGetValue(purpose, out TimeSpan value))
             {
@@ -42,11 +38,15 @@ public class CachedRequestLimiter<TUser>(IMemoryCache cache, IOptions<RequestLim
 
             return true;
         }
+        else
+        {
+            return false;        
+        }
     }
 
     public async Task<DateTimeOffset?> GetExpirationTimeAsync(TUser user, string purpose)
     {
-        string cacheKey = await GetCacheKeyAsync(user, purpose).ConfigureAwait(false);
+        string cacheKey = await GetCacheKeyAsync(user, purpose);
         if (_cache.TryGetValue(cacheKey, out DateTimeOffset expiration))
         {
             return expiration;
@@ -59,7 +59,7 @@ public class CachedRequestLimiter<TUser>(IMemoryCache cache, IOptions<RequestLim
 
     private async Task<string> GetCacheKeyAsync(TUser user, string purpose)
     {
-        string userId = await _userManager.GetUserIdAsync(user).ConfigureAwait(false);
+        string userId = await _userManager.GetUserIdAsync(user);
         return $"requestLimit_{purpose}_{userId}";
     }
 }

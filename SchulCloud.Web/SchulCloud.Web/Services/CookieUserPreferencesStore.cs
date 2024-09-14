@@ -16,7 +16,7 @@ public class CookieUserPreferencesStore(CookieService cookieService) : IUserPref
 
     public async Task<ColorTheme> GetPreferredColorThemeAsync(CancellationToken ct = default)
     {
-        string? value = await _cookieService.GetCookieAsync(_themeCookieName, ct).ConfigureAwait(false);
+        string? value = await _cookieService.GetCookieAsync(_themeCookieName, ct);
         if (string.IsNullOrWhiteSpace(value) || !Enum.TryParse(value, out ColorTheme result))
         {
             return ColorTheme.Auto;
@@ -31,12 +31,12 @@ public class CookieUserPreferencesStore(CookieService cookieService) : IUserPref
         await _cookieService.SetCookieAsync(_themeCookieName, theme.ToString(), new()
         {
             Expires = DateTime.UtcNow.Add(_maxCookieAge)
-        }, ct).ConfigureAwait(false);
+        }, ct);
     }
 
     public async Task<RequestCulture?> GetPreferredCulturesAsync(CancellationToken ct = default)
     {
-        string? value = await _cookieService.GetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, ct).ConfigureAwait(false);
+        string? value = await _cookieService.GetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, ct);
         if (string.IsNullOrWhiteSpace(value) || CookieRequestCultureProvider.ParseCookieValue(value) is not ProviderCultureResult cultureResult)
         {
             return null;
@@ -61,11 +61,11 @@ public class CookieUserPreferencesStore(CookieService cookieService) : IUserPref
             await _cookieService.SetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, cookieValue, new()
             {
                 Expires = DateTime.UtcNow.Add(_maxCookieAge)
-            }, ct).ConfigureAwait(false);
+            }, ct);
         }
         else
         {
-            await _cookieService.RemoveCookieAsync(CookieRequestCultureProvider.DefaultCookieName, ct: ct).ConfigureAwait(false);
+            await _cookieService.RemoveCookieAsync(CookieRequestCultureProvider.DefaultCookieName, ct: ct);
         }
     }
 }

@@ -22,7 +22,7 @@ public abstract class EmailSenderBase<TUser>(ILogger logger, IOptions<EmailSende
             "Go on {0} to reset the password. This link will expire in {1}. " +
             "If you didn't requested this ignore this Email.",
             resetLink, _options.TokensLifeSpan.PasswordResetTokenLifeSpan.Humanize(culture: CultureInfo.InvariantCulture));
-        await ExecuteInternalAsync(user, email, "Reset account password", content).ConfigureAwait(false);
+        await ExecuteInternalAsync(user, email, "Reset account password", content);
     }
 
     public virtual async Task Send2faEmailCodeAsync(TUser user, string email, string code)
@@ -32,7 +32,7 @@ public abstract class EmailSenderBase<TUser>(ILogger logger, IOptions<EmailSende
             "The authentication code is {0}. This code will expire in {1}. " +
             "If you didn't requested this your password may compromised and you should change it.",
             code, _options.TokensLifeSpan.TwoFactorEmailTokenLifeSpan.Humanize(culture: CultureInfo.InvariantCulture));
-        await ExecuteInternalAsync(user, email, "2FA Email confirmation", content).ConfigureAwait(false);
+        await ExecuteInternalAsync(user, email, "2FA Email confirmation", content);
     }
 
     private async Task ExecuteInternalAsync(TUser user, string email, string subject, string content)

@@ -53,7 +53,7 @@ public sealed partial class ResetPassword : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
+        AuthenticationState state = await AuthenticationState;
         if (SignInManager.IsSignedIn(state.User))
         {
             UserId ??= UserManager.GetUserId(state.User);
@@ -61,7 +61,7 @@ public sealed partial class ResetPassword : ComponentBase
 
         if (UserId is not null)
         {
-            _user = await UserManager.FindByIdAsync(UserId).ConfigureAwait(false);
+            _user = await UserManager.FindByIdAsync(UserId);
         }
     }
 
@@ -72,36 +72,36 @@ public sealed partial class ResetPassword : ComponentBase
             return;
         }
 
-        if (await ResetLimiter.CanRequestPasswordResetAsync(_user).ConfigureAwait(false))
+        if (await ResetLimiter.CanRequestPasswordResetAsync(_user))
         {
             // Show the snackbar before the email is sent for better user experience (sending the mail is time expensive).
-            string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(_user).ConfigureAwait(false);
+            string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(_user);
             SnackbarService.AddInfo(Localizer["sent", anonymizedAddress]);
 
-            string resetToken = await UserManager.GeneratePasswordResetTokenAsync(_user).ConfigureAwait(false);
+            string resetToken = await UserManager.GeneratePasswordResetTokenAsync(_user);
             Uri resetUri = NavigationManager.ToAbsoluteUri(Routes.ResetPassword(userId: UserId, token: resetToken, returnUrl: ReturnUrl));
 
-            string userEmail = (await UserManager.GetEmailAsync(_user).ConfigureAwait(false))!;
-            await EmailSender.SendPasswordResetLinkAsync(_user, userEmail, resetUri.AbsoluteUri).ConfigureAwait(false);
+            string userEmail = (await UserManager.GetEmailAsync(_user))!;
+            await EmailSender.SendPasswordResetLinkAsync(_user, userEmail, resetUri.AbsoluteUri);
         }
         else
         {
-            DateTimeOffset? expiration = await ResetLimiter.GetPasswordResetExpirationTimeAsync(_user).ConfigureAwait(false);
+            DateTimeOffset? expiration = await ResetLimiter.GetPasswordResetExpirationTimeAsync(_user);
             SnackbarService.AddInfo(Localizer["sent_Timeout", expiration.Humanize()]);
         }
     }
 
     private async Task<IEnumerable<string>> ValidateUserAsync()
     {
-        _user = await UserManager.FindByEmailAsync(_model.User).ConfigureAwait(false);
-        _user ??= await UserManager.FindByNameAsync(_model.User).ConfigureAwait(false);
+        _user = await UserManager.FindByEmailAsync(_model.User);
+        _user ??= await UserManager.FindByNameAsync(_model.User);
 
         if (_user is null)
         {
             return [Localizer["userForm_UserNotFound"]];
         }
 
-        UserId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
+        UserId = await UserManager.GetUserIdAsync(_user);
         NavigationManager.NavigateToResetPassword(userId: UserId, returnUrl: ReturnUrl, replace: true);
 
         return [];
@@ -116,7 +116,7 @@ public sealed partial class ResetPassword : ComponentBase
 
         string decodedToken = Uri.UnescapeDataString(ChangeToken);
 
-        IdentityResult result = await UserManager.ResetPasswordAsync(_user, decodedToken, _model.NewPassword).ConfigureAwait(false);
+        IdentityResult result = await UserManager.ResetPasswordAsync(_user, decodedToken, _model.NewPassword);
         if (result.Succeeded)
         {
             SnackbarService.AddSuccess(Localizer["success"]);

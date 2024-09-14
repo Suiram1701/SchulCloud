@@ -19,7 +19,7 @@ public static class UserManagerExtensions
         ArgumentNullException.ThrowIfNull(manager);
         ArgumentNullException.ThrowIfNull(user);
 
-        string? userEmail = await manager.GetEmailAsync(user).ConfigureAwait(false);
+        string? userEmail = await manager.GetEmailAsync(user);
         if (string.IsNullOrWhiteSpace(userEmail))
         {
             throw new InvalidOperationException("The user doesn't have an email address.");

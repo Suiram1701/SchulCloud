@@ -52,12 +52,12 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authenticationState = await AuthenticationState.ConfigureAwait(false);
-        _user = (await UserManager.GetUserAsync(authenticationState.User).ConfigureAwait(false))!;
+        AuthenticationState authenticationState = await AuthenticationState;
+        _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
-        foreach (AppCredential credential in await UserManager.GetFido2CredentialsByUserAsync(_user).ConfigureAwait(false))
+        foreach (AppCredential credential in await UserManager.GetFido2CredentialsByUserAsync(_user))
         {
-            _securityKeys.Add(await CredentialToSecurityKeyAsync(credential).ConfigureAwait(false));
+            _securityKeys.Add(await CredentialToSecurityKeyAsync(credential));
         }
     }
 
@@ -65,10 +65,10 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
     {
         if (firstRender)
         {
-            if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
+            if (!await WebAuthnService.IsSupportedAsync())
             {
                 _webAuthnSupported = false;
-                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+                StateHasChanged();
             }
         }
     }
@@ -96,11 +96,10 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
 
         string newName = (string)dialogResult.Data!;
 
-        IdentityResult renameResult = await UserManager.ChangeFido2CredentialSecurityKeyNameAsync(securityKey.Credential, _user, newName).ConfigureAwait(false);
+        IdentityResult renameResult = await UserManager.ChangeFido2CredentialSecurityKeyNameAsync(securityKey.Credential, _user, newName);
         if (renameResult.Succeeded)
         {
             securityKey.Name = newName;
-            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
         }
         else
         {
@@ -116,14 +115,14 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
             confirmColor: Color.Error);
         if (await dialogReference.GetReturnValueAsync<bool?>() ?? false)
         {
-            IdentityResult result = await UserManager.RemoveFido2CredentialAsync(securityKey.Credential, _user).ConfigureAwait(false);
+            IdentityResult result = await UserManager.RemoveFido2CredentialAsync(securityKey.Credential, _user);
             if (result.Succeeded)
             {
                 _securityKeys?.Remove(securityKey);
 
                 if (_securityKeys?.Count == 0)     // Disable if its the last key.
                 {
-                    await UserManager.DisableSecurityKeyAuthenticationAsync(_user).ConfigureAwait(false);
+                    await UserManager.DisableSecurityKeyAuthenticationAsync(_user);
                 }
             }
             else
@@ -158,13 +157,13 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
         {
             if (_pendingRegistration is not null)
             {
-                await _pendingRegistration.DisposeAsync().ConfigureAwait(false);
+                await _pendingRegistration.DisposeAsync();
             }
 
-            CredentialCreateOptions options = await UserManager.CreateFido2CreationOptionsAsync(_user, _registerModel.IsPasskey).ConfigureAwait(false);
+            CredentialCreateOptions options = await UserManager.CreateFido2CreationOptionsAsync(_user, _registerModel.IsPasskey);
             _registerState = new(_registerModel.SecurityKeyName, _registerModel.IsPasskey, options);
 
-            _pendingRegistration = await WebAuthnService.StartCreateCredentialAsync(options, OnCredentialRegistrationCompletedAsync).ConfigureAwait(false);
+            _pendingRegistration = await WebAuthnService.StartCreateCredentialAsync(options, OnCredentialRegistrationCompletedAsync);
         }
     }
 
@@ -187,16 +186,15 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
             _registerState.SecurityKeyName,
             _registerState.IsPasskey,
             args.Result,
-            _registerState.Options).ConfigureAwait(false);
+            _registerState.Options);
         if (result.Succeeded)
         {
-            AppCredential credential = (await UserManager.GetFido2CredentialById(args.Result.Id).ConfigureAwait(false))!;
-            SecurityKey securityKey = await CredentialToSecurityKeyAsync(credential).ConfigureAwait(false);
+            AppCredential credential = (await UserManager.GetFido2CredentialById(args.Result.Id))!;
+            SecurityKey securityKey = await CredentialToSecurityKeyAsync(credential);
 
             _securityKeys ??= [];
             _securityKeys.Add(securityKey);
-            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-
+            StateHasChanged();
         }
         else
         {
@@ -205,16 +203,16 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
 
         _registerModel = new();
         _registerState = null;
-        await InvokeAsync(async () => await _registerDialog.CloseAsync());
+        await _registerDialog.CloseAsync();
     }
 
     private async Task<SecurityKey> CredentialToSecurityKeyAsync(AppCredential credential)
     {
-        string? keyName = await UserManager.GetFido2CredentialSecurityKeyNameAsync(credential).ConfigureAwait(false);
-        bool isPasskey = await UserManager.GetFido2CredentialIsPasskey(credential).ConfigureAwait(false);
-        AuthenticatorTransport[]? transports = await UserManager.GetFido2CredentialTransportsAsync(credential).ConfigureAwait(false);
-        DateTime registrationDate = await UserManager.GetFido2CredentialRegistrationDateAsync(credential).ConfigureAwait(false);
-        MetadataStatement? metadata = await UserManager.GetFido2CredentialMetadataStatementAsync(credential).ConfigureAwait(false);
+        string? keyName = await UserManager.GetFido2CredentialSecurityKeyNameAsync(credential);
+        bool isPasskey = await UserManager.GetFido2CredentialIsPasskey(credential);
+        AuthenticatorTransport[]? transports = await UserManager.GetFido2CredentialTransportsAsync(credential);
+        DateTime registrationDate = await UserManager.GetFido2CredentialRegistrationDateAsync(credential);
+        MetadataStatement? metadata = await UserManager.GetFido2CredentialMetadataStatementAsync(credential);
 
         return new(credential, keyName, isPasskey, transports, registrationDate, metadata);
     }
@@ -223,7 +221,7 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
     {
         if (_pendingRegistration is not null)
         {
-            await _pendingRegistration.DisposeAsync().ConfigureAwait(false);
+            await _pendingRegistration.DisposeAsync();
         }
     }
 

@@ -29,7 +29,7 @@ public sealed partial class MainLayout : LayoutComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
+        AuthenticationState state = await AuthenticationState;
         _userPrincipial = state.User;
     }
 

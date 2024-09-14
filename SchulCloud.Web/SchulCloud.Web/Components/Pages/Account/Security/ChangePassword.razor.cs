@@ -36,13 +36,13 @@ public sealed partial class ChangePassword : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState state = await AuthenticationState.ConfigureAwait(false);
-        _user = (await UserManager.GetUserAsync(state.User).ConfigureAwait(false))!;
+        AuthenticationState state = await AuthenticationState;
+        _user = (await UserManager.GetUserAsync(state.User))!;
     }
 
     private async Task<IEnumerable<string>> ValidateCurrentPasswordAsync()
     {
-        if (!await UserManager.CheckPasswordAsync(_user, _model.CurrentPassword).ConfigureAwait(false))
+        if (!await UserManager.CheckPasswordAsync(_user, _model.CurrentPassword))
         {
             return [ErrorDescriber.PasswordMismatch().Description];
         }
@@ -52,7 +52,7 @@ public sealed partial class ChangePassword : ComponentBase
 
     private async Task OnValidSubmitAsync()
     {
-        IdentityResult result = await UserManager.ChangePasswordAsync(_user, _model.CurrentPassword, _model.NewPassword).ConfigureAwait(false);
+        IdentityResult result = await UserManager.ChangePasswordAsync(_user, _model.CurrentPassword, _model.NewPassword);
         if (result.Succeeded)
         {
             SnackbarService.AddSuccess(Localizer["changeSuccess"]);

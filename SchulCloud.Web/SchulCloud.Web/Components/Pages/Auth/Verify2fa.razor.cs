@@ -106,14 +106,14 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
 
         if (HttpContext is not null)
         {
-            user ??= await SignInManager.GetTwoFactorAuthenticationUserAsync().ConfigureAwait(false);
+            user ??= await SignInManager.GetTwoFactorAuthenticationUserAsync();
             if (user is not null)
             {
                 _user = user!;
-                _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user).ConfigureAwait(false);
-                _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user).ConfigureAwait(false);
+                _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user);
+                _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
 
-                ComponentState.RegisterOnPersisting(() =>
+                _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
                 {
                     ComponentState.PersistAsJson(nameof(_user), _user);
                     ComponentState.PersistAsJson(nameof(_mfaEmailEnabled), _mfaEmailEnabled);
@@ -130,7 +130,7 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
 
             if (HttpMethods.IsPost(HttpContext.Request.Method))
             {
-                await Verify2faAsync().ConfigureAwait(false);
+                await Verify2faAsync();
 
                 _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
                 {
@@ -156,10 +156,10 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
     {
         if (firstRender)
         {
-            if (!await WebAuthnService.IsSupportedAsync().ConfigureAwait(false))
+            if (!await WebAuthnService.IsSupportedAsync())
             {
                 _webAuthnSupported = false;
-                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+                StateHasChanged();
             }
         }
     }
@@ -176,30 +176,30 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (!await Limiter.CanRequestTwoFactorEmailCodeAsync(_user).ConfigureAwait(false))
+        if (!await Limiter.CanRequestTwoFactorEmailCodeAsync(_user))
         {
-            DateTimeOffset? expiration = await Limiter.GetTwoFactorEmailCodeExpirationTimeAsync(_user).ConfigureAwait(false);
+            DateTimeOffset? expiration = await Limiter.GetTwoFactorEmailCodeExpirationTimeAsync(_user);
 
             SnackbarService.AddInfo(Localizer["emailConfirmation_Timeout", expiration.Humanize()]);
         }
         else
         {
             // Renew the user instance because a persistent instance isn't changed tracked anymore.
-            string userId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
-            ApplicationUser user = (await UserManager.FindByIdAsync(userId).ConfigureAwait(false))!;
+            string userId = await UserManager.GetUserIdAsync(_user);
+            ApplicationUser user = (await UserManager.FindByIdAsync(userId))!;
 
-            string code = await UserManager.GenerateTwoFactorEmailCodeAsync(user).ConfigureAwait(false);
+            string code = await UserManager.GenerateTwoFactorEmailCodeAsync(user);
             if (string.IsNullOrEmpty(code))
             {
                 throw new Exception("An unknown error occurred during the email code generation.");
             }
 
             // Show the Toast before the email is sent for better user experience (sending the mail is time expensive).
-            string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(user).ConfigureAwait(false);
+            string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(user);
             SnackbarService.AddInfo(Localizer["emailConfirmation", anonymizedAddress]);
 
-            string email = (await UserManager.GetEmailAsync(user).ConfigureAwait(false))!;
-            await EmailSender.Send2faEmailCodeAsync(user, email, code).ConfigureAwait(false);
+            string email = (await UserManager.GetEmailAsync(user))!;
+            await EmailSender.Send2faEmailCodeAsync(user, email, code);
         }
     }
 
@@ -210,8 +210,8 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
             return;
         }
 
-        _assertionOptions = await UserManager.CreateFido2AssertionOptionsAsync(_user).ConfigureAwait(false);
-        _pendingAssertion = await WebAuthnService.StartGetCredentialAsync(_assertionOptions, OnGetCredentialCompletedCallback).ConfigureAwait(false);
+        _assertionOptions = await UserManager.CreateFido2AssertionOptionsAsync(_user);
+        _pendingAssertion = await WebAuthnService.StartGetCredentialAsync(_assertionOptions, OnGetCredentialCompletedCallback);
     }
 
     private async void OnGetCredentialCompletedCallback(object? sender, WebAuthnCompletedEventArgs<AuthenticatorAssertionRawResponse> args)
@@ -222,7 +222,7 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
             Model.AuthenticatorDataAccessKey = key;
             StateHasChanged();
 
-            string cacheKey = await GetSecurityKeyDataCacheKeyAsync(key).ConfigureAwait(false);
+            string cacheKey = await GetSecurityKeyDataCacheKeyAsync(key);
             using (ICacheEntry entry = Cache.CreateEntry(cacheKey))
             {
                 entry.SetValue(new SecurityKeyAuthState(_assertionOptions!, args.Result));
@@ -231,7 +231,7 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
 
             try
             {
-                await JSRuntime.FormSubmitAsync(_formRef).ConfigureAwait(false);
+                await JSRuntime.FormSubmitAsync(_formRef);
             }
             catch (JSDisconnectedException) { }
         }
@@ -250,7 +250,7 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
             TwoFactorMethod.SecurityKey => VerifyTwoFactorSecurityKeyAsync(Model.AuthenticatorDataAccessKey, Persistent, Model.RememberClient),
             TwoFactorMethod.Recovery => SignInManager.TwoFactorRecoveryCodeSignInAsync(Model.TrimmedCode),
             _ => Task.FromResult(SignInResult.Failed)
-        }).ConfigureAwait(false);
+        });
 
         switch (verifyResult)
         {
@@ -258,7 +258,7 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
                 NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.PagesIndex());
                 break;
             case { IsLockedOut: true }:
-                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(_user).ConfigureAwait(false)).Value;
+                DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(_user)).Value;
 
                 _errorMessage = lockOutEnd.Offset <= TimeSpan.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
                     ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
@@ -277,19 +277,19 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
             return SignInResult.Failed;
         }
 
-        string cacheKey = await GetSecurityKeyDataCacheKeyAsync(dataAccessKey).ConfigureAwait(false);
+        string cacheKey = await GetSecurityKeyDataCacheKeyAsync(dataAccessKey);
         if (!Cache.TryGetValue(cacheKey, out SecurityKeyAuthState? authState))
         {
             return SignInResult.Failed;
         }
 
         Cache.Remove(dataAccessKey!);
-        return await SignInManager.TwoFactorFido2CredentialSignInAsync(authState!.Options, authState.Response, isPersistent, rememberClient).ConfigureAwait(false);
+        return await SignInManager.TwoFactorFido2CredentialSignInAsync(authState!.Options, authState.Response, isPersistent, rememberClient);
     }
 
     private async Task<string> GetSecurityKeyDataCacheKeyAsync(string key)
     {
-        string userId = await UserManager.GetUserIdAsync(_user).ConfigureAwait(false);
+        string userId = await UserManager.GetUserIdAsync(_user);
         return $"twoFactor_securityKeyData_{userId}_{key}";
     }
 
@@ -297,7 +297,7 @@ public sealed partial class Verify2fa : ComponentBase, IAsyncDisposable
     {
         if (_pendingAssertion is not null)
         {
-            await _pendingAssertion.DisposeAsync().ConfigureAwait(false);
+            await _pendingAssertion.DisposeAsync();
         }
 
         _persistingSubscription?.Dispose();

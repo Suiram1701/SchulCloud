@@ -28,8 +28,8 @@ public class MailKitEmailSender<TUser>(ILogger<MailKitEmailSender<TUser>> logger
         };
         mailMessage.To.Add(new MailAddress(email));
 
-        ISmtpClient smtpClient = await _clientFactory.GetSmtpClientAsync().ConfigureAwait(false);
-        await smtpClient.SendAsync(MimeMessage.CreateFromMailMessage(mailMessage)).ConfigureAwait(false);
+        ISmtpClient smtpClient = await _clientFactory.GetSmtpClientAsync();
+        await smtpClient.SendAsync(MimeMessage.CreateFromMailMessage(mailMessage));
 
         return IdentityResult.Success;
     }

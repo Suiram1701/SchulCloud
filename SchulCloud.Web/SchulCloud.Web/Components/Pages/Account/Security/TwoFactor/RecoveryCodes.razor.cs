@@ -44,12 +44,12 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authenticationState = await AuthenticationState.ConfigureAwait(false);
-        _user = (await UserManager.GetUserAsync(authenticationState.User).ConfigureAwait(false))!;
+        AuthenticationState authenticationState = await AuthenticationState;
+        _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
         if (!ComponentState.TryTakeFromJson(nameof(_recoveryCodes), out string[]? recoveryCodes))
         {
-            recoveryCodes = (await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(_user, 10).ConfigureAwait(false))?.ToArray();
+            recoveryCodes = (await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(_user, 10))?.ToArray();
             if (recoveryCodes is not null)
             {
                 _stateSubscription = ComponentState.RegisterOnPersisting(() =>
@@ -72,8 +72,8 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
         if (_recoveryCodes.Length > 0)
         {
             string appName = PresentationOptionsAccessor.Value.ApplicationName;
-            string userName = (await UserManager.GetUserNameAsync(_user).ConfigureAwait(false))!;
-            string userEmail = (await UserManager.GetEmailAsync(_user).ConfigureAwait(false))!;
+            string userName = (await UserManager.GetUserNameAsync(_user))!;
+            string userEmail = (await UserManager.GetEmailAsync(_user))!;
 
             StringBuilder fileBuilder = new();
             fileBuilder.AppendLine(Localizer["file_Introduction", appName, userName, userEmail]);

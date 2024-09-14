@@ -45,10 +45,10 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
     {
         if (HttpContext is not null)
         {
-            ColorTheme colorTheme = await UserPreferences.GetPreferredColorThemeAsync().ConfigureAwait(false);
+            ColorTheme colorTheme = await UserPreferences.GetPreferredColorThemeAsync();
             _isDarkMode = colorTheme == ColorTheme.Dark;
 
-            RequestCulture? cultures = await UserPreferences.GetPreferredCulturesAsync().ConfigureAwait(false);
+            RequestCulture? cultures = await UserPreferences.GetPreferredCulturesAsync();
             _culture = cultures?.UICulture;
 
             _stateSubscription = ComponentState.RegisterOnPersisting(() =>
@@ -70,8 +70,6 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
                 }
             }
         }
-
-        base.OnInitialized();
     }
 
     private async Task IsDarkMode_ChangedAsync()
@@ -81,7 +79,7 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
         ColorTheme theme = _isDarkMode
             ? ColorTheme.Dark
             : ColorTheme.Light;
-        await UserPreferences.SetPreferredColorThemeAsync(theme).ConfigureAwait(false);
+        await UserPreferences.SetPreferredColorThemeAsync(theme);
     }
 
     private async Task ChangeCulture_ClickAsync(CultureInfo? culture)
@@ -89,7 +87,7 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
         RequestCulture? cultures = culture is not null
             ? new(culture)
             : null;
-        await UserPreferences.SetPreferredCulturesAsync(cultures).ConfigureAwait(false);
+        await UserPreferences.SetPreferredCulturesAsync(cultures);
 
         NavigationManager.Refresh(forceReload: true);
     }

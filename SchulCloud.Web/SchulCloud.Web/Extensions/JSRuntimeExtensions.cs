@@ -50,6 +50,6 @@ internal static class JSRuntimeExtensions
     public static async ValueTask FormSubmitAsync(this IJSRuntime runtime, ElementReference reference)
     {
         ArgumentNullException.ThrowIfNull(runtime);
-        await runtime.InvokeVoidAsyncIgnoreErrors($"{ElementHelpers}.formSubmit", reference).ConfigureAwait(false);
+        await runtime.InvokeVoidAsyncIgnoreErrors($"{ElementHelpers}.formSubmit", reference);
     }
 }

@@ -29,7 +29,7 @@ public sealed class SignOut : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authenticationState = await AuthenticationState.ConfigureAwait(false);
+        AuthenticationState authenticationState = await AuthenticationState;
         if (SignInManager.IsSignedIn(authenticationState.User))
         {
             if (HttpContext is null)
@@ -38,7 +38,7 @@ public sealed class SignOut : ComponentBase
                 return;
             }
 
-            await SignInManager.SignOutAsync().ConfigureAwait(false);
+            await SignInManager.SignOutAsync();
 
             string userId = UserManager.GetUserId(authenticationState.User)!;
             Logger.LogDebug("User {id} signed out.", userId);
