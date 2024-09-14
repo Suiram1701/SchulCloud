@@ -83,7 +83,7 @@
                         ? MaterialSymbols.Outlined.Warning
                         : string.Empty;
                 }
-                <MudButton Color="Color.Primary" OnClick="StartSecurityKeyAuthentication_ClickAsync" Disabled="!_webAuthnSupported"
+                <MudButton Color="Color.Primary" OnClick="SecurityKeyAuthentication_ClickAsync" Disabled="!_webAuthnSupported"
                            EndIcon="@endIcon" Variant="Variant.Filled" FullWidth>
                     @Localizer["form_AuthenticateBtn"]
                 </MudButton>

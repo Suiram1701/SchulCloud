@@ -29,7 +29,7 @@
             <MudButton Color="Color.Tertiary" ButtonType="ButtonType.Submit" Variant="Variant.Filled">@Localizer["form_SubmitBtn"]</MudButton>
 
             <MudTooltip RootClass="mud-width-full" Text="@Localizer["webAuthn_NotSupported"]" Disabled="_webAuthnSupported">
-                <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="StartPasskeySignIn_ClickAsync"
+                <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="PasskeySignIn_ClickAsync"
                            StartIcon="@MaterialSymbols.Outlined.Passkey" IconSize="Size.Large" Disabled="!_webAuthnSupported" FullWidth>
                            @Localizer["form_PasskeySignInBtn"]
                 </MudButton>

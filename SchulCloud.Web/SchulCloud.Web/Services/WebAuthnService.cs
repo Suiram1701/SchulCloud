@@ -1,6 +1,7 @@
 ﻿using Fido2NetLib;
 using Microsoft.JSInterop;
 using SchulCloud.Web.Services.EventArgs;
+using SchulCloud.Web.Services.Exceptions;
 using static SchulCloud.Web.Constants.JSNames;
 
 namespace SchulCloud.Web.Services;
@@ -19,53 +20,45 @@ public class WebAuthnService(IJSRuntime runtime)
     /// <returns>The result.</returns>
     public async ValueTask<bool> IsSupportedAsync(CancellationToken ct = default)
     {
-        return await _runtime.InvokeAsync<bool>($"{WebAuthn}.isSupported");
+        return await _runtime.InvokeAsync<bool>($"{WebAuthn}.isSupported", ct);
     }
 
     /// <summary>
-    /// Begins an operation to create a new credential.
+    /// Creates a new credential on the client.
     /// </summary>
     /// <param name="options">The options to use.</param>
-    /// <param name="completedCallback">The callback when the operation is completed.</param>
     /// <param name="ct">Cancellation token</param>
-    /// <returns>The operation. To abort the operation call <see cref="IAsyncDisposable.DisposeAsync"/>.</returns>
-    public async ValueTask<IAsyncDisposable> StartCreateCredentialAsync(
-        CredentialCreateOptions options,
-        EventHandler<WebAuthnCompletedEventArgs<AuthenticatorAttestationRawResponse>> completedCallback,
-        CancellationToken ct = default)
+    /// <returns>The result of the operation.</returns>
+    /// <exception cref="WebAuthnException"></exception>
+    public async Task<AuthenticatorAttestationRawResponse> CreateCredentialAsync(CredentialCreateOptions options, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(completedCallback);
-        ArgumentNullException.ThrowIfNull(ct);
+        ct.ThrowIfCancellationRequested();
 
-        WebAuthnOperation<AuthenticatorAttestationRawResponse> operation = new(completedCallback);
+        WebAuthnOperation<AuthenticatorAttestationRawResponse> operation = new(ct);
         IJSObjectReference abortControllerRef = await _runtime.InvokeAsync<IJSObjectReference>($"{WebAuthn}.createCredential", ct, operation.OperationReference, options);
         operation.AbortControllerRef = abortControllerRef;
 
-        return operation;
+        return await operation.Task;
     }
 
     /// <summary>
-    /// Begins an operation to get a credential from the client.
+    /// Gets a credential from the client.
     /// </summary>
     /// <param name="options">The options to use.</param>
-    /// <param name="completedCallback">The callback when the operation is completed.</param>
     /// <param name="ct">Cancellation token</param>
-    /// <returns>The operation. To abort the operation call <see cref="IAsyncDisposable.DisposeAsync"/>.</returns>
-    public async ValueTask<IAsyncDisposable> StartGetCredentialAsync(
-        AssertionOptions options,
-        EventHandler<WebAuthnCompletedEventArgs<AuthenticatorAssertionRawResponse>> completedCallback,
-        CancellationToken ct = default)
+    /// <returns>The result of the request.</returns>
+    /// <exception cref="WebAuthnException"></exception>
+    public async Task<AuthenticatorAssertionRawResponse> GetCredentialAsync(AssertionOptions options, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(completedCallback);
-        ArgumentNullException.ThrowIfNull(ct);
+        ct.ThrowIfCancellationRequested();
 
-        WebAuthnOperation<AuthenticatorAssertionRawResponse> operation = new(completedCallback);
+        WebAuthnOperation<AuthenticatorAssertionRawResponse> operation = new(ct);
         IJSObjectReference abortControllerRef = await _runtime.InvokeAsync<IJSObjectReference>($"{WebAuthn}.getCredential", ct, operation.OperationReference, options);
         operation.AbortControllerRef = abortControllerRef;
 
-        return operation;
+        return await operation.Task;
     }
 
     private sealed class WebAuthnOperation<TResult> : IAsyncDisposable
@@ -74,29 +67,64 @@ public class WebAuthnService(IJSRuntime runtime)
 
         public IJSObjectReference AbortControllerRef { get; set; } = default!;
 
-        private readonly EventHandler<WebAuthnCompletedEventArgs<TResult>> _completedCallback;
+        public Task<TResult> Task => _completionSource.Task;
 
-        public WebAuthnOperation(EventHandler<WebAuthnCompletedEventArgs<TResult>> completedCallback)
+        private bool _disposed;
+        private readonly TaskCompletionSource<TResult> _completionSource;
+        private readonly CancellationTokenRegistration _cancellationTokenRegistration;
+
+        public WebAuthnOperation(CancellationToken cancellationToken)
         {
             OperationReference = DotNetObjectReference.Create(this);
-            _completedCallback = completedCallback;
+
+            _completionSource = new();
+            _cancellationTokenRegistration = cancellationToken.Register(OnCancelled, null);
+        }
+
+        private async void OnCancelled(object? state, CancellationToken ct)
+        {
+            _completionSource.SetCanceled(ct);
+            await DisposeAsync();
         }
 
         [JSInvokable("onOperationCompleted")]
         public async void OnOperationCompleted(TResult? result, string? errorMessage)
         {
-            WebAuthnCompletedEventArgs<TResult> eventArgs = new(result, errorMessage);
-            _completedCallback.Invoke(this, eventArgs);
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (result is not null)
+            {
+                _completionSource.SetResult(result);
+            }
+            else
+            {
+                _completionSource.SetException(new WebAuthnException(errorMessage));
+            }
 
             await DisposeAsync();
         }
 
         public async ValueTask DisposeAsync()
         {
-            await AbortControllerRef.InvokeVoidAsync("abort", "Operation disposed by server");
-            await AbortControllerRef.DisposeAsync();
+            if (!_disposed)
+            {
+                await _cancellationTokenRegistration.DisposeAsync();
 
-            OperationReference.Dispose();
+                try
+                {
+                    OperationReference.Dispose();
+                    await AbortControllerRef.InvokeVoidAsync("abort", "Operation disposed by server");
+                    await AbortControllerRef.DisposeAsync();
+                }
+                catch (JSDisconnectedException)
+                {
+                }
+
+                _disposed = true;
+            }
         }
     }
 }

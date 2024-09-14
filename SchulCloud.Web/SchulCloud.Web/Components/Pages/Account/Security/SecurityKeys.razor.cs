@@ -3,7 +3,9 @@ using Fido2NetLib.Objects;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
+using Microsoft.JSInterop;
 using MudBlazor;
 using SchulCloud.Store.Managers;
 using SchulCloud.Web.Components.Dialogs;
@@ -11,13 +13,15 @@ using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Models;
 using SchulCloud.Web.Services;
 using SchulCloud.Web.Services.EventArgs;
+using SchulCloud.Web.Services.Exceptions;
 using System.Globalization;
+using System.Security.Cryptography;
 using MaterialSymbols = MudBlazor.FontIcons.MaterialSymbols;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security;
 
 [Route("/account/security/securityKeys")]
-public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
+public sealed partial class SecurityKeys : ComponentBase, IDisposable
 {
     #region Injections
     [Inject]
@@ -40,12 +44,11 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
     private MudForm _registerForm = default!;
     private RegisterSecurityKeyModel _registerModel = new();
 
-    private bool _webAuthnSupported = true;
     private ApplicationUser _user = default!;
     private List<SecurityKey> _securityKeys = [];
 
-    private IAsyncDisposable? _pendingRegistration;
-    private RegisterState? _registerState;
+    private bool _webAuthnSupported = true;
+    private readonly CancellationTokenSource _webAuthnCts = new();
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
@@ -155,55 +158,43 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
         await _registerForm.Validate();
         if (_registerForm.Errors.Length == 0)
         {
-            if (_pendingRegistration is not null)
+            CredentialCreateOptions creationOptions = await UserManager.CreateFido2CreationOptionsAsync(_user, _registerModel.IsPasskey);
+
+            try
             {
-                await _pendingRegistration.DisposeAsync();
+                AuthenticatorAttestationRawResponse authenticatorResponse = await WebAuthnService.CreateCredentialAsync(creationOptions, _webAuthnCts.Token);
+
+                IdentityResult storeResult = await UserManager.StoreFido2CredentialsAsync(
+                    _user,
+                    _registerModel.SecurityKeyName,
+                    _registerModel.IsPasskey,
+                    authenticatorResponse,
+                    creationOptions);
+                if (storeResult.Succeeded)
+                {
+                    AppCredential credential = (await UserManager.GetFido2CredentialById(authenticatorResponse.Id))!;
+                    SecurityKey securityKey = await CredentialToSecurityKeyAsync(credential);
+
+                    _securityKeys ??= [];
+                    _securityKeys.Add(securityKey);
+                    StateHasChanged();
+                }
+                else
+                {
+                    SnackbarService.AddError(storeResult.Errors, Localizer["registerDialog_SaveError"]);
+                }
+
+                _registerModel = new();
+                await _registerDialog.CloseAsync();
             }
-
-            CredentialCreateOptions options = await UserManager.CreateFido2CreationOptionsAsync(_user, _registerModel.IsPasskey);
-            _registerState = new(_registerModel.SecurityKeyName, _registerModel.IsPasskey, options);
-
-            _pendingRegistration = await WebAuthnService.StartCreateCredentialAsync(options, OnCredentialRegistrationCompletedAsync);
+            catch (WebAuthnException ex)
+            {
+                SnackbarService.AddError(ex.Message ?? Localizer["registerDialog_Error"]);
+            }
+            catch (TaskCanceledException)
+            {
+            }
         }
-    }
-
-    private async void OnCredentialRegistrationCompletedAsync(object? sender, WebAuthnCompletedEventArgs<AuthenticatorAttestationRawResponse> args)
-    {
-        _pendingRegistration = null;
-        if (_registerState is null)
-        {
-            return;
-        }
-
-        if (!args.Successful)
-        {
-            SnackbarService.AddError(args.ErrorMessage ?? Localizer["registerDialog_Error"]);
-            return;
-        }
-
-        IdentityResult result = await UserManager.StoreFido2CredentialsAsync(
-            _user,
-            _registerState.SecurityKeyName,
-            _registerState.IsPasskey,
-            args.Result,
-            _registerState.Options);
-        if (result.Succeeded)
-        {
-            AppCredential credential = (await UserManager.GetFido2CredentialById(args.Result.Id))!;
-            SecurityKey securityKey = await CredentialToSecurityKeyAsync(credential);
-
-            _securityKeys ??= [];
-            _securityKeys.Add(securityKey);
-            StateHasChanged();
-        }
-        else
-        {
-            SnackbarService.AddError(result.Errors, Localizer["registerDialog_SaveError"]);
-        }
-
-        _registerModel = new();
-        _registerState = null;
-        await _registerDialog.CloseAsync();
     }
 
     private async Task<SecurityKey> CredentialToSecurityKeyAsync(AppCredential credential)
@@ -217,12 +208,10 @@ public sealed partial class SecurityKeys : ComponentBase, IAsyncDisposable
         return new(credential, keyName, isPasskey, transports, registrationDate, metadata);
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        if (_pendingRegistration is not null)
-        {
-            await _pendingRegistration.DisposeAsync();
-        }
+        _webAuthnCts.Cancel();
+        _webAuthnCts.Dispose();
     }
 
     private record SecurityKey(AppCredential Credential, string? Name, bool IsPasskey, AuthenticatorTransport[]? Transports, DateTime RegistrationDate, MetadataStatement? Metadata)

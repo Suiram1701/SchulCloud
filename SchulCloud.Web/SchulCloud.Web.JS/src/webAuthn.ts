@@ -63,6 +63,10 @@ export namespace webAuthn {
             }
             await objReference.invokeMethodAsync('onOperationCompleted', response, null);
         }).catch(async error => {
+            if (abortController.signal.aborted) {
+                return;
+            }
+
             let errorMessage: string = 'An error occurred while creating credential.';
             if (error instanceof Error) {
                 errorMessage = error.message;
@@ -110,6 +114,10 @@ export namespace webAuthn {
             }
             await objReference.invokeMethodAsync('onOperationCompleted', response, null);
         }).catch(async error => {
+            if (abortController.signal.aborted) {
+                return;
+            }
+
             let errorMessage: string = 'An error occurred while getting credentials.';
             if (error instanceof Error) {
                 errorMessage = error.message;

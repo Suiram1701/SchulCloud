@@ -15,12 +15,13 @@ using SchulCloud.Web.Identity.Managers;
 using SchulCloud.Web.Models;
 using SchulCloud.Web.Services;
 using SchulCloud.Web.Services.EventArgs;
+using SchulCloud.Web.Services.Exceptions;
 using System.Security.Cryptography;
 
 namespace SchulCloud.Web.Components.Pages.Auth;
 
 [Route("/auth/signIn")]
-public sealed partial class SignIn : ComponentBase, IAsyncDisposable
+public sealed partial class SignIn : ComponentBase, IDisposable
 {
     #region Injections
     [Inject]
@@ -60,8 +61,7 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
     private PersistingComponentStateSubscription? _persistingSubscription;
 
     private bool _webAuthnSupported = true;
-    private AssertionOptions? _assertionOptions;
-    private IAsyncDisposable? _pendingAssertion;
+    private readonly CancellationTokenSource _webAuthnCts = new();
 
     private bool IsInvalid => _errorMessage is not null;
 
@@ -150,37 +150,38 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
         NavigationManager.NavigateTo(resetUrl);
     }
 
-    private async Task StartPasskeySignIn_ClickAsync()
+    private async Task PasskeySignIn_ClickAsync()
     {
         if (!_webAuthnSupported)
         {
             return;
         }
 
-        _assertionOptions = await UserManager.CreateFido2AssertionOptionsAsync(null);
-        _pendingAssertion = await WebAuthnService.StartGetCredentialAsync(_assertionOptions, OnGetCredentialCompletedCallback);
-    }
+        AssertionOptions assertionOptions = await UserManager.CreateFido2AssertionOptionsAsync(null);
 
-    private async void OnGetCredentialCompletedCallback(object? sender, WebAuthnCompletedEventArgs<AuthenticatorAssertionRawResponse> args)
-    {
-        if (args.Successful)
+        try
         {
+            AuthenticatorAssertionRawResponse authenticatorResponse = await WebAuthnService.GetCredentialAsync(assertionOptions, _webAuthnCts.Token);
+
             string key = RandomNumberGenerator.GetHexString(32);
             Model.AuthenticatorDataAccessKey = key;
-            StateHasChanged();
 
             string cacheKey = GetSecurityKeyDataCacheKey(key);
             using (ICacheEntry entry = Cache.CreateEntry(cacheKey))
             {
-                entry.SetValue(new SecurityKeyAuthState(_assertionOptions!, args.Result));
+                entry.SetValue(new SecurityKeyAuthState(assertionOptions, authenticatorResponse));
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
             }
 
+            StateHasChanged();
             await JSRuntime.FormSubmitAsync(_formRef);
         }
-        else
+        catch (WebAuthnException ex)
         {
-            SnackbarService.AddError(args.ErrorMessage ?? Localizer["webAuthn_Error"]);
+            SnackbarService.AddError(ex.Message ?? Localizer["webAuthn_Error"]);
+        }
+        catch (TaskCanceledException)
+        {
         }
     }
 
@@ -251,13 +252,11 @@ public sealed partial class SignIn : ComponentBase, IAsyncDisposable
         return $"signIn_securityKeyData_{key}";
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        if (_pendingAssertion is not null)
-        {
-            await _pendingAssertion.DisposeAsync();
-        }
+        _webAuthnCts.Cancel();
 
+        _webAuthnCts.Dispose();
         _persistingSubscription?.Dispose();
     }
 
