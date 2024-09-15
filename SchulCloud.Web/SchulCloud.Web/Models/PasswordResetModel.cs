@@ -1,8 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Localization;
-
-namespace SchulCloud.Web.Models;
+﻿namespace SchulCloud.Web.Models;
 
 /// <summary>
 /// The model for the <see cref="Components.Pages.Auth.ResetPassword"/> page.
@@ -12,7 +8,7 @@ public class PasswordResetModel
     /// <summary>
     /// The name or the email of the user.
     /// </summary>
-    public string User { get; set; } = string.Empty;
+    public string User { get; set; } = default!;
 
     /// <summary>
     /// The new password.
@@ -23,44 +19,4 @@ public class PasswordResetModel
     /// The <see cref="NewPassword"/> again as confirmation.
     /// </summary>
     public string ConfirmedPassword { get; set; } = default!;
-
-    /// <summary>
-    /// A validator for the <see cref="PasswordResetModel"/>.
-    /// </summary>>
-    public class Validator : AbstractValidator<PasswordResetModel>
-    {
-        private readonly IPasswordValidator<ApplicationUser> _passwordValidator;
-        private readonly UserManager<ApplicationUser> _userManager;
-
-        public Validator(IStringLocalizer<PasswordResetModel> localizer, IPasswordValidator<ApplicationUser> passwordValidator, UserManager<ApplicationUser> userManager)
-        {
-            _passwordValidator = passwordValidator;
-            _userManager = userManager;
-
-            RuleFor(model => model.NewPassword).CustomAsync(ValidateNewPasswordAsync);
-            RuleFor(model => model.ConfirmedPassword)
-                .NotEmpty()
-                .WithMessage(localizer["confirmedPasswordNotMatch"])
-                .Equal(model => model.NewPassword)
-                .WithMessage(localizer["confirmedPasswordNotMatch"]);
-        }
-
-        private async Task ValidateNewPasswordAsync(string password, ValidationContext<PasswordResetModel> context, CancellationToken ct)
-        {
-            if (string.IsNullOrEmpty(password))
-            {
-                context.AddFailure(context.PropertyPath);
-                return;
-            }
-
-            IdentityResult result = await _passwordValidator.ValidateAsync(_userManager, null!, password);
-            if (!result.Succeeded)
-            {
-                foreach (IdentityError error in result.Errors)
-                {
-                    context.AddFailure(context.PropertyPath, error.Description);
-                }
-            }
-        }
-    }
 }

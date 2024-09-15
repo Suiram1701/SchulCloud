@@ -21,6 +21,9 @@ public sealed partial class ResetPassword : ComponentBase
     private ISnackbar SnackbarService { get; set; } = default!;
 
     [Inject]
+    private IPasswordValidator<ApplicationUser> PasswordValidator { get; set; } = default!;
+
+    [Inject]
     private Identity.EmailSenders.IEmailSender<ApplicationUser> EmailSender { get; set; } = default!;
 
     [Inject]
@@ -35,6 +38,8 @@ public sealed partial class ResetPassword : ComponentBase
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
     #endregion
+
+    private MudForm _userForm = default!;
 
     private ApplicationUser? _user;
     private readonly PasswordResetModel _model = new();
@@ -91,23 +96,33 @@ public sealed partial class ResetPassword : ComponentBase
         }
     }
 
-    private async Task<IEnumerable<string>> ValidateUserAsync()
+    private async Task UserForm_ValidChangedAsync(bool valid)
     {
-        _user = await UserManager.FindByEmailAsync(_model.User);
-        _user ??= await UserManager.FindByNameAsync(_model.User);
-
-        if (_user is null)
+        if (valid)
         {
-            return [Localizer["userForm_UserNotFound"]];
+            UserId = await UserManager.GetUserIdAsync(_user!);
+            NavigationManager.NavigateToResetPassword(userId: UserId, returnUrl: ReturnUrl, replace: true);
         }
-
-        UserId = await UserManager.GetUserIdAsync(_user);
-        NavigationManager.NavigateToResetPassword(userId: UserId, returnUrl: ReturnUrl, replace: true);
-
-        return [];
     }
 
-    private async Task ResetPasswordAsync()
+    private async Task<string?> UserForm_UserValidateAsync(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return Localizer["form_NotEmpty"];
+        }
+
+        _user = await UserManager.FindByEmailAsync(value);
+        _user ??= await UserManager.FindByNameAsync(value);
+        if (_user is null)
+        {
+            return Localizer["userForm_User_NotFound"];
+        }
+
+        return null;
+    }
+
+    private async Task ResetForm_OnValidSubmitAsync()
     {
         if (_user is null || ChangeToken is null)
         {
@@ -126,5 +141,28 @@ public sealed partial class ResetPassword : ComponentBase
         {
             SnackbarService.AddError(result.Errors, Localizer["error"]);
         }
+    }
+
+    private async Task<IEnumerable<string>?> ResetForm_NewPasswordValidateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_model.NewPassword))
+        {
+            return [Localizer["form_NotEmpty"]];
+        }
+
+        IdentityResult validateResult = await PasswordValidator.ValidateAsync(UserManager, _user!, _model.NewPassword);
+        return validateResult.Errors.Select(error => error.Description);
+    }
+
+    private IEnumerable<string>? ResetForm_ConfirmedPasswordValidate()
+    {
+        if (string.IsNullOrWhiteSpace(_model.ConfirmedPassword))
+        {
+            return [Localizer["form_NotEmpty"]];
+        }
+
+        return !_model.NewPassword.Equals(_model.ConfirmedPassword)
+            ? [Localizer["resetForm_ConfirmedPassword_NotMatch"]]
+            : null;
     }
 }

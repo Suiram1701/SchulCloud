@@ -27,7 +27,7 @@ internal static class JSRuntimeExtensions
             ? "native"
             : "transparent";
         using DotNetStreamReference streamRef = new(stream, leaveOpen);
-        await runtime.InvokeVoidAsync($"{JSNames.File}.download", streamRef, fileName, mimeType, endings);
+        await runtime.InvokeVoidAsyncIgnoreErrors($"{JSNames.File}.download", streamRef, fileName, mimeType, endings);
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ internal static class JSRuntimeExtensions
     public static async ValueTask DownloadFileAsync(this IJSRuntime runtime, Uri filePath, string fileName)
     {
         ArgumentNullException.ThrowIfNull(runtime);
-        await runtime.InvokeVoidAsync($"{JSNames.File}.downloadFromUrl", fileName, filePath);
+        await runtime.InvokeVoidAsyncIgnoreErrors($"{JSNames.File}.downloadFromUrl", fileName, filePath);
     }
 
     /// <summary>

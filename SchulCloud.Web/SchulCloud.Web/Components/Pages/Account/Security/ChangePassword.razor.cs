@@ -19,6 +19,9 @@ public sealed partial class ChangePassword : ComponentBase
     private ISnackbar SnackbarService { get; set; } = default!;
 
     [Inject]
+    private IPasswordValidator<ApplicationUser> PasswordValidator { get; set; } = default!;
+
+    [Inject]
     private UserManager<ApplicationUser> UserManager { get; set; } = default!;
 
     [Inject]
@@ -40,17 +43,7 @@ public sealed partial class ChangePassword : ComponentBase
         _user = (await UserManager.GetUserAsync(state.User))!;
     }
 
-    private async Task<IEnumerable<string>> ValidateCurrentPasswordAsync()
-    {
-        if (!await UserManager.CheckPasswordAsync(_user, _model.CurrentPassword))
-        {
-            return [ErrorDescriber.PasswordMismatch().Description];
-        }
-
-        return [];
-    }
-
-    private async Task OnValidSubmitAsync()
+    private async Task Form_OnValidSubmitAsync()
     {
         IdentityResult result = await UserManager.ChangePasswordAsync(_user, _model.CurrentPassword, _model.NewPassword);
         if (result.Succeeded)
@@ -62,5 +55,38 @@ public sealed partial class ChangePassword : ComponentBase
         {
             SnackbarService.AddError(result.Errors, Localizer["changeError"]);
         }
+    }
+
+    private async Task<IEnumerable<string>?> Form_CurrentPasswordValidateAsync()
+    {
+        if (!await UserManager.CheckPasswordAsync(_user, _model.CurrentPassword))
+        {
+            return [ErrorDescriber.PasswordMismatch().Description];
+        }
+
+        return null;
+    }
+
+    private async Task<IEnumerable<string>?> Form_NewPasswordValidateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_model.NewPassword))
+        {
+            return [Localizer["form_NotEmpty"]];
+        }
+
+        IdentityResult validateResult = await PasswordValidator.ValidateAsync(UserManager, _user!, _model.NewPassword);
+        return validateResult.Errors.Select(error => error.Description);
+    }
+
+    private IEnumerable<string>? Form_ConfirmedPasswordValidate()
+    {
+        if (string.IsNullOrWhiteSpace(_model.ConfirmedPassword))
+        {
+            return [Localizer["form_NotEmpty"]];
+        }
+
+        return !_model.NewPassword.Equals(_model.ConfirmedPassword)
+            ? [Localizer["form_ConfirmedPassword_NotMatch"]]
+            : null;
     }
 }

@@ -23,7 +23,7 @@ public class Validator<TValue> : ComponentBase, IDisposable
     /// The return value is the list of validation errors.
     /// </remarks>
     [Parameter]
-    public Func<IEnumerable<string>>? Validate { get; set; }
+    public Func<IEnumerable<string>?>? Validate { get; set; }
 
     /// <summary>
     /// Get called when the value should be validated.
@@ -32,7 +32,7 @@ public class Validator<TValue> : ComponentBase, IDisposable
     /// The return value is the list of validation errors.
     /// </remarks>
     [Parameter]
-    public Func<Task<IEnumerable<string>>>? ValidateAsync { get; set; }
+    public Func<Task<IEnumerable<string>?>>? ValidateAsync { get; set; }
 
     [CascadingParameter]
     private EditContext EditContext { get; set; } = default!;
@@ -63,7 +63,7 @@ public class Validator<TValue> : ComponentBase, IDisposable
     {
         _messageStore.Clear(_fieldIdentifier);
 
-        IEnumerable<string> validationErrors;
+        IEnumerable<string>? validationErrors;
         if (Validate is not null)
         {
             validationErrors = Validate();
@@ -77,7 +77,7 @@ public class Validator<TValue> : ComponentBase, IDisposable
             throw new InvalidOperationException($"Nether {nameof(Validate)} or {nameof(ValidateAsync)} where specified.");
         }
 
-        if (validationErrors.Any())
+        if (validationErrors?.Any() ?? false)
         {
             _messageStore.Add(_fieldIdentifier, validationErrors);
         }
