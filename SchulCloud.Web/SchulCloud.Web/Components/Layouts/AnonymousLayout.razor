@@ -1,5 +1,6 @@
 ﻿@using System.Globalization
 @using SchulCloud.Web.Enums
+@using SchulCloud.Web.Options;
 
 @inherits LayoutComponentBase
 
@@ -7,6 +8,15 @@
 
 <MudLayout>
     <MudAppBar>
+        @{
+            PresentationOptions.Favicon? favicon = PresentationOptionsAccessor.Value.Favicons.FirstOrDefault(fav => fav.Sizes == "any");
+            favicon ??= PresentationOptionsAccessor.Value.Favicons.FirstOrDefault();
+
+            if (favicon is not null)
+            {
+                <MudImage Class="mr-2" Src="@favicon.Path" Width="40" Fluid />
+            }
+        }
         <MudText Class="mr-10" Typo="Typo.h5">@PresentationOptionsAccessor.Value.ApplicationName</MudText>
 
         <MudButton Href="@Routes.SignIn()">

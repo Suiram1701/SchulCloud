@@ -1,11 +1,23 @@
-﻿@inherits LayoutComponentBase
+﻿@using SchulCloud.Web.Options
+
+@inherits LayoutComponentBase
 
 <MudThemeProvider IsDarkMode />
 
 <MudLayout>
     <MudAppBar Elevation="1" Dense>
         <MudIconButton Icon="@MaterialSymbols.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleMenu_Click" />
-        <MudText Class="ml-5" Typo="Typo.h5">@PresentationOptionsAccessor.Value.ApplicationName</MudText>
+
+        @{
+            PresentationOptions.Favicon? favicon = PresentationOptionsAccessor.Value.Favicons.FirstOrDefault(fav => fav.Sizes == "any");
+            favicon ??= PresentationOptionsAccessor.Value.Favicons.FirstOrDefault();
+
+            if (favicon is not null)
+            {
+                <MudImage Class="mx-2" Src="@favicon.Path" Width="40" Fluid />
+            }
+        }
+        <MudText Typo="Typo.h5">@PresentationOptionsAccessor.Value.ApplicationName</MudText>
         <MudSpacer />
 
         <MudMenu AnchorOrigin="Origin.BottomRight">
