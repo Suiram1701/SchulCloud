@@ -13,12 +13,17 @@ public class EmailTokensLifeSpanOptions
     private static readonly TimeSpan _defaultLifeSpan = TimeSpan.FromHours(1);
 
     /// <summary>
+    /// The time a email confirmation link is valid.
+    /// </summary>
+    public TimeSpan EmailConfirmLink { get; set; } = _defaultLifeSpan;
+
+    /// <summary>
     /// The time a password reset token is valid.
     /// </summary>
-    public TimeSpan PasswordResetTokenLifeSpan { get; set; } = _defaultLifeSpan;
+    public TimeSpan PasswordResetToken { get; set; } = _defaultLifeSpan;
 
     /// <summary>
     /// The time a two factor email token is valid.
     /// </summary>
-    public TimeSpan TwoFactorEmailTokenLifeSpan { get; set; } = _defaultLifeSpan;
+    public TimeSpan TwoFactorEmailToken { get; set; } = _defaultLifeSpan;
 }

@@ -44,7 +44,7 @@ public class CachedRequestLimiter<TUser>(IMemoryCache cache, IOptions<RequestLim
         }
     }
 
-    public async Task<DateTimeOffset?> GetExpirationTimeAsync(TUser user, string purpose)
+    public async Task<DateTimeOffset?> GetTimeoutAsync(TUser user, string purpose)
     {
         string cacheKey = await GetCacheKeyAsync(user, purpose);
         if (_cache.TryGetValue(cacheKey, out DateTimeOffset expiration))

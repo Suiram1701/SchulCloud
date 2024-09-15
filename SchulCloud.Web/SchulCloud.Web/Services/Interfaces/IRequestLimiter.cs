@@ -30,5 +30,5 @@ public interface IRequestLimiter<TUser>
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>The timeout of the user. When no timeout set <c>null</c> will be returned.</returns>
-    public Task<DateTimeOffset?> GetExpirationTimeAsync(TUser user, string purpose);
+    public Task<DateTimeOffset?> GetTimeoutAsync(TUser user, string purpose);
 }

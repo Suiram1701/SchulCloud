@@ -142,4 +142,19 @@
   <data name="form_NotEmpty" xml:space="preserve">
     <value>The field must not be empty</value>
   </data>
+  <data name="signIn_Error" xml:space="preserve">
+    <value>An error occurred during sign in</value>
+  </data>
+  <data name="emailConfirmDialog" xml:space="preserve">
+    <value>Confirm email address</value>
+  </data>
+  <data name="emailConfirmDialog_closeBtn" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="emailConfirmDialog_confirmBtn" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="emailConfirmDialog_Message" xml:space="preserve">
+    <value>Before signing in, you must confirm the email address associated with your account. Click "Confirm" to confirm and click "Close" to sign in to another account.</value>
+  </data>
 </root>

@@ -91,7 +91,7 @@ public sealed partial class ResetPassword : ComponentBase
         }
         else
         {
-            DateTimeOffset? expiration = await ResetLimiter.GetPasswordResetExpirationTimeAsync(_user);
+            DateTimeOffset? expiration = await ResetLimiter.GetPasswordResetTimeoutAsync(_user);
             SnackbarService.AddInfo(Localizer["sent_Timeout", expiration.Humanize()]);
         }
     }

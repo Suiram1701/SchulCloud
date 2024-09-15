@@ -8,6 +8,15 @@ public interface IEmailSender<TUser>
     where TUser : class
 {
     /// <summary>
+    /// Sends a email confirm link to the specified <paramref name="email"/> address.
+    /// </summary>
+    /// <param name="user">The user that triggered the email.</param>
+    /// <param name="email">The recipient email.</param>
+    /// <param name="confirmLink">The reset link.</param>
+    /// <returns></returns>
+    public Task SendEmailConfirmLinkAsync(TUser user, string email, string confirmLink);
+
+    /// <summary>
     /// Sends a password reset email to the specified <paramref name="email"/> address.
     /// </summary>
     /// <remarks>

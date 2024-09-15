@@ -57,11 +57,15 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
     private ElementReference _formRef = default!;
     private const string _formName = "signInForm";
+
     private string? _errorMessage;
     private PersistingComponentStateSubscription? _persistingSubscription;
 
     private bool _webAuthnSupported = true;
     private readonly CancellationTokenSource _webAuthnCts = new();
+
+    private bool _emailConfirmDialogVisible;
+    private string? _emailConfirmUserId;
 
     private bool IsInvalid => _errorMessage is not null;
 
@@ -104,6 +108,8 @@ public sealed partial class SignIn : ComponentBase, IDisposable
                     {
                         ComponentState.PersistAsJson(nameof(Model), Model);
                         ComponentState.PersistAsJson(nameof(_errorMessage), _errorMessage);
+                        ComponentState.PersistAsJson(nameof(_emailConfirmDialogVisible), _emailConfirmDialogVisible);
+                        ComponentState.PersistAsJson(nameof(_emailConfirmUserId), _emailConfirmUserId);
 
                         return Task.CompletedTask;
                     });
@@ -117,6 +123,8 @@ public sealed partial class SignIn : ComponentBase, IDisposable
                 Model = persistedModel!;
             }
             ComponentState.TryTakeFromJson(nameof(_errorMessage), out _errorMessage);
+            ComponentState.TryTakeFromJson(nameof(_emailConfirmDialogVisible), out _emailConfirmDialogVisible);
+            ComponentState.TryTakeFromJson(nameof(_emailConfirmUserId), out _emailConfirmUserId);
         }
     }
 
@@ -195,7 +203,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
             user ??= await UserManager.FindByNameAsync(Model.User);
             if (user is null)
             {
-                _errorMessage = Localizer["signIn_" + SignInResult.Failed];
+                _errorMessage = Localizer["signIn_Failed"];
                 return false;
             }
 
@@ -222,8 +230,19 @@ public sealed partial class SignIn : ComponentBase, IDisposable
                     ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
                     : Localizer["signIn_LockedOut_NotSpecified"];
                 break;
+            case { IsNotAllowed: true }:
+                if (!await UserManager.IsEmailConfirmedAsync(user!))
+                {
+                    _emailConfirmDialogVisible = true;
+                    _emailConfirmUserId = await UserManager.GetUserIdAsync(user!);
+                }
+                else
+                {
+                    _errorMessage = Localizer["signIn_NotAllowed"];
+                }
+                break;
             default:
-                _errorMessage = Localizer["signIn_" + signInResult];
+                _errorMessage = Localizer["signIn_Error"];
                 break;
         }
 

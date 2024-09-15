@@ -1,4 +1,6 @@
-﻿<SchulCloudPageTitle Title="@Localizer["title"]" />
+﻿@using SchulCloud.Web.Extensions
+
+<SchulCloudPageTitle Title="@Localizer["title"]" />
 
 <MudPaper Class="mt-15 px-3 py-3">
     <MudText Class="mb-5" Typo="Typo.h4" Align="Align.Center">@Localizer["header"]</MudText>
@@ -31,7 +33,7 @@
             <MudTooltip RootClass="mud-width-full" Text="@Localizer["webAuthn_NotSupported"]" Disabled="_webAuthnSupported">
                 <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="PasskeySignIn_ClickAsync"
                            StartIcon="@MaterialSymbols.Outlined.Passkey" IconSize="Size.Large" Disabled="!_webAuthnSupported" FullWidth>
-                           @Localizer["form_PasskeySignInBtn"]
+                    @Localizer["form_PasskeySignInBtn"]
                 </MudButton>
             </MudTooltip>
 
@@ -39,3 +41,15 @@
         </MudStack>
     </form>
 </MudPaper>
+
+<MudDialog @bind-Visible="_emailConfirmDialogVisible">
+    <TitleContent>@Localizer["emailConfirmDialog"]</TitleContent>
+    <DialogContent>@Localizer["emailConfirmDialog_Message"]</DialogContent>
+    <DialogActions>
+        <MudButton Class="mr-2" OnClick="@(() => _emailConfirmDialogVisible = false)">@Localizer["emailConfirmDialog_closeBtn"]</MudButton>
+        <MudButton Color="Color.Primary" Href="@Routes.ConfirmEmail(_emailConfirmUserId!, returnUrl: NavigationManager.GetRelativeUri())"
+                   Variant="Variant.Filled">
+            @Localizer["emailConfirmDialog_confirmBtn"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>

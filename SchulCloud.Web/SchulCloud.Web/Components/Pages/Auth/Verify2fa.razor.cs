@@ -178,7 +178,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
 
         if (!await Limiter.CanRequestTwoFactorEmailCodeAsync(_user))
         {
-            DateTimeOffset? expiration = await Limiter.GetTwoFactorEmailCodeExpirationTimeAsync(_user);
+            DateTimeOffset? expiration = await Limiter.GetTwoFactorEmailCodeTimeoutAsync(_user);
 
             SnackbarService.AddInfo(Localizer["emailConfirmation_Timeout", expiration.Humanize()]);
         }

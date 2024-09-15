@@ -4,6 +4,34 @@ namespace SchulCloud.Web.Extensions;
 
 public static class RequestLimiterExtensions
 {
+    public const string ConfirmEmailPurpose = "ConfirmEmail";
+
+    /// <summary>
+    /// Indicates whether a email confirmation request is allowed for a user.
+    /// </summary>
+    /// <inheritdoc cref="IRequestLimiter{TUser}.CanRequestAsync(TUser, string)"/>
+    public static async Task<bool> CanRequestEmailConfirmationAsync<TUser>(this IRequestLimiter<TUser> limiter, TUser user)
+        where TUser : class
+    {
+        ArgumentNullException.ThrowIfNull(limiter);
+        ArgumentNullException.ThrowIfNull(user);
+
+        return await limiter.CanRequestAsync(user, ConfirmEmailPurpose);
+    }
+
+    /// <summary>
+    /// Gets the timeout of the email confirmation of a user.
+    /// </summary>
+    /// <inheritdoc cref="IRequestLimiter{TUser}.GetTimeoutAsync(TUser, string)"/>
+    public static async Task<DateTimeOffset?> GetEmailConfirmationTimeoutAsync<TUser>(this IRequestLimiter<TUser> limiter, TUser user)
+        where TUser : class
+    {
+        ArgumentNullException.ThrowIfNull(limiter);
+        ArgumentNullException.ThrowIfNull(user);
+
+        return await limiter.GetTimeoutAsync(user, ConfirmEmailPurpose);
+    }
+
     public const string PasswordResetPurpose = "PasswordReset";
 
     /// <summary>
@@ -20,16 +48,16 @@ public static class RequestLimiterExtensions
     }
 
     /// <summary>
-    /// Gets the expiration time of the password reset timeout of the user.
+    /// Gets the timeout of the password reset of the user.
     /// </summary>
-    /// <inheritdoc cref="IRequestLimiter{TUser}.GetExpirationTimeAsync(TUser, string)"/>
-    public static async Task<DateTimeOffset?> GetPasswordResetExpirationTimeAsync<TUser>(this IRequestLimiter<TUser> limiter, TUser user)
+    /// <inheritdoc cref="IRequestLimiter{TUser}.GetTimeoutAsync(TUser, string)"/>
+    public static async Task<DateTimeOffset?> GetPasswordResetTimeoutAsync<TUser>(this IRequestLimiter<TUser> limiter, TUser user)
         where TUser : class
     {
         ArgumentNullException.ThrowIfNull(limiter, nameof(limiter));
         ArgumentNullException.ThrowIfNull(user);
 
-        return await limiter.GetExpirationTimeAsync(user, PasswordResetPurpose);
+        return await limiter.GetTimeoutAsync(user, PasswordResetPurpose);
     }
 
     public const string TwoFactorEmailPurpose = "TwoFactorEmail";
@@ -48,15 +76,15 @@ public static class RequestLimiterExtensions
     }
 
     /// <summary>
-    /// Gets the expiration time of the 2fa email code timeout of the user.
+    /// Gets the timeout of the 2fa email code of the user.
     /// </summary>
-    /// <inheritdoc cref="IRequestLimiter{TUser}.GetExpirationTimeAsync(TUser, string)"/>
-    public static async Task<DateTimeOffset?> GetTwoFactorEmailCodeExpirationTimeAsync<TUser>(this IRequestLimiter<TUser> limiter, TUser user)
+    /// <inheritdoc cref="IRequestLimiter{TUser}.GetTimeoutAsync(TUser, string)"/>
+    public static async Task<DateTimeOffset?> GetTwoFactorEmailCodeTimeoutAsync<TUser>(this IRequestLimiter<TUser> limiter, TUser user)
         where TUser : class
     {
         ArgumentNullException.ThrowIfNull(limiter, nameof(limiter));
         ArgumentNullException.ThrowIfNull(user);
 
-        return await limiter.GetExpirationTimeAsync(user, TwoFactorEmailPurpose);
+        return await limiter.GetTimeoutAsync(user, TwoFactorEmailPurpose);
     }
 }

@@ -142,4 +142,19 @@
   <data name="form_NotEmpty" xml:space="preserve">
     <value>Das Feld darf nicht Leer sein</value>
   </data>
+  <data name="signIn_Error" xml:space="preserve">
+    <value>Bei der Anmeldung ist ein Fehler aufgetreten</value>
+  </data>
+  <data name="emailConfirmDialog" xml:space="preserve">
+    <value>E-Mail Adresse bestätigen</value>
+  </data>
+  <data name="emailConfirmDialog_Message" xml:space="preserve">
+    <value>Vor der Anmeldung muss die im Konto hinterlegte E-Mail Adresse bestätigt werden. Klicken Sie auf "Bestätigen" um die Bestätigung durchzuführen und "Schließen", um sich mit einem anderen Konto anzumelden.</value>
+  </data>
+  <data name="emailConfirmDialog_closeBtn" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="emailConfirmDialog_confirmBtn" xml:space="preserve">
+    <value>Bestätigen</value>
+  </data>
 </root>

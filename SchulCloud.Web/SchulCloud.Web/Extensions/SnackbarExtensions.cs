@@ -34,7 +34,7 @@ public static class SnackbarExtensions
         sb.Append("<ul class=\"mt-2\">");
         foreach (IdentityError error in errors)
         {
-            sb.AppendFormat("<li>{0}: {1}</li>", error.Code, error.Description);
+            sb.AppendFormat("<li>{0}</li>", error.Description);
         }
         sb.Append("</ul>");
 

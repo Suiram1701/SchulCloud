@@ -98,51 +98,21 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="title" xml:space="preserve">
-    <value>reset Password</value>
+    <value>Konto E-Mail bestätigen</value>
   </data>
-  <data name="userForm_User" xml:space="preserve">
-    <value>Email address or username</value>
+  <data name="confirmText" xml:space="preserve">
+    <value>Zur Bestätigung der E-Mail Adresse wird an die E-Mail Adresse des Kontos ein Bestätigungslink gesendet.</value>
   </data>
-  <data name="userForm_SubmitBtn" xml:space="preserve">
-    <value>reset Password</value>
+  <data name="sendLinkBtn" xml:space="preserve">
+    <value>Bestätigungs E-Mail senden</value>
   </data>
-  <data name="userForm_User_NotFound" xml:space="preserve">
-    <value>The specified user could not be found.</value>
+  <data name="confirmError" xml:space="preserve">
+    <value>Bei der Überprüfung ist ein Fehler aufgetreten.</value>
   </data>
-  <data name="sendMailBtn" xml:space="preserve">
-    <value>Send link</value>
+  <data name="sentEmail" xml:space="preserve">
+    <value>Der Link zur Bestätigung der E-Mail Adresse wurde an {0} gesendet.</value>
   </data>
-  <data name="resetForm_SubmitBtn" xml:space="preserve">
-    <value>reset Password</value>
-  </data>
-  <data name="success" xml:space="preserve">
-    <value>The password reset was successful.</value>
-  </data>
-  <data name="error" xml:space="preserve">
-    <value>Error resetting password</value>
-  </data>
-  <data name="resetForm_NewPassword" xml:space="preserve">
-    <value>New Password</value>
-  </data>
-  <data name="resetForm_ConfirmedPassword" xml:space="preserve">
-    <value>Confirm new password</value>
-  </data>
-  <data name="sendMailText" xml:space="preserve">
-    <value>To reset your account password, a link to reset your password will be sent to the email address stored in your account.</value>
-  </data>
-  <data name="userForm_Text" xml:space="preserve">
-    <value>Please enter the email address or username of the user whose password you want to reset.</value>
-  </data>
-  <data name="sent" xml:space="preserve">
-    <value>The password reset link has been sent to {0}.</value>
-  </data>
-  <data name="sent_Timeout" xml:space="preserve">
-    <value>A password reset email has already been sent to this user. Please try again at {0}.</value>
-  </data>
-  <data name="resetForm_ConfirmedPassword_NotMatch" xml:space="preserve">
-    <value>The new password and the confirmed password do not match.</value>
-  </data>
-  <data name="form_NotEmpty" xml:space="preserve">
-    <value>The field must not be empty</value>
+  <data name="sentEmail_Timeout" xml:space="preserve">
+    <value>An diesen Benutzer wurde bereits eine bestätigungs E-Mail gesendet. Versuchen Sie es in {0} nochmal.</value>
   </data>
 </root>

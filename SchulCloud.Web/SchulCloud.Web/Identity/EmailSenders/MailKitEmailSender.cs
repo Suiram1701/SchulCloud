@@ -11,8 +11,8 @@ namespace SchulCloud.Web.Identity.EmailSenders;
 /// <summary>
 /// An <see cref="EmailSenderBase"/> implementation that uses MailKit.Client to send emails.
 /// </summary>
-public class MailKitEmailSender<TUser>(ILogger<MailKitEmailSender<TUser>> logger, IOptions<EmailSenderOptions> optionsAccessor, MailKitClientFactory clientFactory)
-    : EmailSenderBase<TUser>(logger, optionsAccessor)
+public class MailKitEmailSender<TUser>(ILogger<MailKitEmailSender<TUser>> logger, IOptions<EmailSenderOptions> optionsAccessor, UserManager<TUser> userManager, MailKitClientFactory clientFactory)
+    : EmailSenderBase<TUser>(logger, optionsAccessor, userManager)
     where TUser : class
 {
     private readonly EmailSenderOptions _options = optionsAccessor.Value;

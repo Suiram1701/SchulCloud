@@ -1,4 +1,5 @@
 ﻿using Humanizer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SchulCloud.Web.Options;
 using System.Globalization;
@@ -8,20 +9,33 @@ namespace SchulCloud.Web.Identity.EmailSenders;
 /// <summary>
 /// Provides a email sender that generates a localized UI for the sendet emails
 /// </summary>
-public abstract class EmailSenderBase<TUser>(ILogger logger, IOptions<EmailSenderOptions> optionsAccessor) : IEmailSender<TUser>
+public abstract class EmailSenderBase<TUser>(ILogger logger, IOptions<EmailSenderOptions> optionsAccessor, UserManager<TUser> userManager) : IEmailSender<TUser>
     where TUser : class
 {
     protected readonly ILogger _logger = logger;
+    protected readonly UserManager<TUser> _userManager = userManager;
     private readonly EmailSenderOptions _options = optionsAccessor.Value;
 
     // A real UI and localization will be implemented later.
+    public virtual async Task SendEmailConfirmLinkAsync(TUser user, string email, string confirmLink)
+    {
+        string userName = (await _userManager.GetUserNameAsync(user))!;
+
+        string content = string.Format(
+            "A confirmation of this email for the user account {0} was requested. " +
+            "Go on {1} to confirm this email address for the account. This link will expire in {2}. " +
+            "If you didn't created this account ignore this email.",
+            userName, confirmLink, _options.TokensLifeSpans.EmailConfirmLink.Humanize(culture: CultureInfo.InvariantCulture));
+        await ExecuteInternalAsync(user, email, "Email confirmation", content);
+    }
+
     public virtual async Task SendPasswordResetLinkAsync(TUser user, string email, string resetLink)
     {
         string content = string.Format(
             "A reset of the account password of this account was requested. " +
             "Go on {0} to reset the password. This link will expire in {1}. " +
             "If you didn't requested this ignore this Email.",
-            resetLink, _options.TokensLifeSpan.PasswordResetTokenLifeSpan.Humanize(culture: CultureInfo.InvariantCulture));
+            resetLink, _options.TokensLifeSpans.PasswordResetToken.Humanize(culture: CultureInfo.InvariantCulture));
         await ExecuteInternalAsync(user, email, "Reset account password", content);
     }
 
@@ -31,7 +45,7 @@ public abstract class EmailSenderBase<TUser>(ILogger logger, IOptions<EmailSende
             "A 2fa authentication via email was requested for this account. " +
             "The authentication code is {0}. This code will expire in {1}. " +
             "If you didn't requested this your password may compromised and you should change it.",
-            code, _options.TokensLifeSpan.TwoFactorEmailTokenLifeSpan.Humanize(culture: CultureInfo.InvariantCulture));
+            code, _options.TokensLifeSpans.TwoFactorEmailToken.Humanize(culture: CultureInfo.InvariantCulture));
         await ExecuteInternalAsync(user, email, "2FA Email confirmation", content);
     }
 

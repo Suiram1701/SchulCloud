@@ -18,5 +18,5 @@ public class EmailSenderOptions
     /// <summary>
     /// Displayed life spans of tokens sent via email.
     /// </summary>
-    public EmailTokensLifeSpanOptions TokensLifeSpan { get; set; } = new();
+    public EmailTokensLifeSpanOptions TokensLifeSpans { get; set; } = new();
 }
