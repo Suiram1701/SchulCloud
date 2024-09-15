@@ -4,13 +4,25 @@
     <MudText Class="mb-2" Typo="Typo.h6" Align="Align.Center">@Localizer["title"]</MudText>
     <MudText Typo="Typo.subtitle1" Align="Align.Center">@Localizer["desc"]</MudText>
 
-    <MudText HtmlTag="div" Class="my-5" Align="Align.Center">
-        @foreach (string code in _recoveryCodes)
-        {
-            <b class="mt-1">@(code)</b>
-            <br />
-        }
-    </MudText>
+    @if (_recoveryCodes is not null)
+    {
+        <MudText HtmlTag="div" Class="my-5" Align="Align.Center">
+            @foreach (string code in _recoveryCodes)
+            {
+                <b class="mt-1">@(code)</b>
+                <br />
+            }
+        </MudText>
+    }
+    else
+    {
+        <div class="d-flex flex-column align-center my-5">
+            @for (int i = 0; i < _codeCount; i++)
+            {
+                <MudSkeleton Class="mt-1" Width="150px" />
+            }
+        </div>
+    }
 
     <MudStack Justify="Justify.Center" Row>
         <MudButton Color="Color.Secondary" OnClick="Download_ClickAsync">@Localizer["downloadBtn"]</MudButton>

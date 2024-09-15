@@ -15,6 +15,7 @@ using SchulCloud.Web.Services;
 using SchulCloud.Web.Services.EventArgs;
 using SchulCloud.Web.Services.Exceptions;
 using System.Globalization;
+using System.Net;
 using System.Security.Cryptography;
 using MaterialSymbols = MudBlazor.FontIcons.MaterialSymbols;
 
@@ -40,12 +41,15 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
     private WebAuthnService WebAuthnService { get; set; } = default!;
     #endregion
 
+    private ApplicationUser _user = default!;
+
     private MudDialog _registerDialog = default!;
     private MudForm _registerForm = default!;
     private RegisterSecurityKeyModel _registerModel = new();
 
-    private ApplicationUser _user = default!;
-    private List<SecurityKey> _securityKeys = [];
+    private List<SecurityKey>? _securityKeys;
+    private int _selectedPage = 1;
+    private const int _keysPerPage = 10;
 
     private bool _webAuthnSupported = true;
     private readonly CancellationTokenSource _webAuthnCts = new();
@@ -58,10 +62,11 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
         AuthenticationState authenticationState = await AuthenticationState;
         _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
-        foreach (AppCredential credential in await UserManager.GetFido2CredentialsByUserAsync(_user))
-        {
-            _securityKeys.Add(await CredentialToSecurityKeyAsync(credential));
-        }
+        IEnumerable<AppCredential> credentials = await UserManager.GetFido2CredentialsByUserAsync(_user);
+        SecurityKey[] securityKeys = await Task.WhenAll(credentials.Select(async cred => await CredentialToSecurityKeyAsync(cred)));
+
+        _securityKeys ??= [];
+        _securityKeys.AddRange(securityKeys);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -90,7 +95,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
             Localizer["renameDialog"],
             null,
             oldName: securityKey.Name,
-            excludedNames: _securityKeys.Select(key => key.Name ?? string.Empty));
+            excludedNames: _securityKeys!.Select(key => key.Name ?? string.Empty));
         DialogResult? dialogResult = await dialogReference.Result;
         if (dialogResult?.Canceled ?? true)
         {

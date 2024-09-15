@@ -189,13 +189,10 @@ public sealed partial class Index : ComponentBase, IDisposable
     private async Task UpdateMfaStatesAsync()
     {
         _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user);
-        if (_mfaEnabled)
-        {
-            _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user);
-            _securityKeysCount = await UserManager.GetTwoFactorSecurityKeysCountAsync(_user);
-            _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
-            _mfaRemainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user);
-        }
+        _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user);
+        _securityKeysCount = await UserManager.GetTwoFactorSecurityKeysCountAsync(_user);
+        _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
+        _mfaRemainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user);
     }
 
     public void Dispose()

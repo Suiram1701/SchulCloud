@@ -1,20 +1,20 @@
-﻿@using QRCoder
-
-<SchulCloudPageTitle Title="@Localizer["title"]" />
+﻿<SchulCloudPageTitle Title="@Localizer["title"]" />
 
 <MudPaper Class="px-3 py-3">
     <MudText Typo="Typo.h6" Align="Align.Center">@Localizer["title"]</MudText>
 
     <MudGrid Class="mt-2">
-        <MudItem Class="d-flex justify-center" xs="12" md="6">
-            <div>
-                @if (_authenticatorInfo is not null)
-                {
-                    @((MarkupString)_authenticatorInfo.Value.SvgRenderedQrCode)
-                    <br />
-                    <b class="mt-2">@_authenticatorInfo.Value.Base32Secret</b>
-                }
-            </div>
+        <MudItem Class="d-flex flex-column justify-center align-center" xs="12" md="6">
+            @if (_authenticatorData is not null)
+            {
+                @((MarkupString)_authenticatorData.Value.SvgRenderedQrCode)
+                <b class="mt-2">@_authenticatorData.Value.Base32Secret</b>
+            }
+            else
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="294px" Height="294px" />
+                <MudSkeleton Class="mt-2" Width="320px" />
+            }
         </MudItem>
         <MudItem xs="12" md="6">
             <ol class="ml-5">
@@ -24,11 +24,11 @@
             </ol>
         </MudItem>
         <MudItem xs="12">
-            <MudForm @ref="_form" Model="_model" IsValidChanged="Form_IsValidChanged">
+            <MudForm Class="mx-5" @ref="_form" Model="_model" IsValidChanged="Form_IsValidChanged">
                 <MudTextField @bind-Value="_model.Code" Label="@Localizer["form_Code"]" RequiredError="@Localizer["form_NotEmpty"]" Required
                               Validation="@((string value) => Form_ValidateCodeAsync(value))" />
 
-                <MudButton Class="mt-3" Color="Color.Primary" OnClick="_form.Validate" >@Localizer["form_SubmitBtn"]</MudButton>
+                <MudButton Class="mt-3" Color="Color.Primary" OnClick="_form.Validate">@Localizer["form_SubmitBtn"]</MudButton>
             </MudForm>
         </MudItem>
     </MudGrid>

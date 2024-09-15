@@ -18,58 +18,73 @@
         </MudButton>
     </MudTooltip>
 
-    <MudExpansionPanels Elevation="4" MultiExpansion>
-        @foreach (SecurityKey securityKey in _securityKeys.OrderByDescending(key => key.RegistrationDate))
-        {
-            <MudExpansionPanel>
-                <TitleContent>
-                    <MudStack AlignItems="AlignItems.Center" Row>
-                        <MudIcon Icon="@securityKey.GetIconName()" />
-                        <span class="ms-2">@securityKey.Name</span>
+    @if (_securityKeys is not null)
+    {
+        <MudExpansionPanels Elevation="4" MultiExpansion>
+            @foreach (SecurityKey securityKey in _securityKeys
+                .OrderByDescending(key => key.RegistrationDate)
+                .Skip((_selectedPage - 1) * _keysPerPage)
+                .Take(_keysPerPage))
+            {
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <MudStack AlignItems="AlignItems.Center" Row>
+                            <MudIcon Icon="@securityKey.GetIconName()" />
+                            <span class="ms-2">@securityKey.Name</span>
 
-                        @if (securityKey.IsPasskey)
+                            @if (securityKey.IsPasskey)
+                            {
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small">@Localizer["securityKey_IsPasskey"]</MudChip>
+                            }
+
+                            <MudSpacer />
+                            <span class="mr-2">@Localizer["securityKey_Added", securityKey.RegistrationDate.ToDisplayedString()]</span>
+                        </MudStack>
+                    </TitleContent>
+                    <ChildContent>
+                        @if (securityKey.Metadata is not null)
                         {
-                            <MudChip T="string" Color="Color.Info" Size="Size.Small">@Localizer["securityKey_IsPasskey"]</MudChip>
+
+                            <div class="d-flex">
+                                <MudPaper Elevation="2" Square>
+                                    <MudImage Src="@securityKey.Metadata.Icon" Fluid />
+                                </MudPaper>
+
+                                <MudText HtmlTag="ul" Class="ml-2 mt-2" Typo="Typo.body2">
+                                    <li>@Localizer["securityKey_Desc", securityKey.GetLocalizedDescription()]</li>
+                                    <li>@Localizer["securityKey_Protocol", securityKey.Metadata.ProtocolFamily]</li>
+                                </MudText>
+                            </div>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2">@Localizer["securityKey_NoDesc"]</MudText>
                         }
 
-                        <MudSpacer /> 
-                        <span class="mr-2">@Localizer["securityKey_Added", securityKey.RegistrationDate.ToDisplayedString()]</span>
-                    </MudStack>
-                </TitleContent>
-                <ChildContent>
-                    @if (securityKey.Metadata is not null)
-                    {
-
-                        <div class="d-flex">
-                            <MudPaper Elevation="2" Square>
-                                <MudImage Src="@securityKey.Metadata.Icon" Fluid />
-                            </MudPaper>
-
-                            <MudText HtmlTag="ul" Class="ml-2 mt-2" Typo="Typo.body2">
-                                <li>@Localizer["securityKey_Desc", securityKey.GetLocalizedDescription()]</li>
-                                <li>@Localizer["securityKey_Protocol", securityKey.Metadata.ProtocolFamily]</li>
-                            </MudText>
-                        </div>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.body2">@Localizer["securityKey_NoDesc"]</MudText>
-                    }
-
-                    <MudStack Class="mt-2" Row>
-                        <MudButton Color="Color.Secondary" OnClick="@(async () => await SecurityKeyChangeName_ClickAsync(securityKey))"
-                                   StartIcon="@MaterialSymbols.Outlined.Edit">
-                                   @Localizer["securityKey_RenameBtn"]
-                        </MudButton>
-                        <MudButton Class="ml-2" Color="Color.Error" OnClick="@(async () => await SecurityKeyRemove_ClickAsync(securityKey))"
-                                   StartIcon="@MaterialSymbols.Outlined.Delete">
-                                   @Localizer["securityKey_RemoveBtn"]
-                        </MudButton>
-                    </MudStack>
-                </ChildContent>
-            </MudExpansionPanel>
-        }
-    </MudExpansionPanels>
+                        <MudStack Class="mt-2" Row>
+                            <MudButton Color="Color.Secondary" OnClick="@(async () => await SecurityKeyChangeName_ClickAsync(securityKey))"
+                                       StartIcon="@MaterialSymbols.Outlined.Edit">
+                                @Localizer["securityKey_RenameBtn"]
+                            </MudButton>
+                            <MudButton Class="ml-2" Color="Color.Error" OnClick="@(async () => await SecurityKeyRemove_ClickAsync(securityKey))"
+                                       StartIcon="@MaterialSymbols.Outlined.Delete">
+                                @Localizer["securityKey_RemoveBtn"]
+                            </MudButton>
+                        </MudStack>
+                    </ChildContent>
+                </MudExpansionPanel>
+            }
+        </MudExpansionPanels>
+        <div class="d-flex justify-center mt-2">
+            <MudPagination @bind-Selected="_selectedPage" Count="@((int)Math.Ceiling((_securityKeys?.Count ?? 0) / (double)_keysPerPage))" />
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-center">
+            <MudProgressCircular Color="Color.Primary" Indeterminate />
+        </div>
+    }
 </MudPaper>
 
 <MudDialog @ref="_registerDialog" ContentStyle="width:350px;">
@@ -83,10 +98,10 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Secondary" OnClick="@(async () => await _registerDialog.CloseAsync())">
+        <MudButton OnClick="@(async () => await _registerDialog.CloseAsync())">
             @Localizer["registerDialog_CancelBtn"]
         </MudButton>
-        <MudButton Color="Color.Primary" OnClick="RegisterForm_Register_ClickAsync">
+        <MudButton Color="Color.Primary" OnClick="RegisterForm_Register_ClickAsync" Variant="Variant.Filled">
             @Localizer["registerDialog_RegisterBtn"]
         </MudButton>
     </DialogActions>

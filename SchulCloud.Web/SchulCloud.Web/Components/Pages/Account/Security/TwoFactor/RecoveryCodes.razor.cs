@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -13,7 +12,7 @@ using System.Text;
 namespace SchulCloud.Web.Components.Pages.Account.Security.TwoFactor;
 
 [Route("/account/security/twoFactor/recoveryCodes")]
-public sealed partial class RecoveryCodes : ComponentBase, IDisposable
+public sealed partial class RecoveryCodes : ComponentBase
 {
     #region Injections
     [Inject]
@@ -30,14 +29,12 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
 
     [Inject]
     private UserManager<ApplicationUser> UserManager { get; set; } = default!;
-
-    [Inject]
-    private PersistentComponentState ComponentState { get; set; } = default!;
     #endregion
 
     private ApplicationUser _user = default!;
-    private string[] _recoveryCodes = [];
-    private PersistingComponentStateSubscription? _stateSubscription;
+
+    private IEnumerable<string>? _recoveryCodes;
+    private const int _codeCount = 10;
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
@@ -46,30 +43,21 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
     {
         AuthenticationState authenticationState = await AuthenticationState;
         _user = (await UserManager.GetUserAsync(authenticationState.User))!;
+    }
 
-        if (!ComponentState.TryTakeFromJson(nameof(_recoveryCodes), out string[]? recoveryCodes))
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
         {
-            recoveryCodes = (await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(_user, 10))?.ToArray();
-            if (recoveryCodes is not null)
-            {
-                _stateSubscription = ComponentState.RegisterOnPersisting(() =>
-                {
-                    ComponentState.PersistAsJson(nameof(_recoveryCodes), recoveryCodes);
-                    return Task.CompletedTask;
-                }, RenderMode.InteractiveServer);
-            }
-            else
-            {
-                SnackbarService.AddError(Localizer["generationError"]);
-            }
+            // Send the codes only via SignalR to prevent multiple transmissions.
+            _recoveryCodes = await CreateRecoveryCodesAsync();
+            StateHasChanged();
         }
-
-        _recoveryCodes = recoveryCodes ?? [];
     }
 
     private async Task Download_ClickAsync()
     {
-        if (_recoveryCodes.Length > 0)
+        if (_recoveryCodes?.Any() ?? false)
         {
             string appName = PresentationOptionsAccessor.Value.ApplicationName;
             string userName = (await UserManager.GetUserNameAsync(_user))!;
@@ -88,8 +76,14 @@ public sealed partial class RecoveryCodes : ComponentBase, IDisposable
         }
     }
 
-    public void Dispose()
+    private async Task<IEnumerable<string>?> CreateRecoveryCodesAsync()
     {
-        _stateSubscription?.Dispose();
+        IEnumerable<string>? recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(_user, _codeCount);
+        if (recoveryCodes is null)
+        {
+            SnackbarService.AddError(Localizer["generationError"]);
+        }
+
+        return recoveryCodes;
     }
 }

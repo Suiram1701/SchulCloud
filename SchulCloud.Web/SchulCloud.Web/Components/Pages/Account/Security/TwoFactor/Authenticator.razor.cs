@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
 using QRCoder;
@@ -14,9 +13,6 @@ namespace SchulCloud.Web.Components.Pages.Account.Security.TwoFactor;
 public sealed partial class Authenticator : ComponentBase
 {
     #region Injections
-    [Inject]
-    private IMemoryCache Cache { get; set; } = default!;
-
     [Inject]
     private IStringLocalizer<Authenticator> Localizer { get; set; } = default!;
 
@@ -33,7 +29,7 @@ public sealed partial class Authenticator : ComponentBase
     private MudForm _form = default!;
 
     private ApplicationUser _user = default!;
-    private (string Base32Secret, string SvgRenderedQrCode)? _authenticatorInfo;
+    private (string Base32Secret, string SvgRenderedQrCode)? _authenticatorData;
     private readonly AuthenticatorModel _model = new();
 
     [CascadingParameter]
@@ -49,8 +45,16 @@ public sealed partial class Authenticator : ComponentBase
             NavigationManager.NavigateToSecurityIndex();
             return;
         }
+    }
 
-        _authenticatorInfo = await Cache.GetOrCreateAsync(await GetCacheKeyAsync(), CreateAuthenticatorInfoAsync);
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Send qr code and secret only via SignalR to prevent multiple transmissions.
+            _authenticatorData = await CreateAuthenticatorDataAsync();
+            StateHasChanged();
+        }
     }
 
     private async Task Form_IsValidChanged(bool valid)
@@ -63,8 +67,6 @@ public sealed partial class Authenticator : ComponentBase
         IdentityResult enableResult = await UserManager.SetTwoFactorEnabledAsync(_user, true);
         if (enableResult.Succeeded)
         {
-            Cache.Remove(await GetCacheKeyAsync());
-
             SnackbarService.AddSuccess(Localizer["enableSuccess"]);
             NavigationManager.NavigateToSecurityIndex();
         }
@@ -89,27 +91,17 @@ public sealed partial class Authenticator : ComponentBase
         return null;
     }
 
-    private async Task<string> GetCacheKeyAsync()
+    private async Task<(string, string)?> CreateAuthenticatorDataAsync()
     {
-        string userId = await UserManager.GetUserIdAsync(_user);
-        return $"authenticatorEnableData_{userId}";
-    }
-
-    private async Task<(string, string)?> CreateAuthenticatorInfoAsync(ICacheEntry entry)
-    {
-        IdentityResult result = await UserManager.ResetAuthenticatorKeyAsync(_user);
-        if (!result.Succeeded)
+        IdentityResult resetResult = await UserManager.ResetAuthenticatorKeyAsync(_user);
+        if (!resetResult.Succeeded)
         {
-            entry.SlidingExpiration = TimeSpan.Zero;
-
-            SnackbarService.AddError(result.Errors, Localizer["requestError"]);
+            SnackbarService.AddError(resetResult.Errors, Localizer["requestError"]);
             return null;
         }
 
-        entry.SlidingExpiration = TimeSpan.FromMinutes(10);
-        string base32secret = (await UserManager.GetAuthenticatorKeyAsync(_user))!;
-
         string userName = (await UserManager.GetUserNameAsync(_user))!;
+        string base32secret = (await UserManager.GetAuthenticatorKeyAsync(_user))!;
         PayloadGenerator.OneTimePassword payload = new()
         {
             Issuer = UserManager.Options.Tokens.AuthenticatorIssuer,
