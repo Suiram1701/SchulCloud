@@ -14,7 +14,6 @@ using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Identity.Managers;
 using SchulCloud.Web.Models;
 using SchulCloud.Web.Services;
-using SchulCloud.Web.Services.EventArgs;
 using SchulCloud.Web.Services.Exceptions;
 using System.Security.Cryptography;
 

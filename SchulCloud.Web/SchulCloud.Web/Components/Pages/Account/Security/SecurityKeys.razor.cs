@@ -12,7 +12,6 @@ using SchulCloud.Web.Components.Dialogs;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Models;
 using SchulCloud.Web.Services;
-using SchulCloud.Web.Services.EventArgs;
 using SchulCloud.Web.Services.Exceptions;
 using System.Globalization;
 using System.Net;
