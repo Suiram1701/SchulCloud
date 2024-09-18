@@ -48,7 +48,7 @@ public class SchulCloudSignInManager<TUser, TCredential>(
         {
             return (SignInResult.Failed, null);
         }
-        else if (!await _userManager.GetFido2CredentialIsPasskey(credential))
+        else if (!await _userManager.GetIsPasskey(credential))
         {
             return (SignInResult.Failed, null);
         }

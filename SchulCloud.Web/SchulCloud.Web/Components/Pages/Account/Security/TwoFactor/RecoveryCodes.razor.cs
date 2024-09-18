@@ -29,6 +29,9 @@ public sealed partial class RecoveryCodes : ComponentBase
 
     [Inject]
     private UserManager<ApplicationUser> UserManager { get; set; } = default!;
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
     #endregion
 
     private ApplicationUser _user = default!;
@@ -41,6 +44,12 @@ public sealed partial class RecoveryCodes : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        if (!UserManager.SupportsUserTwoFactor || !UserManager.SupportsUserTwoFactorRecoveryCodes)
+        {
+            NavigationManager.NavigateToSecurityIndex();
+            return;
+        }
+
         AuthenticationState authenticationState = await AuthenticationState;
         _user = (await UserManager.GetUserAsync(authenticationState.User))!;
     }

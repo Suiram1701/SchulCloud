@@ -100,8 +100,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
             if (HttpMethods.IsPost(HttpContext.Request.Method))
             {
-                bool result = await SignInAsync();
-                if (!result)
+                if (!await SignInAsync())
                 {
                     // Persist state from initial HTTP request to interactivity begin.
                     _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
@@ -160,7 +159,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
     private async Task PasskeySignIn_ClickAsync()
     {
-        if (!_webAuthnSupported)
+        if (!UserManager.SupportsUserPasskeySignIn || !_webAuthnSupported)
         {
             return;
         }
@@ -195,9 +194,9 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
     private async Task<bool> SignInAsync()
     {
-        SignInResult signInResult;
-        ApplicationUser? user;
-        if (string.IsNullOrWhiteSpace(Model.AuthenticatorDataAccessKey))
+        ApplicationUser? user = null;
+        SignInResult signInResult = SignInResult.Failed;
+        if (UserManager.SupportsUserPassword && string.IsNullOrWhiteSpace(Model.AuthenticatorDataAccessKey))
         {
             user = await UserManager.FindByEmailAsync(Model.User);
             user ??= await UserManager.FindByNameAsync(Model.User);
@@ -209,7 +208,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
             signInResult = await SignInManager.PasswordSignInAsync(user, Model.Password, Model.Persistent, lockoutOnFailure: true);
         }
-        else
+        else if (UserManager.SupportsUserPasskeySignIn)
         {
             (signInResult, user) = await SecurityKeySignInAsync(Model.AuthenticatorDataAccessKey, Model.Persistent);
             Model.AuthenticatorDataAccessKey = null;
@@ -226,7 +225,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
             case { IsLockedOut: true }:
                 DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(user!)).Value;
 
-                _errorMessage = lockOutEnd.Offset <= TimeSpan.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
+                _errorMessage = lockOutEnd < DateTimeOffset.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
                     ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
                     : Localizer["signIn_LockedOut_NotSpecified"];
                 break;

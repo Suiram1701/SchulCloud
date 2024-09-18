@@ -37,6 +37,12 @@ public sealed partial class Authenticator : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        if (!UserManager.SupportsUserTwoFactor || !UserManager.SupportsUserAuthenticatorKey)
+        {
+            NavigationManager.NavigateToSecurityIndex();
+            return;
+        }
+
         AuthenticationState authenticationState = await AuthenticationState;
         _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 

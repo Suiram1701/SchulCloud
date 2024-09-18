@@ -3,10 +3,16 @@
 @using SchulCloud.Web.Extensions
 
 <MudPaper Class="px-3 py-3">
-    <MudText Class="mb-1" Align="Align.Center">@Localizer["desc"]</MudText>
-    <MudText Align="Align.Center">@Localizer["desc_Passkey"]</MudText>
+    @if (UserManager.SupportsUserTwoFactorSecurityKeys)
+    {
+        <MudText Class="mb-1" Align="Align.Center">@Localizer["desc"]</MudText>
+    }
+    @if (UserManager.SupportsUserPasskeySignIn)
+    {
+        <MudText Class="mb-1" Align="Align.Center">@Localizer["desc_Passkey"]</MudText>
+    }
 
-    <MudTooltip RootClass="mud-width-full mt-5" Text="@Localizer["webAuthn_NotSupported"]" Disabled="_webAuthnSupported">
+    <MudTooltip RootClass="mud-width-full mt-4" Text="@Localizer["webAuthn_NotSupported"]" Disabled="_webAuthnSupported">
         @{
             string endIcon = !_webAuthnSupported
                 ? MaterialSymbols.Outlined.Exclamation
@@ -94,7 +100,15 @@
             <MudTextField @bind-Value="_registerModel.SecurityKeyName" Label="@Localizer["registerDialog_KeyName"]"
                           Validation="@((string value) => RegisterForm_ValidateSecurityKeyName(value))" RequiredError="@Localizer["form_NotEmpty"]" Required />
 
-            <MudCheckBox @bind-Value="_registerModel.IsPasskey" Label="@Localizer["registerDialog_IsPasskey"]" />
+            @if (UserManager.SupportsUserPasskeySignIn && UserManager.SupportsUserTwoFactorSecurityKeys)
+            {
+                <MudCheckBox @bind-Value="_registerModel.IsPasskey" Label="@Localizer["registerDialog_IsPasskey"]" />
+            }
+            else if (UserManager.SupportsUserPasskeySignIn)
+            {
+                _registerModel.IsPasskey = true;
+                <MudCheckBox Value="true" Label="@Localizer["registerDialog_IsPasskey"]" Disabled />
+            }
         </MudForm>
     </DialogContent>
     <DialogActions>

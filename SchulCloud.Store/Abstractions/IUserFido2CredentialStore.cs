@@ -69,14 +69,6 @@ public interface IUserFido2CredentialStore<TCredential, TUser>
     public Task SetCredentialSecurityKeyNameAsync(TCredential credential, string? newName, CancellationToken ct);
 
     /// <summary>
-    /// Gets a flag that indicates whether the credential were registered as a passkey.
-    /// </summary>
-    /// <param name="credential">The credential.</param>
-    /// <param name="ct">Cancellation token</param>
-    /// <returns>The flag.</returns>
-    public Task<bool> GetCredentialIsPasskeyAsync(TCredential credential, CancellationToken ct);
-
-    /// <summary>
     /// Gets the public key of a credential.
     /// </summary>
     /// <param name="credential">The credential.</param>

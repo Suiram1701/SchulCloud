@@ -9,16 +9,19 @@
         <AntiforgeryToken />
         <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive rendering Blazor doesn't place it by its own. *@
 
-        @if (_webAuthnSupported)
+        @if (UserManager.SupportsUserPasskeySignIn && _webAuthnSupported)
         {
             <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.AuthenticatorDataAccessKey)}")" value="@Model.AuthenticatorDataAccessKey" />
         }
 
-        <MudTextField @bind-Value="Model.User" @bind-Value:after="Input_Changed" For="@(() => Model.User)" name="@($"{nameof(Model)}.{nameof(Model.User)}")"
-                      Class="mb-2" Label="@Localizer["form_User"]" Error="IsInvalid" RequiredError="@Localizer["form_NotEmpty"]" Required autocomplete="username" />
+        @if (UserManager.SupportsUserPassword)
+        {
+            <MudTextField @bind-Value="Model.User" @bind-Value:after="Input_Changed" For="@(() => Model.User)" name="@($"{nameof(Model)}.{nameof(Model.User)}")"
+                          Class="mb-2" Label="@Localizer["form_User"]" Error="IsInvalid" RequiredError="@Localizer["form_NotEmpty"]" Required autocomplete="username" />
 
-        <PasswordField @bind-Value="Model.Password" @bind-Value:after="Input_Changed" For="@(() => Model.Password)" name="@($"{nameof(Model)}.{nameof(Model.Password)}")"
-                       Label="@Localizer["form_Password"]" Error="IsInvalid" RequiredError="@Localizer["form_NotEmpty"]" Required autocomplete="password" />
+            <PasswordField @bind-Value="Model.Password" @bind-Value:after="Input_Changed" For="@(() => Model.Password)" name="@($"{nameof(Model)}.{nameof(Model.Password)}")"
+                           Label="@Localizer["form_Password"]" Error="IsInvalid" RequiredError="@Localizer["form_NotEmpty"]" Required autocomplete="password" />
+        }
 
         @if (IsInvalid)
         {
@@ -28,14 +31,20 @@
         <MudCheckBox Class="mt-2" @bind-Value="Model.Persistent" For="@(() => Model.Persistent)" name="@($"{nameof(Model)}.{nameof(Model.Persistent)}")" Label="@Localizer["form_Persistent"]" />
 
         <MudStack Class="mt-3">
-            <MudButton Color="Color.Tertiary" ButtonType="ButtonType.Submit" Variant="Variant.Filled">@Localizer["form_SubmitBtn"]</MudButton>
+            @if (UserManager.SupportsUserPassword)
+            {
+                <MudButton Color="Color.Tertiary" ButtonType="ButtonType.Submit" Variant="Variant.Filled">@Localizer["form_SubmitBtn"]</MudButton>
+            }
 
-            <MudTooltip RootClass="mud-width-full" Text="@Localizer["webAuthn_NotSupported"]" Disabled="_webAuthnSupported">
-                <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="PasskeySignIn_ClickAsync"
-                           StartIcon="@MaterialSymbols.Outlined.Passkey" IconSize="Size.Large" Disabled="!_webAuthnSupported" FullWidth>
-                    @Localizer["form_PasskeySignInBtn"]
-                </MudButton>
-            </MudTooltip>
+            @if (UserManager.SupportsUserPasskeySignIn)
+            {
+                <MudTooltip RootClass="mud-width-full" Text="@Localizer["webAuthn_NotSupported"]" Disabled="_webAuthnSupported">
+                    <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="PasskeySignIn_ClickAsync"
+                               StartIcon="@MaterialSymbols.Outlined.Passkey" IconSize="Size.Large" Disabled="!_webAuthnSupported" FullWidth>
+                        @Localizer["form_PasskeySignInBtn"]
+                    </MudButton>
+                </MudTooltip>
+            }
 
             <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ForgotPasswordAsync_ClickAsync">@Localizer["form_ForgotPasswordBtn"]</MudButton>
         </MudStack>

@@ -14,7 +14,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     IUserFido2CredentialStore<Fido2Credential, TUser>,
     IUserTwoFactorEmailStore<TUser>,
     IUserTwoFactorSecurityKeyStore<TUser>,
-    IUserPasskeysStore<TUser>
+    IUserPasskeysStore<TUser, Fido2Credential>
     where TUser : SchulCloudUser
     where TRole : IdentityRole
     where TContext : DbContext
@@ -189,15 +189,6 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         return Task.CompletedTask;
     }
 
-    public Task<bool> GetCredentialIsPasskeyAsync(Fido2Credential credential, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        return Task.FromResult(credential.IsPasskey);
-    }
-
     public Task<byte[]> GetCredentialPublicKeyAsync(Fido2Credential credential, CancellationToken ct)
     {
         ThrowIfDisposed();
@@ -318,6 +309,15 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
 
         user.PasskeysEnabled = enabled;
         return Task.CompletedTask;
+    }
+
+    public Task<bool> GetIsPasskeyAsync(Fido2Credential credential, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(credential);
+
+        return Task.FromResult(credential.IsPasskey);
     }
 
     public async Task<int> GetPasskeyCountAsync(TUser user, CancellationToken ct)

@@ -39,6 +39,12 @@ public sealed partial class ChangePassword : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        if (!UserManager.SupportsUserPassword)
+        {
+            NavigationManager.NavigateToSecurityIndex();
+            return;
+        }
+
         AuthenticationState state = await AuthenticationState;
         _user = (await UserManager.GetUserAsync(state.User))!;
     }

@@ -257,20 +257,6 @@ partial class SchulCloudUserManager<TUser, TCredential>
     }
 
     /// <summary>
-    /// Gets a flag that indicates whether a credential was registered as a passkey.
-    /// </summary>
-    /// <param name="credential">The credential.</param>
-    /// <returns>The flag.</returns>
-    public virtual async Task<bool> GetFido2CredentialIsPasskey(TCredential credential)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(credential);
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
-
-        return await store.GetCredentialIsPasskeyAsync(credential, CancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
     /// Changes the name of a credential.
     /// </summary>
     /// <param name="credential">The credential to modify.</param>

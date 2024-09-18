@@ -42,13 +42,17 @@
         <MudSelect Class="mb-3 mt-4" @bind-Value="Model.Method" Label="@Localizer["methods"]" Variant="Variant.Outlined">
             @{
                 HashSet<TwoFactorMethod> methods = new(Enum.GetValues<TwoFactorMethod>());
-                if (!_mfaEmailEnabled)
+                if (!UserManager.SupportsUserTwoFactorEmail || !_mfaEmailEnabled)
                 {
                     methods.Remove(TwoFactorMethod.Email);
                 }
-                if (!_mfaSecurityKeyEnabled)
+                if (!UserManager.SupportsUserTwoFactorSecurityKeys || !_mfaSecurityKeyEnabled)
                 {
                     methods.Remove(TwoFactorMethod.SecurityKey);
+                }
+                if (!UserManager.SupportsUserTwoFactorRecoveryCodes)
+                {
+                    methods.Remove(TwoFactorMethod.Recovery);
                 }
             }
             @foreach (TwoFactorMethod method in methods)

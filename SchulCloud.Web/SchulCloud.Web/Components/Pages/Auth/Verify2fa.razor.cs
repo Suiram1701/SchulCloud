@@ -91,6 +91,12 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
+        if (!UserManager.SupportsUserTwoFactor)
+        {
+            NavigationManager.NavigateToSignIn(returnUrl: ReturnUrl);
+            return;
+        }
+
         // Make sure that a valid antiforgery token is available.
         if (AntiforgeryStateProvider.GetAntiforgeryToken() is null)
         {
@@ -110,8 +116,11 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
             if (user is not null)
             {
                 _user = user!;
-                _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user);
-                _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
+
+                _mfaEmailEnabled = UserManager.SupportsUserTwoFactorEmail
+                    && await UserManager.GetTwoFactorEmailEnabledAsync(_user);
+                _mfaSecurityKeyEnabled = UserManager.SupportsUserTwoFactorSecurityKeys
+                    && await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
 
                 _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
                 {
@@ -171,7 +180,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
 
     private async Task SendEmailAuthenticationCode_ClickAsync()
     {
-        if (!_mfaEmailEnabled)
+        if (!UserManager.SupportsUserTwoFactorEmail || !_mfaEmailEnabled)
         {
             return;
         }
@@ -205,7 +214,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
 
     private async Task SecurityKeyAuthentication_ClickAsync()
     {
-        if (!_webAuthnSupported)
+        if (!UserManager.SupportsUserTwoFactorSecurityKeys || !_webAuthnSupported)
         {
             return;
         }
@@ -240,6 +249,19 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
 
     private async Task Verify2faAsync()
     {
+        if (!UserManager.SupportsUserTwoFactorEmail && Model.Method == TwoFactorMethod.Email)
+        {
+            return;
+        }
+        else if (!UserManager.SupportsUserTwoFactorSecurityKeys && Model.Method == TwoFactorMethod.SecurityKey)
+        {
+            return;
+        }
+        else if (!UserManager.SupportsUserTwoFactorRecoveryCodes && Model.Method == TwoFactorMethod.Recovery)
+        {
+            return;
+        }
+
         SignInResult verifyResult = await (Model.Method switch
         {
             TwoFactorMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),

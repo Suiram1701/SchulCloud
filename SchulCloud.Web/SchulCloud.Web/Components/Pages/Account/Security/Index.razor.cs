@@ -73,8 +73,11 @@ public sealed partial class Index : ComponentBase, IDisposable
         {
             _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
-            _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user);
-            _passkeysCount = await UserManager.GetPasskeyCountAsync(_user);
+            if (UserManager.SupportsUserPasskeySignIn)
+            {
+                _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user);
+                _passkeysCount = await UserManager.GetPasskeyCountAsync(_user); 
+            }
             await UpdateMfaStatesAsync();
 
             _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
@@ -188,11 +191,24 @@ public sealed partial class Index : ComponentBase, IDisposable
 
     private async Task UpdateMfaStatesAsync()
     {
+        if (!UserManager.SupportsUserTwoFactor)
+        {
+            return;
+        }
         _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user);
-        _mfaEmailEnabled = await UserManager.GetTwoFactorEmailEnabledAsync(_user);
-        _securityKeysCount = await UserManager.GetTwoFactorSecurityKeysCountAsync(_user);
-        _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
-        _mfaRemainingRecoveryCodes = await UserManager.CountRecoveryCodesAsync(_user);
+
+        _mfaEmailEnabled = UserManager.SupportsUserTwoFactorEmail
+            && await UserManager.GetTwoFactorEmailEnabledAsync(_user);
+
+        if (UserManager.SupportsUserTwoFactorSecurityKeys)
+        {
+            _securityKeysCount = await UserManager.GetTwoFactorSecurityKeysCountAsync(_user);
+            _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
+        }
+
+        _mfaRemainingRecoveryCodes = UserManager.SupportsUserTwoFactorRecoveryCodes
+            ? await UserManager.CountRecoveryCodesAsync(_user)
+            : 0;
     }
 
     public void Dispose()

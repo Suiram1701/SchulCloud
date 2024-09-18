@@ -38,6 +38,9 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
     private SchulCloudUserManager<ApplicationUser, AppCredential> UserManager { get; set; } = default!;
 
     [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    [Inject]
     private WebAuthnService WebAuthnService { get; set; } = default!;
     #endregion
 
@@ -59,6 +62,12 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
+        if (!UserManager.SupportsUserFido2Credentials)
+        {
+            NavigationManager.NavigateToNotFound();
+            return;
+        }
+
         AuthenticationState authenticationState = await AuthenticationState;
         _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
@@ -205,7 +214,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
     private async Task<SecurityKey> CredentialToSecurityKeyAsync(AppCredential credential)
     {
         string? keyName = await UserManager.GetFido2CredentialSecurityKeyNameAsync(credential);
-        bool isPasskey = await UserManager.GetFido2CredentialIsPasskey(credential);
+        bool isPasskey = await UserManager.GetIsPasskey(credential);
         AuthenticatorTransport[]? transports = await UserManager.GetFido2CredentialTransportsAsync(credential);
         DateTime registrationDate = await UserManager.GetFido2CredentialRegistrationDateAsync(credential);
         MetadataStatement? metadata = await UserManager.GetFido2CredentialMetadataStatementAsync(credential);

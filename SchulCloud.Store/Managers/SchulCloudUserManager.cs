@@ -41,7 +41,7 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         get
         {
             ThrowIfDisposed();
-            return Store is IUserPasskeysStore<TUser>;
+            return Store is IUserPasskeysStore<TUser, TCredential> && SupportsUserFido2Credentials;
         }
     }
 
@@ -65,7 +65,7 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         get
         {
             ThrowIfDisposed();
-            return Store is IUserTwoFactorSecurityKeyStore<TUser>;
+            return Store is IUserTwoFactorSecurityKeyStore<TUser> && SupportsUserFido2Credentials;
         }
     }
 
@@ -79,7 +79,7 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserPasskeysStore<TUser> store = GetPasskeysStore();
+        IUserPasskeysStore<TUser, TCredential> store = GetPasskeysStore();
         return await store.GetPasskeysEnabledAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
@@ -94,10 +94,24 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserPasskeysStore<TUser> store = GetPasskeysStore();
+        IUserPasskeysStore<TUser, TCredential> store = GetPasskeysStore();
         await store.SetPasskeysEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
 
         return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets a flag that indicates whether a credential was registered as a passkey.
+    /// </summary>
+    /// <param name="credential">The credential.</param>
+    /// <returns>The flag.</returns>
+    public virtual async Task<bool> GetIsPasskey(TCredential credential)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credential);
+        IUserPasskeysStore<TUser, TCredential> store = GetPasskeysStore();
+
+        return await store.GetIsPasskeyAsync(credential, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -110,7 +124,7 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserPasskeysStore<TUser> store = GetPasskeysStore();
+        IUserPasskeysStore<TUser, TCredential> store = GetPasskeysStore();
         return await store.GetPasskeyCountAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
@@ -279,7 +293,7 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
 
         if (SupportsUserPasskeySignIn)
         {
-            IUserPasskeysStore<TUser> passkeysStore = GetPasskeysStore();
+            IUserPasskeysStore<TUser, TCredential> passkeysStore = GetPasskeysStore();
             await passkeysStore.SetPasskeysEnabledAsync(user, false, CancellationToken).ConfigureAwait(false);
         }
 
@@ -300,11 +314,11 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         return Convert.ToBase64String(HMACSHA256.HashData(keyBytes, codeBytes));
     }
 
-    private IUserPasskeysStore<TUser> GetPasskeysStore()
+    private IUserPasskeysStore<TUser, TCredential> GetPasskeysStore()
     {
-        if (Store is not IUserPasskeysStore<TUser> cast)
+        if (Store is not IUserPasskeysStore<TUser, TCredential> cast)
         {
-            throw new NotSupportedException($"{nameof(IUserPasskeysStore<TUser>)} isn't supported by the store.");
+            throw new NotSupportedException($"{nameof(IUserPasskeysStore<TUser, TCredential>)} isn't supported by the store.");
         }
         return cast;
     }
