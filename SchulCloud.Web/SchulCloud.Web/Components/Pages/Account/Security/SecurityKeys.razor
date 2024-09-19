@@ -7,7 +7,7 @@
     {
         <MudText Class="mb-1" Align="Align.Center">@Localizer["desc"]</MudText>
     }
-    @if (UserManager.SupportsUserPasskeySignIn)
+    @if (UserManager.SupportsUserPasskeys)
     {
         <MudText Class="mb-1" Align="Align.Center">@Localizer["desc_Passkey"]</MudText>
     }
@@ -100,11 +100,11 @@
             <MudTextField @bind-Value="_registerModel.SecurityKeyName" Label="@Localizer["registerDialog_KeyName"]"
                           Validation="@((string value) => RegisterForm_ValidateSecurityKeyName(value))" RequiredError="@Localizer["form_NotEmpty"]" Required />
 
-            @if (UserManager.SupportsUserPasskeySignIn && UserManager.SupportsUserTwoFactorSecurityKeys)
+            @if (UserManager.SupportsUserPasskeys && UserManager.SupportsUserTwoFactorSecurityKeys)
             {
                 <MudCheckBox @bind-Value="_registerModel.IsPasskey" Label="@Localizer["registerDialog_IsPasskey"]" />
             }
-            else if (UserManager.SupportsUserPasskeySignIn)
+            else if (UserManager.SupportsUserPasskeys)
             {
                 _registerModel.IsPasskey = true;
                 <MudCheckBox Value="true" Label="@Localizer["registerDialog_IsPasskey"]" Disabled />

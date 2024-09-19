@@ -36,7 +36,7 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
     /// <summary>
     /// Indicate whether the internal store supports passkey sign ins.
     /// </summary>
-    public virtual bool SupportsUserPasskeySignIn
+    public virtual bool SupportsUserPasskeys
     {
         get
         {
@@ -291,7 +291,7 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        if (SupportsUserPasskeySignIn)
+        if (SupportsUserPasskeys)
         {
             IUserPasskeysStore<TUser, TCredential> passkeysStore = GetPasskeysStore();
             await passkeysStore.SetPasskeysEnabledAsync(user, false, CancellationToken).ConfigureAwait(false);

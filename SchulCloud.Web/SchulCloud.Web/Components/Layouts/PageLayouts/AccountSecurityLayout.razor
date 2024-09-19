@@ -10,9 +10,13 @@
         <MudNavLink ActiveClass="@ActiveNavLinkClasses" Href="@Routes.SecurityIndex()" Match="NavLinkMatch.All">
             <MudText Align="Align.Center">@Localizer["tabOverview"]</MudText>
         </MudNavLink>
-        <MudNavLink ActiveClass="@ActiveNavLinkClasses" Href="@Routes.SecurityKeys()">
-            <MudText Align="Align.Center">@Localizer["tabSecurityKeys"]</MudText>
-        </MudNavLink>
+        
+        @if (UserManager.SupportsUserFido2Credentials && (UserManager.SupportsUserPasskeys || UserManager.SupportsUserTwoFactorSecurityKeys))
+        {
+            <MudNavLink ActiveClass="@ActiveNavLinkClasses" Href="@Routes.SecurityKeys()">
+                <MudText Align="Align.Center">@Localizer["tabSecurityKeys"]</MudText>
+            </MudNavLink>
+        }
     </MudStack>
 </MudPaper>
 

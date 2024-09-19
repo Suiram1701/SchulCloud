@@ -73,7 +73,7 @@ public sealed partial class Index : ComponentBase, IDisposable
         {
             _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
-            if (UserManager.SupportsUserPasskeySignIn)
+            if (UserManager.SupportsUserPasskeys)
             {
                 _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user);
                 _passkeysCount = await UserManager.GetPasskeyCountAsync(_user); 

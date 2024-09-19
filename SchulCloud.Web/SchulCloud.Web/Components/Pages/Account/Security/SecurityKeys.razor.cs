@@ -61,7 +61,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        if (!UserManager.SupportsUserFido2Credentials)
+        if (!UserManager.SupportsUserFido2Credentials || (!UserManager.SupportsUserPasskeys && !UserManager.SupportsUserTwoFactorSecurityKeys))
         {
             NavigationManager.NavigateToNotFound();
             return;
@@ -213,10 +213,12 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
     private async Task<SecurityKey> CredentialToSecurityKeyAsync(AppCredential credential)
     {
         string? keyName = await UserManager.GetFido2CredentialSecurityKeyNameAsync(credential);
-        bool isPasskey = await UserManager.GetIsPasskey(credential);
         AuthenticatorTransport[]? transports = await UserManager.GetFido2CredentialTransportsAsync(credential);
         DateTime registrationDate = await UserManager.GetFido2CredentialRegistrationDateAsync(credential);
         MetadataStatement? metadata = await UserManager.GetFido2CredentialMetadataStatementAsync(credential);
+
+        bool isPasskey = UserManager.SupportsUserPasskeys 
+            && await UserManager.GetIsPasskey(credential);
 
         return new(credential, keyName, isPasskey, transports, registrationDate, metadata);
     }

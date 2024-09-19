@@ -9,7 +9,7 @@
         <AntiforgeryToken />
         <input type="hidden" name="_handler" value="@_formName" />     @* I have to place this hidden field by manual because in interactive rendering Blazor doesn't place it by its own. *@
 
-        @if (UserManager.SupportsUserPasskeySignIn && _webAuthnSupported)
+        @if (UserManager.SupportsUserPasskeys && _webAuthnSupported)
         {
             <input type="hidden" name="@($"{nameof(Model)}.{nameof(Model.AuthenticatorDataAccessKey)}")" value="@Model.AuthenticatorDataAccessKey" />
         }
@@ -36,7 +36,7 @@
                 <MudButton Color="Color.Tertiary" ButtonType="ButtonType.Submit" Variant="Variant.Filled">@Localizer["form_SubmitBtn"]</MudButton>
             }
 
-            @if (UserManager.SupportsUserPasskeySignIn)
+            @if (UserManager.SupportsUserPasskeys)
             {
                 <MudTooltip RootClass="mud-width-full" Text="@Localizer["webAuthn_NotSupported"]" Disabled="_webAuthnSupported">
                     <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="PasskeySignIn_ClickAsync"

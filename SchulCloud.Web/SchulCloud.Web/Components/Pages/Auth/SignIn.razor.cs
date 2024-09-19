@@ -158,7 +158,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
     private async Task PasskeySignIn_ClickAsync()
     {
-        if (!UserManager.SupportsUserPasskeySignIn || !_webAuthnSupported)
+        if (!UserManager.SupportsUserPasskeys || !_webAuthnSupported)
         {
             return;
         }
@@ -207,7 +207,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
             signInResult = await SignInManager.PasswordSignInAsync(user, Model.Password, Model.Persistent, lockoutOnFailure: true);
         }
-        else if (UserManager.SupportsUserPasskeySignIn)
+        else if (UserManager.SupportsUserPasskeys)
         {
             (signInResult, user) = await SecurityKeySignInAsync(Model.AuthenticatorDataAccessKey, Model.Persistent);
             Model.AuthenticatorDataAccessKey = null;
