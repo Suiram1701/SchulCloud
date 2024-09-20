@@ -9,7 +9,7 @@ using SchulCloud.Store.Options;
 
 namespace SchulCloud.Store.Managers;
 
-partial class SchulCloudUserManager<TUser, TCredential>
+partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
 {
     /// <summary>
     /// Indicates whether the store supports fido2 credentials

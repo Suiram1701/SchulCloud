@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SchulCloud.Database;
@@ -11,9 +12,11 @@ using SchulCloud.Database;
 namespace SchulCloud.Database.Migrations
 {
     [DbContext(typeof(SchulCloudDbContext))]
-    partial class SchulCloudDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240920181212_LogInAttempts")]
+    partial class LogInAttempts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

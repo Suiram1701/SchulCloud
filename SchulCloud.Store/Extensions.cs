@@ -23,13 +23,14 @@ public static class Extensions
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <returns>The builder pipeline.</returns>
-    public static IdentityBuilder AddSchulCloudManagers<TCredential>(this IdentityBuilder builder)
+    public static IdentityBuilder AddSchulCloudManagers<TCredential, TLogInAttempt>(this IdentityBuilder builder)
         where TCredential : class
+        where TLogInAttempt : class
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         Type userManagerType = typeof(UserManager<>).MakeGenericType(builder.UserType);
-        Type customUserManagerType = typeof(SchulCloudUserManager<,>).MakeGenericType(builder.UserType, typeof(TCredential));
+        Type customUserManagerType = typeof(SchulCloudUserManager<,,>).MakeGenericType(builder.UserType, typeof(TCredential), typeof(TLogInAttempt));
         builder.Services.AddManager(userManagerType, customUserManagerType);
 
         if (builder.RoleType is not null)

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SchulCloud.Database.Enums;
 using SchulCloud.Database.Models;
 using SchulCloud.Store.Abstractions;
+using System.Net;
 
 namespace SchulCloud.Database.Stores;
 
@@ -14,12 +15,15 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     IUserFido2CredentialStore<Fido2Credential, TUser>,
     IUserTwoFactorEmailStore<TUser>,
     IUserTwoFactorSecurityKeyStore<TUser>,
-    IUserPasskeysStore<TUser, Fido2Credential>
+    IUserPasskeysStore<TUser, Fido2Credential>,
+    IUserLoginAttemptStore<LogInAttempt, TUser>
     where TUser : SchulCloudUser
     where TRole : IdentityRole
     where TContext : DbContext
 {
     private DbSet<Fido2Credential> Credentials => Context.Set<Fido2Credential>();
+
+    private DbSet<LogInAttempt> LogInAttempts => Context.Set<LogInAttempt>();
 
     public override Task<bool> GetTwoFactorEnabledAsync(TUser user, CancellationToken ct = default)
     {
@@ -328,6 +332,109 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
 
         string userId = await GetUserIdAsync(user, ct).ConfigureAwait(false);
         return await Credentials.CountAsync(cred => cred.UserId.Equals(userId), ct).ConfigureAwait(false);
+    }
+    #endregion
+
+    #region IUserLogInAttemptStore
+    public async Task<IEnumerable<LogInAttempt>> GetLogInAttemptsOfUserAsync(TUser user, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
+
+        string userId = await GetUserIdAsync(user, ct);
+        return await LogInAttempts.Where(l => l.UserId.Equals(userId)).ToListAsync(ct);
+    }
+
+    public async Task<LogInAttempt> AddUserLogInAttemptAsync(TUser user, string methodCode, bool succeeded, IPAddress ipAddress, string? userAgent, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        if (string.IsNullOrEmpty(methodCode) || methodCode.Length > 3)
+        {
+            throw new ArgumentNullException(nameof(methodCode), "A string with a length of 3 was expected.");
+        }
+        ArgumentNullException.ThrowIfNull(ipAddress);
+        ct.ThrowIfCancellationRequested();
+
+        string userId = await GetUserIdAsync(user, ct);
+        LogInAttempt attempt = new()
+        {
+            UserId = userId,
+            MethodCode = methodCode,
+            Succeeded = succeeded,
+            IpAddress = ipAddress.MapToIPv4().GetAddressBytes(),
+            UserAgent = userAgent
+        };
+        await LogInAttempts.AddAsync(attempt, ct);
+
+        return attempt;
+    }
+
+    public Task RemoveUserLogInAttemptAsync(LogInAttempt attempt, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+        ct.ThrowIfCancellationRequested();
+
+        LogInAttempts.Remove(attempt);
+        return Task.CompletedTask;
+    }
+
+    public async Task RemoveAllUserLogInAttemptsAsync(TUser user, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
+
+        string userId = await GetUserIdAsync(user, ct);
+        await LogInAttempts.Where(l => l.UserId.Equals(userId)).ExecuteDeleteAsync(ct);
+    }
+
+    public async Task<TUser> GetLogInAttemptUserAsync(LogInAttempt attempt, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+        ct.ThrowIfCancellationRequested();
+
+        return (await FindUserAsync(attempt.UserId, ct))!;
+    }
+
+    public Task<string> GetLogInAttemptMethodCodeAsync(LogInAttempt attempt, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult(attempt.MethodCode);
+    }
+
+    public Task<bool> GetLogInAttemptSucceededAsync(LogInAttempt attempt, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult(attempt.Succeeded);
+    }
+
+    public Task<IPAddress> GetLogInAttemptIPAddressAsync(LogInAttempt attempt, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+        ct.ThrowIfCancellationRequested();
+
+        IPAddress ipAddress = new(attempt.IpAddress);
+        return Task.FromResult(ipAddress);
+    }
+
+    public Task<string?> GetLogInAttemptUserAgentAsync(LogInAttempt attempt, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult(attempt.UserAgent);
     }
     #endregion
 }

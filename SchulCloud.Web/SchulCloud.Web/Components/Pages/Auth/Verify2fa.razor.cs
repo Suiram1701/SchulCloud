@@ -46,10 +46,10 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
     private AntiforgeryStateProvider AntiforgeryStateProvider { get; set; } = default!;
 
     [Inject]
-    private SchulCloudSignInManager<ApplicationUser, AppCredential> SignInManager { get; set; } = default!;
+    private SchulCloudSignInManager SignInManager { get; set; } = default!;
 
     [Inject]
-    private SchulCloudUserManager<ApplicationUser, AppCredential> UserManager { get; set; } = default!;
+    private AppUserManager UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;

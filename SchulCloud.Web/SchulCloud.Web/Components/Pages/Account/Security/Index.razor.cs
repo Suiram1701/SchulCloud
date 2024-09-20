@@ -27,7 +27,7 @@ public sealed partial class Index : ComponentBase, IDisposable
     private IOptions<PasswordOptions> PasswordOptionsAccessor { get; set; } = default!;
 
     [Inject]
-    private SchulCloudUserManager<ApplicationUser, AppCredential> UserManager { get; set; } = default!;
+    private AppUserManager UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;

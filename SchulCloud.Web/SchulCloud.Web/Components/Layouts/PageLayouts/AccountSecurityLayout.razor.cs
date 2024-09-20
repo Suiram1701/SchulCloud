@@ -11,7 +11,7 @@ public sealed partial class AccountSecurityLayout : LayoutComponentBase
     private IStringLocalizer<AccountSecurityLayout> Localizer { get; set; } = default!;
 
     [Inject]
-    private SchulCloudUserManager<ApplicationUser, AppCredential> UserManager { get; set; } = default!;
+    private AppUserManager UserManager { get; set; } = default!;
     #endregion
 
     private static string ActiveNavLinkClasses => "border-solid border-b-2 mud-border-primary mud-primary-text";

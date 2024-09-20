@@ -10,19 +10,17 @@ namespace SchulCloud.Web.Identity.Managers;
 /// <summary>
 /// A sign in manager that provides extended sign in logic.
 /// </summary>
-public class SchulCloudSignInManager<TUser, TCredential>(
-    SchulCloudUserManager<TUser, TCredential> userManager,
+public class SchulCloudSignInManager(
+    AppUserManager userManager,
     IHttpContextAccessor contextAccessor,
-    IUserClaimsPrincipalFactory<TUser> claimsFactory,
+    IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory,
     IOptions<IdentityOptions> optionsAccessor,
-    ILogger<SignInManager<TUser>> logger,
+    ILogger<SignInManager<ApplicationUser>> logger,
     IAuthenticationSchemeProvider schemes,
-    IUserConfirmation<TUser> confirmation)
-    : SignInManager<TUser>(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
-    where TUser : class
-    where TCredential : class
+    IUserConfirmation<ApplicationUser> confirmation)
+    : SignInManager<ApplicationUser>(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
 {
-    private readonly SchulCloudUserManager<TUser, TCredential> _userManager = userManager;
+    private readonly AppUserManager _userManager = userManager;
 
     /// <summary>
     /// Tries to sign in with a users fido2 passkey credential.
@@ -31,19 +29,19 @@ public class SchulCloudSignInManager<TUser, TCredential>(
     /// <param name="response">The raw response of the authenticator.</param>
     /// <param name="isPersistent">Indicates whether the session is persistent.</param>
     /// <returns><c>result</c> is the result of the operation and <c>user</c> is the owner of the credential if <c>result</c> is <see cref="SignInResult.Succeeded"/>.</returns>
-    public async Task<(SignInResult result, TUser? user)> Fido2PasskeySignInAsync(AssertionOptions options, AuthenticatorAssertionRawResponse response, bool isPersistent)
+    public async Task<(SignInResult result, ApplicationUser? user)> Fido2PasskeySignInAsync(AssertionOptions options, AuthenticatorAssertionRawResponse response, bool isPersistent)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(response);
 
-        TCredential? credential = await _userManager.MakeFido2AssertionAsync(null, response, options);
+        AppCredential? credential = await _userManager.MakeFido2AssertionAsync(null, response, options);
         if (credential is null)
         {
             return (SignInResult.Failed, null);
         }
 
         // Checks whether user and credential support passkeys.
-        TUser user = await _userManager.GetFido2CredentialOwnerAsync(credential);
+        ApplicationUser user = await _userManager.GetFido2CredentialOwnerAsync(credential);
         if (!await _userManager.GetPasskeySignInEnabledAsync(user))
         {
             return (SignInResult.Failed, null);
@@ -101,7 +99,7 @@ public class SchulCloudSignInManager<TUser, TCredential>(
             return error;
         }
 
-        TCredential? credential = await _userManager.MakeFido2AssertionAsync(twoFactorInfo.User, response, options);
+        AppCredential? credential = await _userManager.MakeFido2AssertionAsync(twoFactorInfo.User, response, options);
         return credential is not null
             ? await DoTwoFactorSignInAsync(twoFactorInfo, isPersistent, rememberClient)
             : SignInResult.Failed;
@@ -109,7 +107,7 @@ public class SchulCloudSignInManager<TUser, TCredential>(
 
     private async Task<TwoFactorInfo?> GetTwoFactorInfoAsync()
     {
-        // logic from UserManager<TUser>.RetrieveTwoFactorInfoAsync
+        // logic from UserManager<ApplicationUser>.RetrieveTwoFactorInfoAsync
         AuthenticateResult result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
         if (result?.Principal is null)
         {
@@ -122,7 +120,7 @@ public class SchulCloudSignInManager<TUser, TCredential>(
             return null;
         }
 
-        TUser? user = await _userManager.FindByIdAsync(userId);
+        ApplicationUser? user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
             return null;
@@ -134,7 +132,7 @@ public class SchulCloudSignInManager<TUser, TCredential>(
 
     private async Task<SignInResult> DoTwoFactorSignInAsync(TwoFactorInfo info, bool isPersistent, bool rememberClient)
     {
-        // logic from UserManager<TUser>.DoTwoFactorSignInAsync
+        // logic from UserManager<ApplicationUser>.DoTwoFactorSignInAsync
 
         if (_userManager.SupportsUserLockout)
         {
@@ -162,5 +160,5 @@ public class SchulCloudSignInManager<TUser, TCredential>(
         return SignInResult.Success;
     }
 
-    private record TwoFactorInfo(TUser User, string? LoginProvider);
+    private record TwoFactorInfo(ApplicationUser User, string? LoginProvider);
 }

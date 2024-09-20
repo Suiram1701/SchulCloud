@@ -11,7 +11,7 @@ namespace SchulCloud.Store.Managers;
 /// <summary>
 /// A user manager that provides functionalities of this application.
 /// </summary>
-public partial class SchulCloudUserManager<TUser, TCredential>(
+public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
     IUserStore<TUser> store,
     IOptions<IdentityOptions> optionsAccessor,
     IOptions<ExtendedTokenProviderOptions> tokenProviderOptionsAccessor,
@@ -25,6 +25,7 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
     : UserManager<TUser>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger: logger)
     where TUser : class
     where TCredential : class
+    where TLogInAttempt : class
 {
     private readonly IServiceProvider _services = services;
 
@@ -364,6 +365,15 @@ public partial class SchulCloudUserManager<TUser, TCredential>(
         if (Store is not IUserTwoFactorRecoveryCodeStore<TUser> cast)
         {
             throw new NotSupportedException($"{nameof(IUserTwoFactorRecoveryCodeStore<TUser>)} isn't supported by the store.");
+        }
+        return cast;
+    }
+
+    private IUserLoginAttemptStore<TLogInAttempt, TUser> GetLoginAttemptStore()
+    {
+        if (Store is not IUserLoginAttemptStore<TLogInAttempt, TUser> cast)
+        {
+            throw new NotSupportedException($"{nameof(IUserLoginAttemptStore<TLogInAttempt, TUser>)} isn't supported by the store.");
         }
         return cast;
     }
