@@ -12,7 +12,7 @@ using SchulCloud.Database;
 namespace SchulCloud.Database.Migrations
 {
     [DbContext(typeof(SchulCloudDbContext))]
-    [Migration("20240920181212_LogInAttempts")]
+    [Migration("20240920183047_LogInAttempts")]
     partial class LogInAttempts
     {
         /// <inheritdoc />
@@ -200,6 +200,9 @@ namespace SchulCloud.Database.Migrations
                     b.Property<string>("Id")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<byte[]>("IpAddress")
                         .IsRequired()

@@ -34,4 +34,9 @@ public class LogInAttempt
     /// The user agent used to log in.
     /// </summary>
     public string? UserAgent { get; set; }
+
+    /// <summary>
+    /// The date time were the attempt occurred.
+    /// </summary>
+    public DateTime DateTime { get; set; }
 }

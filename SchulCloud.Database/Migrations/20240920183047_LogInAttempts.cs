@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -19,7 +20,8 @@ namespace SchulCloud.Database.Migrations
                     MethodCode = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false),
                     Succeeded = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     IpAddress = table.Column<byte[]>(type: "bytea", maxLength: 4, nullable: false),
-                    UserAgent = table.Column<string>(type: "text", nullable: true)
+                    UserAgent = table.Column<string>(type: "text", nullable: true),
+                    DateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {

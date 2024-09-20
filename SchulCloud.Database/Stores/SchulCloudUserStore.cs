@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SchulCloud.Database.Enums;
+using SchulCloud.Database.Migrations;
 using SchulCloud.Database.Models;
 using SchulCloud.Store.Abstractions;
 using System.Net;
@@ -364,7 +365,8 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             MethodCode = methodCode,
             Succeeded = succeeded,
             IpAddress = ipAddress.MapToIPv4().GetAddressBytes(),
-            UserAgent = userAgent
+            UserAgent = userAgent,
+            DateTime = DateTime.Now
         };
         await LogInAttempts.AddAsync(attempt, ct);
 
@@ -435,6 +437,15 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ct.ThrowIfCancellationRequested();
 
         return Task.FromResult(attempt.UserAgent);
+    }
+
+    public Task<DateTime> GetLogInAttemptDateTimeAsync(LogInAttempt attempt, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult(attempt.DateTime);
     }
     #endregion
 }

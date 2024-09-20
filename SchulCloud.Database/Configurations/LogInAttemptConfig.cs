@@ -16,6 +16,7 @@ internal sealed class LogInAttemptConfig : IEntityTypeConfiguration<LogInAttempt
         builder.Property(l => l.Succeeded).HasDefaultValue(false);
         builder.Property(l => l.IpAddress).HasMaxLength(4).IsRequired();
         builder.Property(l => l.UserAgent);
+        builder.Property(l => l.DateTime).IsRequired();
 
         builder.ToTable("AspNetLogInAttempts");
     }

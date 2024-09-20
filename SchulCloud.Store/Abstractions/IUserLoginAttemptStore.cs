@@ -89,4 +89,12 @@ public interface IUserLoginAttemptStore<TLogInAttempt, TUser>
     /// <param name="ct">Cancellation token</param>
     /// <returns>The user agent used.</returns>
     public Task<string?> GetLogInAttemptUserAgentAsync(TLogInAttempt attempt, CancellationToken ct = default);
+
+    /// <summary>
+    /// Gets the date time where a log in attempt occurred.
+    /// </summary>
+    /// <param name="attempt">The attempt</param>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>The local date time.</returns>
+    public Task<DateTime> GetLogInAttemptDateTimeAsync(TLogInAttempt attempt, CancellationToken ct = default);
 }
