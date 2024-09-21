@@ -208,7 +208,7 @@ namespace SchulCloud.Database.Migrations
 
                     b.Property<string>("MethodCode")
                         .IsRequired()
-                        .HasMaxLength(3)
+                        .HasMaxLength(64)
                         .HasColumnType("character varying(3)");
 
                     b.Property<bool>("Succeeded")

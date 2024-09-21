@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyCSharp.HttpUserAgentParser;
+using MyCSharp.HttpUserAgentParser.Providers;
 using SchulCloud.Store.Abstractions;
 using SchulCloud.Store.Options;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -67,6 +72,18 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         {
             ThrowIfDisposed();
             return Store is IUserTwoFactorSecurityKeyStore<TUser> && SupportsUserFido2Credentials;
+        }
+    }
+
+    /// <summary>
+    /// Indicates whether the internal store supports log in attempts.
+    /// </summary>
+    public virtual bool SupportsUserLogInAttempts
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return Store is IUserLoginAttemptStore<TLogInAttempt, TUser>;
         }
     }
 
@@ -281,6 +298,14 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         string userId = await GetUserIdAsync(user).ConfigureAwait(false);
         return await base.RedeemTwoFactorRecoveryCodeAsync(user, HashRecoveryCode(userId, code));
     }
+    
+    private static string HashRecoveryCode(string userId, string code)
+    {
+        byte[] keyBytes = Encoding.UTF8.GetBytes(userId);
+        byte[] codeBytes = Encoding.UTF8.GetBytes(code);
+
+        return Convert.ToBase64String(HMACSHA256.HashData(keyBytes, codeBytes));
+    }
 
     /// <summary>
     /// Disables both Passkey sign in and security key 2fa authentication for a user.
@@ -307,12 +332,183 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
     }
 
-    private static string HashRecoveryCode(string userId, string code)
+    /// <summary>
+    /// Gets a log in attempt by its id.
+    /// </summary>
+    /// <param name="id">The id of the attempt.</param>
+    /// <returns>The attempt. If <c>null</c> no attempt with this id were found.</returns>
+    public virtual async Task<TLogInAttempt?> GetLogInAttemptByIdAsync(string id)
     {
-        byte[] keyBytes = Encoding.UTF8.GetBytes(userId);
-        byte[] codeBytes = Encoding.UTF8.GetBytes(code);
+        ThrowIfDisposed();
+        ArgumentException.ThrowIfNullOrWhiteSpace(id); 
 
-        return Convert.ToBase64String(HMACSHA256.HashData(keyBytes, codeBytes));
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        return await store.GetLogInAttemptByIdAsync(id);
+    }
+
+    /// <summary>
+    /// Gets all log in attempts done for a user.
+    /// </summary>
+    /// <param name="user">The user to get these for.</param>
+    /// <returns>The log in attempts.</returns>
+    public virtual async Task<IEnumerable<TLogInAttempt>> GetLogInAttemptsOfUserAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        return await store.GetLogInAttemptsOfUserAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Adds a log in attempt to a user.
+    /// </summary>
+    /// <remarks>
+    /// This method should only get called by the SignInManager.
+    /// </remarks>
+    /// <param name="user">The user to add this attempt to.</param>
+    /// <param name="methodCode">The code of the log in method used for the attempt.</param>
+    /// <param name="succeeded">Was the login successful or not.</param>
+    /// <param name="ipAddress">The clients ip address.</param>
+    /// <param name="userAgent">The user agent used by the client.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> AddLogInAttemptAsync(TUser user, string methodCode, bool succeeded, IPAddress ipAddress, string? userAgent)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(methodCode);
+        ArgumentNullException.ThrowIfNull(ipAddress);
+
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        await store.AddUserLogInAttemptAsync(user, methodCode, succeeded, ipAddress, userAgent, CancellationToken);
+
+        return await Store.UpdateAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Removes a single log in attempt.
+    /// </summary>
+    /// <param name="user">The user that this attempt is for.</param>
+    /// <param name="attempt">The attempt to remove.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> RemoveLogInAttemptAsync(TUser user, TLogInAttempt attempt)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        await store.RemoveUserLogInAttemptAsync(attempt, CancellationToken);
+
+        return await Store.UpdateAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Removes all log in attempts of a user.
+    /// </summary>
+    /// <param name="user">The user to remove all attempts from.</param>
+    /// <returns>The result of operation.</returns>
+    public virtual async Task<IdentityResult> RemoveAllLogInAttemptsOfUserAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        await store.RemoveAllUserLogInAttemptsAsync(user, CancellationToken);
+
+        return await Store.UpdateAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Gets the id of a log in attempt.
+    /// </summary>
+    /// <param name="attempt">The attempt to get the id for.</param>
+    /// <returns>The id</returns>
+    public virtual async Task<string> GetLogInAttemptIdAsync(TLogInAttempt attempt)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        return await store.GetLogInAttemptIdAsync(attempt, CancellationToken);
+    }
+
+    /// <summary>
+    /// Gets the code of the log in method used for a log in attempt.
+    /// </summary>
+    /// <param name="attempt">The attempt</param>
+    /// <returns>The code</returns>
+    public virtual async Task<string> GetLogInAttemptMethodCodeAsync(TLogInAttempt attempt)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        return await store.GetLogInAttemptMethodCodeAsync(attempt, CancellationToken);
+    }
+
+    /// <summary>
+    /// Gets a flag indicating whether a log in was successful or not.
+    /// </summary>
+    /// <param name="attempt">The attempt to get this flag.</param>
+    /// <returns>The flag</returns>
+    public virtual async Task<bool> GetLogInAttemptSucceededAsync(TLogInAttempt attempt)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        return await store.GetLogInAttemptSucceededAsync(attempt, CancellationToken);
+    }
+
+    /// <summary>
+    /// Gets the client ip v4 address of a log in attempt.
+    /// </summary>
+    /// <param name="attempt">The attempt</param>
+    /// <returns>The ip v4 address</returns>
+    public virtual async Task<IPAddress> GetLogInAttemptIPAddressAsync(TLogInAttempt attempt)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        return await store.GetLogInAttemptIPAddressAsync(attempt, CancellationToken);
+    }
+
+    /// <summary>
+    /// Gets the parsed user agent the client used for a log in attempt.
+    /// </summary>
+    /// <param name="attempt">The attempt</param>
+    /// <returns>The parsed user agent. If <c>null</c> no user agent were specified.</returns>
+    public virtual async Task<HttpUserAgentInformation?> GetLogInAttemptUserAgentAsync(TLogInAttempt attempt)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        string? userAgent = await store.GetLogInAttemptUserAgentAsync(attempt, CancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(userAgent))
+        {
+            IHttpUserAgentParserProvider parserProvider = GetUserAgentParserService();
+            return parserProvider.Parse(userAgent);
+        }
+        return null;
+    }
+
+    private IHttpUserAgentParserProvider GetUserAgentParserService() => _services.GetRequiredService<IHttpUserAgentParserProvider>();
+
+    /// <summary>
+    /// Gets the date time were a login attempt were done.
+    /// </summary>
+    /// <param name="attempt">The attempt</param>
+    /// <returns>The date time</returns>
+    public virtual async Task<DateTime> GetLogInAttemptDateTimeAsync(TLogInAttempt attempt)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+
+        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
+        return await store.GetLogInAttemptDateTimeAsync(attempt, CancellationToken);
     }
 
     private IUserPasskeysStore<TUser, TCredential> GetPasskeysStore()
@@ -369,7 +565,7 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         return cast;
     }
 
-    private IUserLoginAttemptStore<TLogInAttempt, TUser> GetLoginAttemptStore()
+    private IUserLoginAttemptStore<TLogInAttempt, TUser> GetLogInAttemptStore()
     {
         if (Store is not IUserLoginAttemptStore<TLogInAttempt, TUser> cast)
         {

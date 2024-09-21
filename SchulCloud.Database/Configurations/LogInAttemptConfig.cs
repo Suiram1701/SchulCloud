@@ -12,7 +12,7 @@ internal sealed class LogInAttemptConfig : IEntityTypeConfiguration<LogInAttempt
 
         builder.Property(l => l.Id).HasMaxLength(256).IsRequired();
         builder.Property(l => l.UserId).HasMaxLength(256).IsRequired();
-        builder.Property(l => l.MethodCode).HasMaxLength(3).IsRequired();
+        builder.Property(l => l.MethodCode).HasMaxLength(64).IsRequired();
         builder.Property(l => l.Succeeded).HasDefaultValue(false);
         builder.Property(l => l.IpAddress).HasMaxLength(4).IsRequired();
         builder.Property(l => l.UserAgent);

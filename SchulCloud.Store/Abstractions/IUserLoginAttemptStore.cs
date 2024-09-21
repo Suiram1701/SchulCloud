@@ -17,6 +17,14 @@ public interface IUserLoginAttemptStore<TLogInAttempt, TUser>
     where TUser : class
 {
     /// <summary>
+    /// Gets a log in attempt by its id.
+    /// </summary>
+    /// <param name="id">The id of the attempt.</param>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>The attempt. If <c>null</c> the attempt wasn't found.</returns>
+    public Task<TLogInAttempt?> GetLogInAttemptByIdAsync(string id, CancellationToken ct = default);
+
+    /// <summary>
     /// Gets all log in attempts of a user.
     /// </summary>
     /// <param name="user">The user to get the attempts for.</param>
@@ -28,7 +36,7 @@ public interface IUserLoginAttemptStore<TLogInAttempt, TUser>
     /// Adds a log in attempt for a user.
     /// </summary>
     /// <param name="user">The user to add this attempt to.</param>
-    /// <param name="methodCode">A three letter code that represents the used log in method.</param>
+    /// <param name="methodCode">A code that represents the used log in method.</param>
     /// <param name="succeeded">Indicates whether the log in attempt succeeded.</param>
     /// <param name="ipAddress">The ip address of the client who's done the attempt.</param>
     /// <param name="userAgent">The user agent used by the client who's done the attempt.</param>
@@ -49,6 +57,14 @@ public interface IUserLoginAttemptStore<TLogInAttempt, TUser>
     /// <param name="user">The user to delete the attempts for.</param>
     /// <param name="ct">Cancellation token</param>
     public Task RemoveAllUserLogInAttemptsAsync(TUser user, CancellationToken ct = default);
+
+    /// <summary>
+    /// Gets the id of a log in attempt.
+    /// </summary>
+    /// <param name="attempt">The attempt</param>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>The id of the attempt.</returns>
+    public Task<string> GetLogInAttemptIdAsync(TLogInAttempt attempt, CancellationToken ct = default);
 
     /// <summary>
     /// Gets the user for that a log in attempt was done.

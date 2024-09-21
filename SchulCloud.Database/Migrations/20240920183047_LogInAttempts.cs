@@ -17,7 +17,7 @@ namespace SchulCloud.Database.Migrations
                 {
                     Id = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     UserId = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    MethodCode = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false),
+                    MethodCode = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Succeeded = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     IpAddress = table.Column<byte[]>(type: "bytea", maxLength: 4, nullable: false),
                     UserAgent = table.Column<string>(type: "text", nullable: true),

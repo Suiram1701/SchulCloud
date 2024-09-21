@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.8" />
     <PackageReference Include="MudBlazor" Version="7.8.0" />
     <PackageReference Include="MudBlazor.FontIcons.MaterialSymbols" Version="1.2.0" />
+    <PackageReference Include="MyCSharp.HttpUserAgentParser" Version="3.0.6" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="Suiram1.BlazorRoutesGenerator" Version="1.0.0" />
   </ItemGroup>
@@ -28,9 +29,7 @@
   </ItemGroup>
 
   <Target Name="CopyIsolatedCss" AfterTargets="Build">
-    <Copy SourceFiles="$(IntermediateOutputPath)scopedcss\projectbundle\$(PackageId).bundle.scp.css"
-		  DestinationFiles="wwwroot\css\$(PackageId).bundle.scp.css"
-		  ContinueOnError="true" />
+    <Copy SourceFiles="$(IntermediateOutputPath)scopedcss\projectbundle\$(PackageId).bundle.scp.css" DestinationFiles="wwwroot\css\$(PackageId).bundle.scp.css" ContinueOnError="true" />
   </Target>
     
   <ItemGroup>

@@ -337,6 +337,15 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     #endregion
 
     #region IUserLogInAttemptStore
+    public async Task<LogInAttempt?> GetLogInAttemptByIdAsync(string id, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        ct.ThrowIfCancellationRequested();
+
+        return await LogInAttempts.FindAsync([id], ct);
+    }
+
     public async Task<IEnumerable<LogInAttempt>> GetLogInAttemptsOfUserAsync(TUser user, CancellationToken ct = default)
     {
         ThrowIfDisposed();
@@ -351,10 +360,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
-        if (string.IsNullOrEmpty(methodCode) || methodCode.Length > 3)
-        {
-            throw new ArgumentNullException(nameof(methodCode), "A string with a length of 3 was expected.");
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(methodCode);
         ArgumentNullException.ThrowIfNull(ipAddress);
         ct.ThrowIfCancellationRequested();
 
@@ -391,6 +397,15 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
 
         string userId = await GetUserIdAsync(user, ct);
         await LogInAttempts.Where(l => l.UserId.Equals(userId)).ExecuteDeleteAsync(ct);
+    }
+
+    public Task<string> GetLogInAttemptIdAsync(LogInAttempt attempt, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(attempt);
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult(attempt.Id);
     }
 
     public async Task<TUser> GetLogInAttemptUserAsync(LogInAttempt attempt, CancellationToken ct = default)

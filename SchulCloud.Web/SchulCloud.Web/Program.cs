@@ -3,6 +3,7 @@ using MailKit.Client;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using MyCSharp.HttpUserAgentParser.DependencyInjection;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
 using SchulCloud.ServiceDefaults;
@@ -55,7 +56,9 @@ public class Program
             .AddDefaultTokenProviders()
             .AddTokenProviders();
 
-        builder.Services.AddFido2Services();
+        builder.Services
+            .AddFido2Services()
+            .AddHttpUserAgentParser();
 
         builder.Services.ConfigureApplicationCookie(options =>
         {

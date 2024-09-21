@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SchulCloud.Store.Managers;
+using System.Net;
 using System.Security.Claims;
 
 namespace SchulCloud.Web.Identity.Managers;
@@ -21,6 +22,14 @@ public class SchulCloudSignInManager(
     : SignInManager<ApplicationUser>(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
 {
     private readonly AppUserManager _userManager = userManager;
+
+    public override async Task<SignInResult> PasswordSignInAsync(ApplicationUser user, string password, bool isPersistent, bool lockoutOnFailure)
+    {
+        SignInResult result = await base.PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
+        await LogSignInAttemptIfPossibleAsync(user, result, "pwd");
+
+        return result;
+    }
 
     /// <summary>
     /// Tries to sign in with a users fido2 passkey credential.
@@ -59,7 +68,19 @@ public class SchulCloudSignInManager(
         SignInResult result = credential is not null
             ? await SignInOrTwoFactorAsync(user, isPersistent, loginProvider: "pka", bypassTwoFactor: true)     // 'pka' means Passkey Authentication
             : SignInResult.Failed;
+        await LogSignInAttemptIfPossibleAsync(user, result, "pka");
+
         return (result, user);
+    }
+
+    public override async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
+    {
+        SignInResult result = await base.TwoFactorSignInAsync(provider, code, isPersistent, rememberClient);
+
+        ApplicationUser user = (await GetTwoFactorAuthenticationUserAsync())!;
+        await LogSignInAttemptIfPossibleAsync(user, result, "mfa");
+
+        return result;
     }
 
     /// <summary>
@@ -100,9 +121,12 @@ public class SchulCloudSignInManager(
         }
 
         AppCredential? credential = await _userManager.MakeFido2AssertionAsync(twoFactorInfo.User, response, options);
-        return credential is not null
+        SignInResult result = credential is not null
             ? await DoTwoFactorSignInAsync(twoFactorInfo, isPersistent, rememberClient)
             : SignInResult.Failed;
+
+        await LogSignInAttemptIfPossibleAsync(twoFactorInfo.User, result, "mfa");
+        return result;
     }
 
     private async Task<TwoFactorInfo?> GetTwoFactorInfoAsync()
@@ -158,6 +182,16 @@ public class SchulCloudSignInManager(
         await SignInWithClaimsAsync(info.User, isPersistent, claims);
 
         return SignInResult.Success;
+    }
+
+    private async Task LogSignInAttemptIfPossibleAsync(ApplicationUser user, SignInResult signInResult, string method)
+    {
+        if (!signInResult.RequiresTwoFactor && !signInResult.IsLockedOut && !signInResult.IsNotAllowed)
+        {
+            IPAddress clientIpAddress = Context.Connection.RemoteIpAddress ?? IPAddress.Any;
+            string? userAgent = Context.Request.Headers.UserAgent.ToString();
+            await _userManager.AddLogInAttemptAsync(user, method, signInResult.Succeeded, clientIpAddress, userAgent);
+        }
     }
 
     private record TwoFactorInfo(ApplicationUser User, string? LoginProvider);
