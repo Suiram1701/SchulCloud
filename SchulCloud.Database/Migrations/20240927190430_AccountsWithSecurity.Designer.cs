@@ -12,15 +12,15 @@ using SchulCloud.Database;
 namespace SchulCloud.Database.Migrations
 {
     [DbContext(typeof(SchulCloudDbContext))]
-    [Migration("20240614182325_InitialIdentitySetup")]
-    partial class InitialIdentitySetup
+    [Migration("20240927190430_AccountsWithSecurity")]
+    partial class AccountsWithSecurity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -131,14 +131,116 @@ namespace SchulCloud.Database.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("SchulCloud.Database.Models.Role", b =>
+            modelBuilder.Entity("SchulCloud.Database.Models.Credential", b =>
+                {
+                    b.Property<byte[]>("Id")
+                        .HasMaxLength(256)
+                        .HasColumnType("bytea");
+
+                    b.Property<Guid>("AaGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("AttestationClientDataJson")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("AttestationFormat")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<byte[]>("AttestationObject")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<bool>("IsBackedUp")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsBackupEligible")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPasskey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<byte[]>("PublicKey")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<DateTime>("RegDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("SignCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
+                    b.Property<int[]>("Transports")
+                        .HasColumnType("integer[]");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("AspNetCredentials", (string)null);
+                });
+
+            modelBuilder.Entity("SchulCloud.Database.Models.LoginAttempt", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<bool>("Succeeded")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetLoginAttempts", (string)null);
+                });
+
+            modelBuilder.Entity("SchulCloud.Database.Models.SchulCloudRole", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("Color")
-                        .HasMaxLength(9)
-                        .HasColumnType("character varying(9)");
+                    b.Property<int?>("ArgbColor")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -164,7 +266,7 @@ namespace SchulCloud.Database.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
-            modelBuilder.Entity("SchulCloud.Database.Models.User", b =>
+            modelBuilder.Entity("SchulCloud.Database.Models.SchulCloudUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -197,6 +299,11 @@ namespace SchulCloud.Database.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<bool>("PasskeysEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
@@ -209,8 +316,8 @@ namespace SchulCloud.Database.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
+                    b.Property<int>("TwoFactorEnabledFlags")
+                        .HasColumnType("integer");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
@@ -230,7 +337,7 @@ namespace SchulCloud.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("SchulCloud.Database.Models.Role", null)
+                    b.HasOne("SchulCloud.Database.Models.SchulCloudRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -239,7 +346,7 @@ namespace SchulCloud.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("SchulCloud.Database.Models.User", null)
+                    b.HasOne("SchulCloud.Database.Models.SchulCloudUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -248,7 +355,7 @@ namespace SchulCloud.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("SchulCloud.Database.Models.User", null)
+                    b.HasOne("SchulCloud.Database.Models.SchulCloudUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -257,13 +364,13 @@ namespace SchulCloud.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("SchulCloud.Database.Models.Role", null)
+                    b.HasOne("SchulCloud.Database.Models.SchulCloudRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SchulCloud.Database.Models.User", null)
+                    b.HasOne("SchulCloud.Database.Models.SchulCloudUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -272,7 +379,25 @@ namespace SchulCloud.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("SchulCloud.Database.Models.User", null)
+                    b.HasOne("SchulCloud.Database.Models.SchulCloudUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SchulCloud.Database.Models.Credential", b =>
+                {
+                    b.HasOne("SchulCloud.Database.Models.SchulCloudUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SchulCloud.Database.Models.LoginAttempt", b =>
+                {
+                    b.HasOne("SchulCloud.Database.Models.SchulCloudUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

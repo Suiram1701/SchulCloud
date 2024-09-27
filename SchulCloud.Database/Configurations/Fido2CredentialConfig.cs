@@ -4,16 +4,16 @@ using SchulCloud.Database.Models;
 
 namespace SchulCloud.Database.Configurations;
 
-internal sealed class Fido2CredentialConfig : IEntityTypeConfiguration<Fido2Credential>
+internal sealed class Fido2CredentialConfig : IEntityTypeConfiguration<Credential>
 {
-    public void Configure(EntityTypeBuilder<Fido2Credential> builder)
+    public void Configure(EntityTypeBuilder<Credential> builder)
     {
         builder.HasKey(c => c.Id);
-        builder.HasIndex(cu => new { cu.UserId, cu.SecurityKeyName }).IsUnique();
+        builder.HasIndex(cu => new { cu.UserId, cu.Name }).IsUnique();
 
         builder.Property(c => c.Id).HasMaxLength(256).IsRequired();
         builder.Property(c => c.UserId).HasMaxLength(256).IsRequired();
-        builder.Property(c => c.SecurityKeyName).HasMaxLength(256);
+        builder.Property(c => c.Name).HasMaxLength(256);
         builder.Property(c => c.IsPasskey).HasDefaultValue(false);
         builder.Property(c => c.PublicKey).IsRequired();
         builder.Property(c => c.Transports).HasJsonPropertyName(null);

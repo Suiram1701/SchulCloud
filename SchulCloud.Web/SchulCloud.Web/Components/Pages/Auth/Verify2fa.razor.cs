@@ -302,7 +302,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
         }
 
         Cache.Remove(dataAccessKey!);
-        return await SignInManager.TwoFactorFido2CredentialSignInAsync(authState!.Options, authState.Response, isPersistent, rememberClient);
+        return await SignInManager.TwoFactorFido2UserCredentialSignInAsync(authState!.Options, authState.Response, isPersistent, rememberClient);
     }
 
     private async Task<string> GetSecurityKeyDataCacheKeyAsync(string key)

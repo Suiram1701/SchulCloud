@@ -1,19 +1,16 @@
-﻿namespace SchulCloud.Database.Models;
+﻿using System.Net;
+
+namespace SchulCloud.Store.Models;
 
 /// <summary>
 /// Represents a login attempt for a user.
 /// </summary>
-internal class LoginAttempt
+public class UserLoginAttempt
 {
     /// <summary>
     /// The id of this attempt.
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
-
-    /// <summary>
-    /// The id of the user to attempted to login.
-    /// </summary>
-    public string UserId { get; set; } = default!;
+    public string Id { get; set; } = default!;
 
     /// <summary>
     /// A code that represents the used login method.
@@ -28,7 +25,7 @@ internal class LoginAttempt
     /// <summary>
     /// The ip address of the client attempted to login.
     /// </summary>
-    public byte[] IpAddress { get; set; } = [];
+    public IPAddress IpAddress { get; set; } = default!;
 
     /// <summary>
     /// The user agent used to login.

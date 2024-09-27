@@ -5,21 +5,23 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SchulCloud.Store.Abstractions;
+using SchulCloud.Store.Models;
 using SchulCloud.Store.Options;
+using System.Text;
 
 namespace SchulCloud.Store.Managers;
 
-partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
+partial class SchulCloudUserManager<TUser>
 {
     /// <summary>
     /// Indicates whether the store supports fido2 credentials
     /// </summary>
-    public virtual bool SupportsUserFido2Credentials
+    public virtual bool SupportsUserCredentials
     {
         get
         {
             ThrowIfDisposed();
-            return Store is IUserFido2CredentialStore<TCredential, TUser>;
+            return Store is IUserCredentialStore<TUser>;
         }
     }
 
@@ -34,12 +36,17 @@ partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
         IFido2 fido2 = GetFido2Service();
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
+        IUserCredentialStore<TUser> store = GetCredentialStore();
 
-        Fido2User fido2User = await store.UserToFido2UserAsync(user, CancellationToken).ConfigureAwait(false);
+        Fido2User fido2User = new()
+        {
+            Id = Encoding.UTF8.GetBytes(await GetUserIdAsync(user)),
+            Name = await GetEmailAsync(user),
+            DisplayName = await GetUserNameAsync(user)
+        };
 
-        IEnumerable<TCredential> existingCreds = await store.GetCredentialsByUserAsync(user, CancellationToken).ConfigureAwait(false);
-        PublicKeyCredentialDescriptor[] existingKeys = await Task.WhenAll(existingCreds.Select(cred => store.GetCredentialDescriptorAsync(cred, CancellationToken))).ConfigureAwait(false);
+        IEnumerable<UserCredential> existingCreds = await store.FindCredentialsByUserAsync(user, CancellationToken).ConfigureAwait(false);
+        PublicKeyCredentialDescriptor[] existingKeys = existingCreds.Select(cred => cred.ToCredentialDescriptor()).ToArray();
 
         ResidentKeyRequirement residentKey = isPasskey
             ? ResidentKeyRequirement.Required
@@ -59,12 +66,12 @@ partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
     /// Stores a created credential.
     /// </summary>
     /// <param name="user">The user that should own the credential.</param>
-    /// <param name="securityKeyName">A user specified name of the security key.</param>
+    /// <param name="name">A user specified name of the credential.</param>
     /// <param name="isPasskey">Indicates The credential is a passkey.</param>
     /// <param name="authenticatorResponse">The raw response of the authenticator.</param>
     /// <param name="options">The options that were used to request the credential creation from the authenticator.</param>
     /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> StoreFido2CredentialsAsync(TUser user, string? securityKeyName, bool isPasskey, AuthenticatorAttestationRawResponse authenticatorResponse, CredentialCreateOptions options)
+    public virtual async Task<IdentityResult> StoreFido2CredentialsAsync(TUser user, string? name, bool isPasskey, AuthenticatorAttestationRawResponse authenticatorResponse, CredentialCreateOptions options)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
@@ -72,11 +79,11 @@ partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
         ArgumentNullException.ThrowIfNull(options);
 
         IFido2 fido2 = GetFido2Service();
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
+        IUserCredentialStore<TUser> store = GetCredentialStore();
 
         async Task<bool> isUniqueCallback(IsCredentialIdUniqueToUserParams @params, CancellationToken ct)
         {
-            return await store.GetCredentialById(@params.CredentialId, ct).ConfigureAwait(false) is null;
+            return await store.FindCredentialAsync(@params.CredentialId, ct).ConfigureAwait(false) is null;
         }
 
         try
@@ -88,7 +95,29 @@ partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
                 throw new Fido2VerificationException(makeResult.ErrorMessage);
             }
 
-            await store.CreateCredentialAsync(user, securityKeyName, isPasskey, makeResult.Result, CancellationToken).ConfigureAwait(false);
+            UserCredential credential = new()
+            {
+                Id = makeResult.Result.Id,
+                Name = name,
+                PublicKey = makeResult.Result.PublicKey,
+                SignCount = makeResult.Result.SignCount,
+                Transports = makeResult.Result.Transports,
+                IsBackupEligible = makeResult.Result.IsBackupEligible,
+                IsBackedUp = makeResult.Result.IsBackedUp,
+                AttestationObject = makeResult.Result.AttestationObject,
+                AttestationClientDataJson = makeResult.Result.AttestationClientDataJson,
+                AttestationFormat = makeResult.Result.AttestationFormat,
+                RegDate = DateTime.UtcNow,
+                AaGuid = makeResult.Result.AaGuid
+            };
+            await store.AddCredentialAsync(user, credential, CancellationToken).ConfigureAwait(false);
+
+            if (isPasskey && SupportsUserPasskeys)
+            {
+                IUserPasskeysStore<TUser> passkeysStore = GetPasskeysStore();
+                await passkeysStore.SetIsPasskeyCredentialAsync(credential, true, CancellationToken).ConfigureAwait(false);
+            }
+
             return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
         }
         catch (Fido2VerificationException ex)
@@ -111,13 +140,13 @@ partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
     {
         ThrowIfDisposed();
         IFido2 fido2 = GetFido2Service();
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
+        IUserCredentialStore<TUser> store = GetCredentialStore();
 
         PublicKeyCredentialDescriptor[] existingKeys = [];
         if (user is not null)
         {
-            IEnumerable<TCredential> existingCreds = await store.GetCredentialsByUserAsync(user, CancellationToken).ConfigureAwait(false);
-            existingKeys = await Task.WhenAll(existingCreds.Select(cred => store.GetCredentialDescriptorAsync(cred, CancellationToken))).ConfigureAwait(false);
+            IEnumerable<UserCredential> existingCreds = await store.FindCredentialsByUserAsync(user, CancellationToken).ConfigureAwait(false);
+            existingKeys = existingCreds.Select(cred => cred.ToCredentialDescriptor()).ToArray();
         }
 
         AuthenticationExtensionsClientInputs extensions = new()
@@ -142,33 +171,43 @@ partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
     /// <c>credential</c> is the credential that were used by the authenticator.
     /// The credential used for the assertion. If <c>null</c> the assertion wasn't successful or the <paramref name="authenticatorResponse"/> isn't valid.
     /// </returns>
-    public virtual async Task<TCredential?> MakeFido2AssertionAsync(TUser? user, AuthenticatorAssertionRawResponse authenticatorResponse, AssertionOptions options)
+    public virtual async Task<UserCredential?> MakeFido2AssertionAsync(TUser? user, AuthenticatorAssertionRawResponse authenticatorResponse, AssertionOptions options)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(authenticatorResponse);
         ArgumentNullException.ThrowIfNull(options);
 
         IFido2 fido2 = GetFido2Service();
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
+        IUserCredentialStore<TUser> store = GetCredentialStore();
 
-        if (await store.GetCredentialById(authenticatorResponse.Id, CancellationToken).ConfigureAwait(false) is not TCredential credential)
+        if (await store.FindCredentialAsync(authenticatorResponse.Id, CancellationToken).ConfigureAwait(false) is not UserCredential credential)
         {
             return null;
         }
 
         async Task<bool> isOwnedByUserHandleCallback(IsUserHandleOwnerOfCredentialIdParams @params, CancellationToken ct)
         {
-            return await store.IsCredentialOwnedByUserHandle(@params.CredentialId, @params.UserHandle, CancellationToken).ConfigureAwait(false);
-        }
+            TUser? user = await FindByIdAsync(Encoding.UTF8.GetString(@params.UserHandle));
+            UserCredential? credential = await store.FindCredentialAsync(@params.CredentialId, ct);
 
-        uint signCount = await store.GetCredentialSignCountAsync(credential, CancellationToken).ConfigureAwait(false);
-        byte[] publicKey = await store.GetCredentialPublicKeyAsync(credential, CancellationToken).ConfigureAwait(false);
+            return user is not null && credential is not null && await store.IsCredentialOwnedByUser(user, credential, ct);
+        }
 
         try
         {
             // NOTE: Every verification error throws an exception.
-            VerifyAssertionResult result = await fido2.MakeAssertionAsync(authenticatorResponse, options, publicKey, [], signCount, isOwnedByUserHandleCallback, CancellationToken).ConfigureAwait(false);
-            await store.SetCredentialSignCountAsync(credential, result.SignCount, CancellationToken).ConfigureAwait(false);
+            VerifyAssertionResult result = await fido2.MakeAssertionAsync(
+                authenticatorResponse,
+                options,
+                credential.PublicKey,
+                [],
+                credential.SignCount,
+                isOwnedByUserHandleCallback,
+                CancellationToken).ConfigureAwait(false);
+
+            credential.SignCount = result.SignCount;
+            credential.IsBackedUp = result.IsBackedUp;
+            await store.UpdateCredentialAsync(credential, CancellationToken);
         }
         catch (Fido2VerificationException ex)
         {
@@ -176,7 +215,12 @@ partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
             return null;
         }
 
-        user ??= await store.GetCredentialOwnerAsync(credential, CancellationToken).ConfigureAwait(false);
+        user ??= await store.FindUserByCredentialAsync(credential, CancellationToken).ConfigureAwait(false);
+        if (user is null)
+        {
+            LogFido2AssertionError(Logger, "Owner of credential not found.");
+            return null;
+        }
 
         IdentityResult updateResult = await UpdateAsync(user).ConfigureAwait(false);
         return updateResult.Succeeded
@@ -185,121 +229,81 @@ partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
     }
 
     /// <summary>
+    /// Gets a fido2 credential by its id.
+    /// </summary>
+    /// <param name="credId">The id of the credential.</param>
+    /// <returns>The credential if found.</returns>
+    public virtual async Task<UserCredential?> FindFido2Credential(byte[] credId)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credId);
+        IUserCredentialStore<TUser> store = GetCredentialStore();
+
+        return await store.FindCredentialAsync(credId, CancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Finds every fido2 credentials that a user owns.
+    /// </summary>
+    /// <param name="user">The user to find the credentials of.</param>
+    /// <returns>The credentials</returns>
+    public virtual async Task<IEnumerable<UserCredential>> FindFido2CredentialsByUserAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserCredentialStore<TUser> store = GetCredentialStore();
+        return await store.FindCredentialsByUserAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Finds a user by one of the credentials he owns.
+    /// </summary>
+    /// <param name="credential">The credential to find the owner for.</param>
+    /// <returns>The credential owner.</returns>
+    public virtual async Task<TUser?> FindUserByFido2CredentialAsync(UserCredential credential)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credential);
+
+        IUserCredentialStore<TUser> store = GetCredentialStore();
+        return await store.FindUserByCredentialAsync(credential, CancellationToken);
+    }
+
+    /// <summary>
+    /// Updates the name of a fido2 credential.
+    /// </summary>
+    /// <param name="user">The user that owns this credential.</param>
+    /// <param name="credential">The credential to update the name of.</param>
+    /// <param name="name">The new name of the credential.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> UpdateFido2CredentialNameAsync(TUser user, UserCredential credential, string name)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credential);
+        IUserCredentialStore<TUser> store = GetCredentialStore();
+
+        credential.Name = name;
+        await store.UpdateCredentialAsync(credential, CancellationToken).ConfigureAwait(false);
+
+        return await UpdateAsync(user).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Removes a fido2 credential.
     /// </summary>
     /// <param name="credential">The credential.</param>
     /// <param name="user">The user that owns the credential.</param>
     /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> RemoveFido2CredentialAsync(TCredential credential, TUser user)
+    public virtual async Task<IdentityResult> RemoveFido2CredentialAsync(UserCredential credential, TUser user)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(credential);
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
 
-        await store.DeleteCredentialAsync(credential, CancellationToken).ConfigureAwait(false);
+        IUserCredentialStore<TUser> store = GetCredentialStore();
+        await store.RemoveCredentialAsync(credential, CancellationToken).ConfigureAwait(false);
+
         return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Gets a fido2 credential by its id.
-    /// </summary>
-    /// <param name="credId">The id of the credential.</param>
-    /// <returns>The credential if found.</returns>
-    public virtual async Task<TCredential?> GetFido2CredentialById(byte[] credId)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(credId);
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
-
-        return await store.GetCredentialById(credId, CancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Gets the fido2 credentials of a user.
-    /// </summary>
-    /// <param name="user">The user</param>
-    /// <returns>The credentials</returns>
-    public virtual async Task<IEnumerable<TCredential>> GetFido2CredentialsByUserAsync(TUser user)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(user);
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
-
-        return await store.GetCredentialsByUserAsync(user, CancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Gets the owner of a fido2 credential.
-    /// </summary>
-    /// <param name="credential">The credential.</param>
-    /// <returns>The owner of the credential.</returns>
-    public virtual async Task<TUser> GetFido2CredentialOwnerAsync(TCredential credential)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
-        return await store.GetCredentialOwnerAsync(credential, CancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Gets the security key name of a credential (specified by the user).
-    /// </summary>
-    /// <param name="credential">The credential.</param>
-    /// <returns>The name of the key.</returns>
-    public virtual async Task<string?> GetFido2CredentialSecurityKeyNameAsync(TCredential credential)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(credential);
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
-
-        return await store.GetCredentialSecurityKeyNameAsync(credential, CancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Changes the name of a credential.
-    /// </summary>
-    /// <param name="credential">The credential to modify.</param>
-    /// <param name="user">The owner of the credential.</param>
-    /// <param name="newName">The new name.</param>
-    /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> ChangeFido2CredentialSecurityKeyNameAsync(TCredential credential, TUser user, string? newName)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(credential);
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
-
-        await store.SetCredentialSecurityKeyNameAsync(credential, newName, CancellationToken).ConfigureAwait(false);
-        return await UpdateAsync(user).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Gets the transports flags of a credential. These flags represents information about the used authenticator.
-    /// </summary>
-    /// <param name="credential">The credential.</param>
-    /// <returns>The flags. If <c>null</c> the authenticator haven't provided these flags.</returns>
-    public virtual async Task<AuthenticatorTransport[]?> GetFido2CredentialTransportsAsync(TCredential credential)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(credential);
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
-
-        PublicKeyCredentialDescriptor descriptor = await store.GetCredentialDescriptorAsync(credential, CancellationToken).ConfigureAwait(false);
-        return descriptor.Transports;
-    }
-
-    /// <summary>
-    /// Gets the utc registration datetime of a credential.
-    /// </summary>
-    /// <param name="credential">The credential.</param>
-    /// <returns>The datetime.</returns>
-    public virtual async Task<DateTime> GetFido2CredentialRegistrationDateAsync(TCredential credential)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(credential);
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
-
-        return await store.GetCredentialRegistrationDateAsync(credential, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -310,27 +314,25 @@ partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>
     /// </remarks>
     /// <param name="credential">The credential.</param>
     /// <returns>The metadata statement. If <c>null</c> the authenticator haven't provided these information on registration.</returns>
-    public virtual async Task<MetadataStatement?> GetFido2CredentialMetadataStatementAsync(TCredential credential)
+    public virtual async Task<MetadataStatement?> GetFido2CredentialMetadataStatementAsync(UserCredential credential)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(credential);
         IMetadataService metadataService = GetMetadataService();
-        IUserFido2CredentialStore<TCredential, TUser> store = GetFido2CredentialStore();
 
-        Guid aaguid = await store.GetCredentialAaGuidAsync(credential, CancellationToken).ConfigureAwait(false);
-        if (aaguid.Equals(Guid.Empty))
+        if (credential.AaGuid.Equals(Guid.Empty))
         {
             return null;
         }
-        MetadataBLOBPayloadEntry? entry = await metadataService.GetEntryAsync(aaguid, CancellationToken).ConfigureAwait(false);
+        MetadataBLOBPayloadEntry? entry = await metadataService.GetEntryAsync(credential.AaGuid, CancellationToken).ConfigureAwait(false);
         return entry?.MetadataStatement;
     }
 
-    private IUserFido2CredentialStore<TCredential, TUser> GetFido2CredentialStore()
+    private IUserCredentialStore<TUser> GetCredentialStore()
     {
-        if (Store is not IUserFido2CredentialStore<TCredential, TUser> cast)
+        if (Store is not IUserCredentialStore<TUser> cast)
         {
-            throw new NotSupportedException($"{nameof(IUserFido2CredentialStore<TCredential, TUser>)} isn't supported by the store.");
+            throw new NotSupportedException($"{nameof(IUserCredentialStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }

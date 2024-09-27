@@ -48,7 +48,7 @@ public class Program
 
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()
-            .AddSchulCloudManagers<AppCredential, AppLogInAttempt>()
+            .AddSchulCloudManagers()
             .AddSignInManager<SchulCloudSignInManager>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
             .AddEmailSender<MailKitEmailSender<ApplicationUser>>()

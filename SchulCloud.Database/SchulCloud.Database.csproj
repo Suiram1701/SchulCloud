@@ -26,4 +26,8 @@
     <ProjectReference Include="..\SchulCloud.Store\SchulCloud.Store.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>

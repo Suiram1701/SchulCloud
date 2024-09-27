@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SchulCloud.Store.Managers;
+using SchulCloud.Store.Models;
 using System.Net;
 using System.Security.Claims;
 
@@ -43,19 +44,15 @@ public class SchulCloudSignInManager(
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(response);
 
-        AppCredential? credential = await _userManager.MakeFido2AssertionAsync(null, response, options);
+        UserCredential? credential = await _userManager.MakeFido2AssertionAsync(null, response, options);
         if (credential is null)
         {
             return (SignInResult.Failed, null);
         }
 
         // Checks whether user and credential support passkeys.
-        ApplicationUser user = await _userManager.GetFido2CredentialOwnerAsync(credential);
-        if (!await _userManager.GetPasskeySignInEnabledAsync(user))
-        {
-            return (SignInResult.Failed, null);
-        }
-        else if (!await _userManager.GetIsPasskey(credential))
+        ApplicationUser user = (await _userManager.FindUserByFido2CredentialAsync(credential))!;
+        if (!await _userManager.GetPasskeySignInEnabledAsync(user) || !await _userManager.GetIsPasskey(credential))
         {
             return (SignInResult.Failed, null);
         }
@@ -104,7 +101,7 @@ public class SchulCloudSignInManager(
     /// <param name="isPersistent">Indicates whether the session is persistent.</param>
     /// <param name="rememberClient">Indicates whether this client should be remembered for future 2fa sign ins.</param>
     /// <returns>The result of the sign in.</returns>
-    public async Task<SignInResult> TwoFactorFido2CredentialSignInAsync(AssertionOptions options, AuthenticatorAssertionRawResponse response, bool isPersistent, bool rememberClient)
+    public async Task<SignInResult> TwoFactorFido2UserCredentialSignInAsync(AssertionOptions options, AuthenticatorAssertionRawResponse response, bool isPersistent, bool rememberClient)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(response);
@@ -120,7 +117,7 @@ public class SchulCloudSignInManager(
             return error;
         }
 
-        AppCredential? credential = await _userManager.MakeFido2AssertionAsync(twoFactorInfo.User, response, options);
+        UserCredential? credential = await _userManager.MakeFido2AssertionAsync(twoFactorInfo.User, response, options);
         SignInResult result = credential is not null
             ? await DoTwoFactorSignInAsync(twoFactorInfo, isPersistent, rememberClient)
             : SignInResult.Failed;
@@ -190,7 +187,14 @@ public class SchulCloudSignInManager(
         {
             IPAddress clientIpAddress = Context.Connection.RemoteIpAddress ?? IPAddress.Any;
             string? userAgent = Context.Request.Headers.UserAgent.ToString();
-            await _userManager.AddLogInAttemptAsync(user, method, signInResult.Succeeded, clientIpAddress, userAgent);
+
+            await _userManager.AddLogInAttemptAsync(user, new()
+            {
+                Method = method,
+                Succeeded = signInResult.Succeeded,
+                IpAddress = clientIpAddress,
+                UserAgent = userAgent
+            });
         }
     }
 

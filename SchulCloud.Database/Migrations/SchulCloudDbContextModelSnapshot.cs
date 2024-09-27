@@ -128,7 +128,7 @@ namespace SchulCloud.Database.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("SchulCloud.Database.Models.Fido2Credential", b =>
+            modelBuilder.Entity("SchulCloud.Database.Models.Credential", b =>
                 {
                     b.Property<byte[]>("Id")
                         .HasMaxLength(256)
@@ -160,16 +160,16 @@ namespace SchulCloud.Database.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
                     b.Property<byte[]>("PublicKey")
                         .IsRequired()
                         .HasColumnType("bytea");
 
                     b.Property<DateTime>("RegDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SecurityKeyName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
 
                     b.Property<long>("SignCount")
                         .ValueGeneratedOnAdd()
@@ -186,13 +186,13 @@ namespace SchulCloud.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "SecurityKeyName")
+                    b.HasIndex("UserId", "Name")
                         .IsUnique();
 
                     b.ToTable("AspNetCredentials", (string)null);
                 });
 
-            modelBuilder.Entity("SchulCloud.Database.Models.LogInAttempt", b =>
+            modelBuilder.Entity("SchulCloud.Database.Models.LoginAttempt", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(256)
@@ -206,10 +206,10 @@ namespace SchulCloud.Database.Migrations
                         .HasMaxLength(4)
                         .HasColumnType("bytea");
 
-                    b.Property<string>("MethodCode")
+                    b.Property<string>("Method")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(3)");
+                        .HasColumnType("character varying(64)");
 
                     b.Property<bool>("Succeeded")
                         .ValueGeneratedOnAdd()
@@ -228,7 +228,7 @@ namespace SchulCloud.Database.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetLogInAttempts", (string)null);
+                    b.ToTable("AspNetLoginAttempts", (string)null);
                 });
 
             modelBuilder.Entity("SchulCloud.Database.Models.SchulCloudRole", b =>
@@ -383,7 +383,7 @@ namespace SchulCloud.Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SchulCloud.Database.Models.Fido2Credential", b =>
+            modelBuilder.Entity("SchulCloud.Database.Models.Credential", b =>
                 {
                     b.HasOne("SchulCloud.Database.Models.SchulCloudUser", null)
                         .WithMany()
@@ -392,7 +392,7 @@ namespace SchulCloud.Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SchulCloud.Database.Models.LogInAttempt", b =>
+            modelBuilder.Entity("SchulCloud.Database.Models.LoginAttempt", b =>
                 {
                     b.HasOne("SchulCloud.Database.Models.SchulCloudUser", null)
                         .WithMany()

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using MyCSharp.HttpUserAgentParser;
 using MyCSharp.HttpUserAgentParser.Providers;
 using SchulCloud.Store.Abstractions;
+using SchulCloud.Store.Models;
 using SchulCloud.Store.Options;
 using System.Net;
 using System.Security.Cryptography;
@@ -16,7 +17,7 @@ namespace SchulCloud.Store.Managers;
 /// <summary>
 /// A user manager that provides functionalities of this application.
 /// </summary>
-public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
+public partial class SchulCloudUserManager<TUser>(
     IUserStore<TUser> store,
     IOptions<IdentityOptions> optionsAccessor,
     IOptions<ExtendedTokenProviderOptions> tokenProviderOptionsAccessor,
@@ -29,8 +30,6 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
     ILogger<UserManager<TUser>> logger)
     : UserManager<TUser>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger: logger)
     where TUser : class
-    where TCredential : class
-    where TLogInAttempt : class
 {
     private readonly IServiceProvider _services = services;
 
@@ -47,7 +46,7 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         get
         {
             ThrowIfDisposed();
-            return Store is IUserPasskeysStore<TUser, TCredential> && SupportsUserFido2Credentials;
+            return Store is IUserPasskeysStore<TUser> && SupportsUserCredentials;
         }
     }
 
@@ -71,19 +70,19 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         get
         {
             ThrowIfDisposed();
-            return Store is IUserTwoFactorSecurityKeyStore<TUser> && SupportsUserFido2Credentials;
+            return Store is IUserTwoFactorSecurityKeyStore<TUser> && SupportsUserCredentials;
         }
     }
 
     /// <summary>
     /// Indicates whether the internal store supports log in attempts.
     /// </summary>
-    public virtual bool SupportsUserLogInAttempts
+    public virtual bool SupportsUserLoginAttempts
     {
         get
         {
             ThrowIfDisposed();
-            return Store is IUserLoginAttemptStore<TLogInAttempt, TUser>;
+            return Store is IUserLoginAttemptStore<TUser>;
         }
     }
 
@@ -97,7 +96,7 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserPasskeysStore<TUser, TCredential> store = GetPasskeysStore();
+        IUserPasskeysStore<TUser> store = GetPasskeysStore();
         return await store.GetPasskeysEnabledAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
@@ -112,7 +111,7 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserPasskeysStore<TUser, TCredential> store = GetPasskeysStore();
+        IUserPasskeysStore<TUser> store = GetPasskeysStore();
         await store.SetPasskeysEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
 
         return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
@@ -123,13 +122,13 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
     /// </summary>
     /// <param name="credential">The credential.</param>
     /// <returns>The flag.</returns>
-    public virtual async Task<bool> GetIsPasskey(TCredential credential)
+    public virtual async Task<bool> GetIsPasskey(UserCredential credential)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(credential);
-        IUserPasskeysStore<TUser, TCredential> store = GetPasskeysStore();
+        IUserPasskeysStore<TUser> store = GetPasskeysStore();
 
-        return await store.GetIsPasskeyAsync(credential, CancellationToken).ConfigureAwait(false);
+        return await store.GetIsPasskeyCredentialAsync(credential, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -142,7 +141,7 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserPasskeysStore<TUser, TCredential> store = GetPasskeysStore();
+        IUserPasskeysStore<TUser> store = GetPasskeysStore();
         return await store.GetPasskeyCountAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
@@ -319,7 +318,7 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
 
         if (SupportsUserPasskeys)
         {
-            IUserPasskeysStore<TUser, TCredential> passkeysStore = GetPasskeysStore();
+            IUserPasskeysStore<TUser> passkeysStore = GetPasskeysStore();
             await passkeysStore.SetPasskeysEnabledAsync(user, false, CancellationToken).ConfigureAwait(false);
         }
 
@@ -333,35 +332,35 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
     }
 
     /// <summary>
-    /// Gets a log in attempt by its id.
+    /// Finds a login attempt by its id.
     /// </summary>
     /// <param name="id">The id of the attempt.</param>
     /// <returns>The attempt. If <c>null</c> no attempt with this id were found.</returns>
-    public virtual async Task<TLogInAttempt?> GetLogInAttemptByIdAsync(string id)
+    public virtual async Task<UserLoginAttempt?> FindLoginAttemptAsync(string id)
     {
         ThrowIfDisposed();
         ArgumentException.ThrowIfNullOrWhiteSpace(id); 
 
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        return await store.GetLogInAttemptByIdAsync(id);
+        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        return await store.FindLoginAttemptAsync(id, CancellationToken);
     }
 
     /// <summary>
-    /// Gets all log in attempts done for a user.
+    /// Finds all login attempts of a user.
     /// </summary>
     /// <param name="user">The user to get these for.</param>
     /// <returns>The log in attempts.</returns>
-    public virtual async Task<IEnumerable<TLogInAttempt>> GetLogInAttemptsOfUserAsync(TUser user)
+    public virtual async Task<IEnumerable<UserLoginAttempt>> FindLoginAttemptsByUserAsync(TUser user)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        return await store.GetLogInAttemptsOfUserAsync(user, CancellationToken);
+        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        return await store.FindLoginAttemptsByUserAsync(user, CancellationToken);
     }
 
     /// <summary>
-    /// Adds a log in attempt to a user.
+    /// Adds a login attempt to a user.
     /// </summary>
     /// <remarks>
     /// This method should only get called by the SignInManager.
@@ -372,38 +371,38 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
     /// <param name="ipAddress">The clients ip address.</param>
     /// <param name="userAgent">The user agent used by the client.</param>
     /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> AddLogInAttemptAsync(TUser user, string methodCode, bool succeeded, IPAddress ipAddress, string? userAgent)
+    public virtual async Task<IdentityResult> AddLogInAttemptAsync(TUser user, UserLoginAttempt attempt)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
-        ArgumentNullException.ThrowIfNull(methodCode);
-        ArgumentNullException.ThrowIfNull(ipAddress);
+        ArgumentNullException.ThrowIfNull(attempt);
 
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        await store.AddUserLogInAttemptAsync(user, methodCode, succeeded, ipAddress, userAgent, CancellationToken);
+        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        await store.AddLoginAttemptAsync(user, attempt, CancellationToken);
 
         return await Store.UpdateAsync(user, CancellationToken);
     }
 
     /// <summary>
-    /// Removes a single log in attempt.
+    /// Removes a single login attempt of a user.
     /// </summary>
     /// <param name="user">The user that this attempt is for.</param>
     /// <param name="attempt">The attempt to remove.</param>
     /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> RemoveLogInAttemptAsync(TUser user, TLogInAttempt attempt)
+    public virtual async Task<IdentityResult> RemoveLogInAttemptAsync(TUser user, UserLoginAttempt attempt)
     {
         ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(attempt);
 
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        await store.RemoveUserLogInAttemptAsync(attempt, CancellationToken);
+        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        await store.RemoveLoginAttemptAsync(attempt, CancellationToken);
 
         return await Store.UpdateAsync(user, CancellationToken);
     }
 
     /// <summary>
-    /// Removes all log in attempts of a user.
+    /// Removes all login attempts of a user.
     /// </summary>
     /// <param name="user">The user to remove all attempts from.</param>
     /// <returns>The result of operation.</returns>
@@ -412,110 +411,31 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        await store.RemoveAllUserLogInAttemptsAsync(user, CancellationToken);
+        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        await store.RemoveAllLoginAttemptsAsync(user, CancellationToken);
 
         return await Store.UpdateAsync(user, CancellationToken);
     }
 
     /// <summary>
-    /// Gets the id of a log in attempt.
+    /// Finds the user that owns a login attempt.
     /// </summary>
-    /// <param name="attempt">The attempt to get the id for.</param>
-    /// <returns>The id</returns>
-    public virtual async Task<string> GetLogInAttemptIdAsync(TLogInAttempt attempt)
+    /// <param name="attempt">The attempt to check.</param>
+    /// <returns>The user.</returns>
+    public virtual async Task<TUser?> FindUserByLoginAttemptAsync(UserLoginAttempt attempt)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(attempt);
 
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        return await store.GetLogInAttemptIdAsync(attempt, CancellationToken);
+        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        return await store.FindUserByLoginAttemptAsync(attempt, CancellationToken);
     }
 
-    /// <summary>
-    /// Gets the code of the log in method used for a log in attempt.
-    /// </summary>
-    /// <param name="attempt">The attempt</param>
-    /// <returns>The code</returns>
-    public virtual async Task<string> GetLogInAttemptMethodCodeAsync(TLogInAttempt attempt)
+    private IUserPasskeysStore<TUser> GetPasskeysStore()
     {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
-
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        return await store.GetLogInAttemptMethodCodeAsync(attempt, CancellationToken);
-    }
-
-    /// <summary>
-    /// Gets a flag indicating whether a log in was successful or not.
-    /// </summary>
-    /// <param name="attempt">The attempt to get this flag.</param>
-    /// <returns>The flag</returns>
-    public virtual async Task<bool> GetLogInAttemptSucceededAsync(TLogInAttempt attempt)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
-
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        return await store.GetLogInAttemptSucceededAsync(attempt, CancellationToken);
-    }
-
-    /// <summary>
-    /// Gets the client ip v4 address of a log in attempt.
-    /// </summary>
-    /// <param name="attempt">The attempt</param>
-    /// <returns>The ip v4 address</returns>
-    public virtual async Task<IPAddress> GetLogInAttemptIPAddressAsync(TLogInAttempt attempt)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
-
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        return await store.GetLogInAttemptIPAddressAsync(attempt, CancellationToken);
-    }
-
-    /// <summary>
-    /// Gets the parsed user agent the client used for a log in attempt.
-    /// </summary>
-    /// <param name="attempt">The attempt</param>
-    /// <returns>The parsed user agent. If <c>null</c> no user agent were specified.</returns>
-    public virtual async Task<HttpUserAgentInformation?> GetLogInAttemptUserAgentAsync(TLogInAttempt attempt)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
-
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        string? userAgent = await store.GetLogInAttemptUserAgentAsync(attempt, CancellationToken);
-
-        if (!string.IsNullOrWhiteSpace(userAgent))
+        if (Store is not IUserPasskeysStore<TUser> cast)
         {
-            IHttpUserAgentParserProvider parserProvider = GetUserAgentParserService();
-            return parserProvider.Parse(userAgent);
-        }
-        return null;
-    }
-
-    private IHttpUserAgentParserProvider GetUserAgentParserService() => _services.GetRequiredService<IHttpUserAgentParserProvider>();
-
-    /// <summary>
-    /// Gets the date time were a login attempt were done.
-    /// </summary>
-    /// <param name="attempt">The attempt</param>
-    /// <returns>The date time</returns>
-    public virtual async Task<DateTime> GetLogInAttemptDateTimeAsync(TLogInAttempt attempt)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
-
-        IUserLoginAttemptStore<TLogInAttempt, TUser> store = GetLogInAttemptStore();
-        return await store.GetLogInAttemptDateTimeAsync(attempt, CancellationToken);
-    }
-
-    private IUserPasskeysStore<TUser, TCredential> GetPasskeysStore()
-    {
-        if (Store is not IUserPasskeysStore<TUser, TCredential> cast)
-        {
-            throw new NotSupportedException($"{nameof(IUserPasskeysStore<TUser, TCredential>)} isn't supported by the store.");
+            throw new NotSupportedException($"{nameof(IUserPasskeysStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }
@@ -565,11 +485,11 @@ public partial class SchulCloudUserManager<TUser, TCredential, TLogInAttempt>(
         return cast;
     }
 
-    private IUserLoginAttemptStore<TLogInAttempt, TUser> GetLogInAttemptStore()
+    private IUserLoginAttemptStore<TUser> GetLogInAttemptStore()
     {
-        if (Store is not IUserLoginAttemptStore<TLogInAttempt, TUser> cast)
+        if (Store is not IUserLoginAttemptStore<TUser> cast)
         {
-            throw new NotSupportedException($"{nameof(IUserLoginAttemptStore<TLogInAttempt, TUser>)} isn't supported by the store.");
+            throw new NotSupportedException($"{nameof(IUserLoginAttemptStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }

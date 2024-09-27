@@ -27,7 +27,7 @@ internal class Program
         builder.Services.AddIdentityCore<ApplicationUser>()
             .AddRoles<ApplicationRole>()
             .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()
-            .AddSchulCloudManagers<AppCredential, AppLogInAttempt>();
+            .AddSchulCloudManagers();
 
         builder.Services
             .AddSingleton<DbInitializer>()

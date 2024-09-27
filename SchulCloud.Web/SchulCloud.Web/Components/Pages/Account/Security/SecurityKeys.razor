@@ -1,5 +1,6 @@
 ﻿@using Fido2NetLib.Objects;
 @using Fido2NetLib;
+@using SchulCloud.Store.Models
 @using SchulCloud.Web.Extensions
 
 <MudPaper Class="px-3 py-3">
@@ -27,38 +28,43 @@
     @if (_securityKeys is not null)
     {
         <MudExpansionPanels Elevation="4" MultiExpansion>
-            @foreach (SecurityKey securityKey in _securityKeys
-                .OrderByDescending(key => key.RegistrationDate)
+            @foreach (UserCredential securityKey in _securityKeys
+                .OrderByDescending(key => key.RegDate)
                 .Skip((_selectedPage - 1) * _keysPerPage)
                 .Take(_keysPerPage))
             {
                 <MudExpansionPanel>
                     <TitleContent>
                         <MudStack AlignItems="AlignItems.Center" Row>
-                            <MudIcon Icon="@securityKey.GetIconName()" />
+                            @{
+                                string iconName = securityKey.Transports?.Any(transport => new[] { AuthenticatorTransport.Internal, AuthenticatorTransport.Hybrid }.Contains(transport)) ?? false
+                                    ? MaterialSymbols.Outlined.Devices
+                                    : MaterialSymbols.Outlined.SecurityKey;
+                            }
+                            <MudIcon Icon="@iconName" />
                             <span class="ms-2">@securityKey.Name</span>
 
-                            @if (securityKey.IsPasskey)
+                            @if (_passkeys.Contains(securityKey.Id))
                             {
                                 <MudChip T="string" Color="Color.Info" Size="Size.Small">@Localizer["securityKey_IsPasskey"]</MudChip>
                             }
 
                             <MudSpacer />
-                            <span class="mr-2">@Localizer["securityKey_Added", securityKey.RegistrationDate.ToDisplayedString()]</span>
+                            <span class="mr-2">@Localizer["securityKey_Added", securityKey.RegDate.ToDisplayedString()]</span>
                         </MudStack>
                     </TitleContent>
                     <ChildContent>
-                        @if (securityKey.Metadata is not null)
+                        @if (_metadata.TryGetValue(securityKey.Id, out MetadataStatement? metadataStatement))
                         {
 
                             <div class="d-flex">
                                 <MudPaper Elevation="2" Square>
-                                    <MudImage Src="@securityKey.Metadata.Icon" Fluid />
+                                    <MudImage Src="@metadataStatement.Icon" Fluid />
                                 </MudPaper>
 
                                 <MudText HtmlTag="ul" Class="ml-2 mt-2" Typo="Typo.body2">
-                                    <li>@Localizer["securityKey_Desc", securityKey.GetLocalizedDescription()]</li>
-                                    <li>@Localizer["securityKey_Protocol", securityKey.Metadata.ProtocolFamily]</li>
+                                    <li>@Localizer["securityKey_Desc", metadataStatement.Description]</li>
+                                    <li>@Localizer["securityKey_Protocol", metadataStatement.ProtocolFamily]</li>
                                 </MudText>
                             </div>
                         }

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SchulCloud.Store.Managers;
+using SchulCloud.Store.Models;
 using SchulCloud.Web.Components.Dialogs;
 using SchulCloud.Web.Extensions;
 using SchulCloud.Web.Models;
@@ -15,7 +15,6 @@ using SchulCloud.Web.Services;
 using SchulCloud.Web.Services.Exceptions;
 using System.Globalization;
 using System.Net;
-using System.Security.Cryptography;
 using MaterialSymbols = MudBlazor.FontIcons.MaterialSymbols;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security;
@@ -49,9 +48,12 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
     private MudForm _registerForm = default!;
     private RegisterSecurityKeyModel _registerModel = new();
 
-    private List<SecurityKey>? _securityKeys;
+    private List<UserCredential>? _securityKeys;
     private int _selectedPage = 1;
     private const int _keysPerPage = 10;
+
+    private readonly HashSet<byte[]> _passkeys = [];
+    private readonly Dictionary<byte[], MetadataStatement> _metadata = [];
 
     private bool _webAuthnSupported = true;
     private readonly CancellationTokenSource _webAuthnCts = new();
@@ -61,7 +63,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        if (!UserManager.SupportsUserFido2Credentials || (!UserManager.SupportsUserPasskeys && !UserManager.SupportsUserTwoFactorSecurityKeys))
+        if (!UserManager.SupportsUserCredentials || !(UserManager.SupportsUserPasskeys || UserManager.SupportsUserTwoFactorSecurityKeys))
         {
             NavigationManager.NavigateToNotFound();
             return;
@@ -70,11 +72,13 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
         AuthenticationState authenticationState = await AuthenticationState;
         _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
-        IEnumerable<AppCredential> credentials = await UserManager.GetFido2CredentialsByUserAsync(_user);
-        SecurityKey[] securityKeys = await Task.WhenAll(credentials.Select(async cred => await CredentialToSecurityKeyAsync(cred)));
+        IEnumerable<UserCredential> credentials = await UserManager.FindFido2CredentialsByUserAsync(_user);
+        _securityKeys = credentials.ToList();
 
-        _securityKeys ??= [];
-        _securityKeys.AddRange(securityKeys);
+        foreach (UserCredential credential in _securityKeys)
+        {
+            await AddSecurityKeyAsync(credential);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -97,7 +101,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
         }
     }
 
-    private async Task SecurityKeyChangeName_ClickAsync(SecurityKey securityKey)
+    private async Task SecurityKeyChangeName_ClickAsync(UserCredential securityKey)
     {
         IDialogReference dialogReference = await DialogService.ShowRenameDialogAsync(
             Localizer["renameDialog"],
@@ -112,7 +116,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
 
         string newName = (string)dialogResult.Data!;
 
-        IdentityResult renameResult = await UserManager.ChangeFido2CredentialSecurityKeyNameAsync(securityKey.Credential, _user, newName);
+        IdentityResult renameResult = await UserManager.UpdateFido2CredentialNameAsync(_user, securityKey, newName);
         if (renameResult.Succeeded)
         {
             securityKey.Name = newName;
@@ -123,7 +127,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
         }
     }
 
-    private async Task SecurityKeyRemove_ClickAsync(SecurityKey securityKey)
+    private async Task SecurityKeyRemove_ClickAsync(UserCredential securityKey)
     {
         IDialogReference dialogReference = await DialogService.ShowConfirmDialogAsync(
             Localizer["removeDialog"],
@@ -131,7 +135,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
             confirmColor: Color.Error);
         if (await dialogReference.GetReturnValueAsync<bool?>() ?? false)
         {
-            IdentityResult result = await UserManager.RemoveFido2CredentialAsync(securityKey.Credential, _user);
+            IdentityResult result = await UserManager.RemoveFido2CredentialAsync(securityKey, _user);
             if (result.Succeeded)
             {
                 _securityKeys?.Remove(securityKey);
@@ -176,6 +180,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
             try
             {
                 AuthenticatorAttestationRawResponse authenticatorResponse = await WebAuthnService.CreateCredentialAsync(creationOptions, _webAuthnCts.Token);
+                await _registerDialog.CloseAsync();
 
                 IdentityResult storeResult = await UserManager.StoreFido2CredentialsAsync(
                     _user,
@@ -185,11 +190,10 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
                     creationOptions);
                 if (storeResult.Succeeded)
                 {
-                    AppCredential credential = (await UserManager.GetFido2CredentialById(authenticatorResponse.Id))!;
-                    SecurityKey securityKey = await CredentialToSecurityKeyAsync(credential);
+                    UserCredential credential = (await UserManager.FindFido2Credential(authenticatorResponse.Id))!;
+                    (_securityKeys ??= []).Add(credential);
 
-                    _securityKeys ??= [];
-                    _securityKeys.Add(securityKey);
+                    await AddSecurityKeyAsync(credential);
                     StateHasChanged();
                 }
                 else
@@ -198,7 +202,6 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
                 }
 
                 _registerModel = new();
-                await _registerDialog.CloseAsync();
             }
             catch (WebAuthnException ex)
             {
@@ -210,49 +213,24 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
         }
     }
 
-    private async Task<SecurityKey> CredentialToSecurityKeyAsync(AppCredential credential)
+    private async Task AddSecurityKeyAsync(UserCredential credential)
     {
-        string? keyName = await UserManager.GetFido2CredentialSecurityKeyNameAsync(credential);
-        AuthenticatorTransport[]? transports = await UserManager.GetFido2CredentialTransportsAsync(credential);
-        DateTime registrationDate = await UserManager.GetFido2CredentialRegistrationDateAsync(credential);
+        if (await UserManager.GetIsPasskey(credential))
+        {
+            _passkeys.Add(credential.Id);
+        }
+
         MetadataStatement? metadata = await UserManager.GetFido2CredentialMetadataStatementAsync(credential);
-
-        bool isPasskey = UserManager.SupportsUserPasskeys 
-            && await UserManager.GetIsPasskey(credential);
-
-        return new(credential, keyName, isPasskey, transports, registrationDate, metadata);
+        if (metadata is not null)
+        {
+            _metadata.Add(credential.Id, metadata);
+        }
     }
 
     public void Dispose()
     {
         _webAuthnCts.Cancel();
         _webAuthnCts.Dispose();
-    }
-
-    private record SecurityKey(AppCredential Credential, string? Name, bool IsPasskey, AuthenticatorTransport[]? Transports, DateTime RegistrationDate, MetadataStatement? Metadata)
-    {
-        public string? Name { get; set; } = Name;
-
-        public string GetIconName()
-        {
-            return Transports?.Any(transport => new[] { AuthenticatorTransport.Internal, AuthenticatorTransport.Hybrid }.Contains(transport)) ?? false
-                ? MaterialSymbols.Outlined.Devices
-                : MaterialSymbols.Outlined.SecurityKey;
-        }
-
-        public string GetLocalizedDescription()
-        {
-            if (Metadata is null)
-            {
-                return string.Empty;
-            }
-
-            if (Metadata.IETFLanguageCodesMembers?.IETFLanguageCodesMembers.TryGetValue(CultureInfo.CurrentUICulture.ToString(), out string? desc) ?? false)
-            {
-                return desc;
-            }
-            return Metadata.Description;
-        }
     }
 
     private record RegisterState(string SecurityKeyName, bool IsPasskey, CredentialCreateOptions Options);

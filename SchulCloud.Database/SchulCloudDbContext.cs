@@ -11,7 +11,7 @@ public class SchulCloudDbContext(DbContextOptions options) : IdentityDbContext<S
     {
         base.OnModelCreating(builder);
         builder.ApplyConfiguration(new Fido2CredentialConfig());
-        builder.ApplyConfiguration(new LogInAttemptConfig());
+        builder.ApplyConfiguration(new LoginAttemptConfig());
 
         builder.Entity<SchulCloudUser>(b =>
         {
@@ -19,8 +19,8 @@ public class SchulCloudDbContext(DbContextOptions options) : IdentityDbContext<S
             b.Ignore(u => u.TwoFactorEnabled);
             b.Property(u => u.TwoFactorEnabledFlags);
 
-            b.HasMany<Fido2Credential>().WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
-            b.HasMany<LogInAttempt>().WithOne().HasForeignKey(la => la.UserId).IsRequired();
+            b.HasMany<Credential>().WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
+            b.HasMany<LoginAttempt>().WithOne().HasForeignKey(la => la.UserId).IsRequired();
         });
     }
 }

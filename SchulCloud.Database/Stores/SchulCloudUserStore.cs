@@ -4,27 +4,27 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SchulCloud.Database.Enums;
-using SchulCloud.Database.Migrations;
 using SchulCloud.Database.Models;
 using SchulCloud.Store.Abstractions;
+using SchulCloud.Store.Models;
 using System.Net;
 
 namespace SchulCloud.Database.Stores;
 
 public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, IdentityErrorDescriber? describer = null)
     : UserStore<TUser, TRole, TContext>(context, describer),
-    IUserFido2CredentialStore<Fido2Credential, TUser>,
+    IUserCredentialStore<TUser>,
     IUserTwoFactorEmailStore<TUser>,
     IUserTwoFactorSecurityKeyStore<TUser>,
-    IUserPasskeysStore<TUser, Fido2Credential>,
-    IUserLoginAttemptStore<LogInAttempt, TUser>
+    IUserPasskeysStore<TUser>,
+    IUserLoginAttemptStore<TUser>
     where TUser : SchulCloudUser
     where TRole : IdentityRole
     where TContext : DbContext
 {
-    private DbSet<Fido2Credential> Credentials => Context.Set<Fido2Credential>();
+    private DbSet<Credential> Credentials => Context.Set<Credential>();
 
-    private DbSet<LogInAttempt> LogInAttempts => Context.Set<LogInAttempt>();
+    private DbSet<LoginAttempt> LoginAttempts => Context.Set<LoginAttempt>();
 
     public override Task<bool> GetTwoFactorEnabledAsync(TUser user, CancellationToken ct = default)
     {
@@ -118,142 +118,62 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     }
     #endregion
 
-    #region IUserFido2CredentialStore
-    public async Task<Fido2User> UserToFido2UserAsync(TUser user, CancellationToken ct)
+    #region IUserCredentialStore
+    public async Task<UserCredential?> FindCredentialAsync(byte[] id, CancellationToken ct)
     {
         ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(user);
-
-        string userId = await GetUserIdAsync(user, ct);
-        string? userName = await GetUserNameAsync(user, ct);
-        string? userEmail = await GetEmailAsync(user, ct);
-
-        return new Fido2User()
-        {
-            Id = Guid.Parse(userId).ToByteArray(),
-            DisplayName = userName,
-            Name = userEmail,
-        };
-    }
-
-    public async Task<Fido2Credential?> GetCredentialById(byte[] id, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(id);
+        ct.ThrowIfCancellationRequested();
 
-        return await Credentials.FindAsync([id], cancellationToken: ct).AsTask();
+        Credential? credential = await Credentials.FindAsync([id], ct).AsTask();
+        if (credential is not null)
+        {
+            return ToUserCredential(credential);
+        }
+
+        return null;
     }
 
-    public async Task<IEnumerable<Fido2Credential>> GetCredentialsByUserAsync(TUser user, CancellationToken ct)
+    public async Task<TUser?> FindUserByCredentialAsync(UserCredential credential, CancellationToken ct = default)
     {
         ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credential);
         ct.ThrowIfCancellationRequested();
+
+        Credential? dbCredential = await Credentials.FindAsync([credential.Id], ct).AsTask();
+        if (dbCredential is not null)
+        {
+            return await FindUserAsync(dbCredential.UserId, ct);
+        }
+
+        return null;
+    }
+
+    public async Task<IEnumerable<UserCredential>> FindCredentialsByUserAsync(TUser user, CancellationToken ct)
+    {
+        ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
 
         string userId = await GetUserIdAsync(user, ct);
-        return await Credentials.Where(cred => cred.UserId.Equals(userId)).ToArrayAsync(ct);
+        IEnumerable<Credential> credentials = await Credentials
+            .AsNoTracking()
+            .Where(cred => cred.UserId.Equals(userId))
+            .ToListAsync(ct);
+        return credentials.Select(ToUserCredential);
     }
 
-    public Task<PublicKeyCredentialDescriptor> GetCredentialDescriptorAsync(Fido2Credential credential, CancellationToken ct)
+    public async Task AddCredentialAsync(TUser user, UserCredential credential, CancellationToken ct)
     {
         ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        PublicKeyCredentialDescriptor descriptor = new(PublicKeyCredentialType.PublicKey, credential.Id, credential.Transports);
-        return Task.FromResult(descriptor);
-    }
-
-    public async Task<TUser> GetCredentialOwnerAsync(Fido2Credential credential, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        return (await FindUserAsync(credential.UserId, ct))!;
-    }
-
-    public Task<string?> GetCredentialSecurityKeyNameAsync(Fido2Credential credential, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        return Task.FromResult(credential.SecurityKeyName);
-    }
-
-    public Task SetCredentialSecurityKeyNameAsync(Fido2Credential credential, string? newName, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        credential.SecurityKeyName = newName;
-        return Task.CompletedTask;
-    }
-
-    public Task<byte[]> GetCredentialPublicKeyAsync(Fido2Credential credential, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        return Task.FromResult(credential.PublicKey);
-    }
-
-    public Task<uint> GetCredentialSignCountAsync(Fido2Credential credential, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        return Task.FromResult(credential.SignCount);
-    }
-
-    public Task SetCredentialSignCountAsync(Fido2Credential credential, uint count, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        credential.SignCount = count;
-        return Task.CompletedTask;
-    }
-
-    public Task<DateTime> GetCredentialRegistrationDateAsync(Fido2Credential credential, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        return Task.FromResult(credential.RegDate);
-    }
-
-    public Task<Guid> GetCredentialAaGuidAsync(Fido2Credential credential, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credential);
-
-        return Task.FromResult(credential.AaGuid);
-    }
-
-    public async Task<Fido2Credential> CreateCredentialAsync(TUser user, string? securityKeyName, bool isPasskey, RegisteredPublicKeyCredential credential, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(user);
-        ArgumentNullException.ThrowIfNull(credential);
+        ct.ThrowIfCancellationRequested();
 
-        string userId = await GetUserIdAsync(user, ct);
-        Fido2Credential cred = new()
+        Credential dbCredential = new()
         {
             Id = credential.Id,
-            UserId = userId,
-            SecurityKeyName = securityKeyName,
-            IsPasskey = isPasskey,
+            UserId = await GetUserIdAsync(user, ct),
+            Name = credential.Name,
             PublicKey = credential.PublicKey,
             SignCount = credential.SignCount,
             Transports = credential.Transports,
@@ -262,37 +182,75 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             AttestationObject = credential.AttestationObject,
             AttestationClientDataJson = credential.AttestationClientDataJson,
             AttestationFormat = credential.AttestationFormat,
-            RegDate = DateTime.UtcNow,
+            RegDate = credential.RegDate,
             AaGuid = credential.AaGuid
         };
-
-        await Credentials.AddAsync(cred, ct).AsTask();
-        return cred;
+        await Credentials.AddAsync(dbCredential, ct).AsTask();
     }
 
-    public Task DeleteCredentialAsync(Fido2Credential credential, CancellationToken ct)
+    public async Task UpdateCredentialAsync(UserCredential credential, CancellationToken ct = default)
     {
         ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(credential);
+        ct.ThrowIfCancellationRequested();
 
-        Credentials.Remove(credential);
-        return Task.CompletedTask;
+        Credential? dbCredential = await Credentials.FindAsync([credential.Id], ct).AsTask();
+        if (dbCredential is not null)
+        {
+            dbCredential.Name = credential.Name;
+            dbCredential.PublicKey = credential.PublicKey;
+            dbCredential.SignCount = credential.SignCount;
+            dbCredential.Transports = credential.Transports;
+            dbCredential.IsBackupEligible = credential.IsBackupEligible;
+            dbCredential.IsBackedUp = credential.IsBackedUp;
+            dbCredential.AttestationObject = credential.AttestationObject;
+            dbCredential.AttestationClientDataJson = credential.AttestationClientDataJson;
+            dbCredential.AttestationFormat = credential.AttestationFormat;
+            dbCredential.AaGuid = credential.AaGuid;
+        }
+        else
+        {
+            throw new InvalidOperationException($"Not entity found with id {string.Join('-', credential.Id)}.");
+        }
     }
 
-    public async Task<bool> IsCredentialOwnedByUserHandle(byte[] credId, byte[] userHandle, CancellationToken ct)
+    public async Task RemoveCredentialAsync(UserCredential credential, CancellationToken ct)
     {
         ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credential);
         ct.ThrowIfCancellationRequested();
-        ArgumentNullException.ThrowIfNull(credId);
-        ArgumentNullException.ThrowIfNull(userHandle);
-        if (userHandle.Length != 16)
-        {
-            return false;
-        }
 
-        string userId = new Guid(userHandle).ToString();
-        return await Credentials.AnyAsync(cred => cred.Id.SequenceEqual(credId) && cred.UserId.Equals(userId), ct);
+        await Credentials.Where(cred => cred.Id.Equals(credential.Id)).ExecuteDeleteAsync(ct);
+    }
+
+    public async Task<bool> IsCredentialOwnedByUser(TUser user, UserCredential credential, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(credential);
+        ct.ThrowIfCancellationRequested();
+
+        string userId = await GetUserIdAsync(user, ct);
+        return await Credentials.AnyAsync(cred => cred.UserId.Equals(userId) || cred.Id.SequenceEqual(credential.Id), ct);
+    }
+
+    private static UserCredential ToUserCredential(Credential credential)
+    {
+        return new()
+        {
+            Id = credential.Id,
+            Name = credential.Name,
+            PublicKey = credential.PublicKey,
+            SignCount = credential.SignCount,
+            Transports = credential.Transports,
+            IsBackupEligible = credential.IsBackupEligible,
+            IsBackedUp = credential.IsBackedUp,
+            AttestationObject = credential.AttestationObject,
+            AttestationClientDataJson = credential.AttestationClientDataJson,
+            AttestationFormat = credential.AttestationFormat,
+            RegDate = credential.RegDate,
+            AaGuid = credential.AaGuid
+        };
     }
     #endregion
 
@@ -316,13 +274,26 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         return Task.CompletedTask;
     }
 
-    public Task<bool> GetIsPasskeyAsync(Fido2Credential credential, CancellationToken ct)
+    public async Task<bool> GetIsPasskeyCredentialAsync(UserCredential credential, CancellationToken ct)
     {
         ThrowIfDisposed();
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(credential);
 
-        return Task.FromResult(credential.IsPasskey);
+        Credential dbCredential = await Credentials.FindAsync([credential.Id], ct).AsTask()
+            ?? throw new InvalidOperationException($"Could not find entity with the id {string.Join('-', credential.Id)}.");
+        return dbCredential.IsPasskey;
+    }
+
+    public async Task SetIsPasskeyCredentialAsync(UserCredential credential, bool enabled, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(credential);
+        ct.ThrowIfCancellationRequested();
+
+        Credential dbCredential = await Credentials.FindAsync([credential.Id], ct).AsTask()
+            ?? throw new InvalidOperationException($"Could not find entity with the id {string.Join('-', credential.Id)}.");
+        dbCredential.IsPasskey = enabled;
     }
 
     public async Task<int> GetPasskeyCountAsync(TUser user, CancellationToken ct)
@@ -332,135 +303,104 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ArgumentNullException.ThrowIfNull(user);
 
         string userId = await GetUserIdAsync(user, ct).ConfigureAwait(false);
-        return await Credentials.CountAsync(cred => cred.UserId.Equals(userId), ct).ConfigureAwait(false);
+        return await Credentials.CountAsync(cred => cred.UserId.Equals(userId) || cred.IsPasskey, ct).ConfigureAwait(false);
     }
     #endregion
 
     #region IUserLogInAttemptStore
-    public async Task<LogInAttempt?> GetLogInAttemptByIdAsync(string id, CancellationToken ct = default)
+    public async Task<UserLoginAttempt?> FindLoginAttemptAsync(string id, CancellationToken ct = default)
     {
         ThrowIfDisposed();
-        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        ArgumentNullException.ThrowIfNull(id);
         ct.ThrowIfCancellationRequested();
 
-        return await LogInAttempts.FindAsync([id], ct);
-    }
-
-    public async Task<IEnumerable<LogInAttempt>> GetLogInAttemptsOfUserAsync(TUser user, CancellationToken ct = default)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(user);
-        ct.ThrowIfCancellationRequested();
-
-        string userId = await GetUserIdAsync(user, ct);
-        return await LogInAttempts.Where(l => l.UserId.Equals(userId)).ToListAsync(ct);
-    }
-
-    public async Task<LogInAttempt> AddUserLogInAttemptAsync(TUser user, string methodCode, bool succeeded, IPAddress ipAddress, string? userAgent, CancellationToken ct = default)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(user);
-        ArgumentException.ThrowIfNullOrWhiteSpace(methodCode);
-        ArgumentNullException.ThrowIfNull(ipAddress);
-        ct.ThrowIfCancellationRequested();
-
-        string userId = await GetUserIdAsync(user, ct);
-        LogInAttempt attempt = new()
+        LoginAttempt? attempt = await LoginAttempts.FindAsync([id], ct).AsTask();
+        if (attempt is not null)
         {
-            UserId = userId,
-            MethodCode = methodCode,
-            Succeeded = succeeded,
-            IpAddress = ipAddress.MapToIPv4().GetAddressBytes(),
-            UserAgent = userAgent,
-            DateTime = DateTime.Now
-        };
-        await LogInAttempts.AddAsync(attempt, ct);
+            return ToUserAttempt(attempt);
+        }
 
-        return attempt;
+        return null;
     }
 
-    public Task RemoveUserLogInAttemptAsync(LogInAttempt attempt, CancellationToken ct = default)
+    public async Task<TUser?> FindUserByLoginAttemptAsync(UserLoginAttempt attempt, CancellationToken ct = default)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(attempt);
         ct.ThrowIfCancellationRequested();
 
-        LogInAttempts.Remove(attempt);
-        return Task.CompletedTask;
+        LoginAttempt? dbAttempt = await LoginAttempts.FindAsync([attempt.Id], ct);
+        if (dbAttempt is not null)
+        {
+            return await FindUserAsync(dbAttempt.UserId, ct);
+        }
+
+        return null;
     }
 
-    public async Task RemoveAllUserLogInAttemptsAsync(TUser user, CancellationToken ct = default)
+    public async Task<IEnumerable<UserLoginAttempt>> FindLoginAttemptsByUserAsync(TUser user, CancellationToken ct = default)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
         ct.ThrowIfCancellationRequested();
 
         string userId = await GetUserIdAsync(user, ct);
-        await LogInAttempts.Where(l => l.UserId.Equals(userId)).ExecuteDeleteAsync(ct);
+        IEnumerable<LoginAttempt> attempts = await LoginAttempts
+            .AsNoTracking()
+            .Where(attempt => attempt.UserId.Equals(userId))
+            .ToListAsync(ct);
+        return attempts.Select(ToUserAttempt);
     }
 
-    public Task<string> GetLogInAttemptIdAsync(LogInAttempt attempt, CancellationToken ct = default)
+    public async Task AddLoginAttemptAsync(TUser user, UserLoginAttempt attempt, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(attempt);
+        ct.ThrowIfCancellationRequested();
+
+        LoginAttempt dbAttempt = new()
+        {
+            UserId = await GetUserIdAsync(user, ct),
+            Method = attempt.Method,
+            Succeeded = attempt.Succeeded,
+            IpAddress = attempt.IpAddress.GetAddressBytes(),
+            UserAgent = attempt.UserAgent,
+            DateTime = attempt.DateTime
+        };
+        await LoginAttempts.AddAsync(dbAttempt, ct).AsTask();
+    }
+
+    public async Task RemoveLoginAttemptAsync(UserLoginAttempt attempt, CancellationToken ct = default)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(attempt);
         ct.ThrowIfCancellationRequested();
 
-        return Task.FromResult(attempt.Id);
+        await LoginAttempts.Where(attempt => attempt.Id.Equals(attempt.Id)).ExecuteDeleteAsync(ct);
     }
 
-    public async Task<TUser> GetLogInAttemptUserAsync(LogInAttempt attempt, CancellationToken ct = default)
+    public async Task RemoveAllLoginAttemptsAsync(TUser user, CancellationToken ct = default)
     {
         ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
+        ArgumentNullException.ThrowIfNull(user);
         ct.ThrowIfCancellationRequested();
 
-        return (await FindUserAsync(attempt.UserId, ct))!;
+        string userId = await GetUserIdAsync(user, ct);
+        await LoginAttempts.Where(attempt => attempt.UserId.Equals(userId)).ExecuteDeleteAsync(ct);
     }
 
-    public Task<string> GetLogInAttemptMethodCodeAsync(LogInAttempt attempt, CancellationToken ct = default)
+    private static UserLoginAttempt ToUserAttempt(LoginAttempt attempt)
     {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
-        ct.ThrowIfCancellationRequested();
-
-        return Task.FromResult(attempt.MethodCode);
-    }
-
-    public Task<bool> GetLogInAttemptSucceededAsync(LogInAttempt attempt, CancellationToken ct = default)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
-        ct.ThrowIfCancellationRequested();
-
-        return Task.FromResult(attempt.Succeeded);
-    }
-
-    public Task<IPAddress> GetLogInAttemptIPAddressAsync(LogInAttempt attempt, CancellationToken ct = default)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
-        ct.ThrowIfCancellationRequested();
-
-        IPAddress ipAddress = new(attempt.IpAddress);
-        return Task.FromResult(ipAddress);
-    }
-
-    public Task<string?> GetLogInAttemptUserAgentAsync(LogInAttempt attempt, CancellationToken ct = default)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
-        ct.ThrowIfCancellationRequested();
-
-        return Task.FromResult(attempt.UserAgent);
-    }
-
-    public Task<DateTime> GetLogInAttemptDateTimeAsync(LogInAttempt attempt, CancellationToken ct = default)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(attempt);
-        ct.ThrowIfCancellationRequested();
-
-        return Task.FromResult(attempt.DateTime);
+        return new()
+        {
+            Id = attempt.Id,
+            Method = attempt.Method,
+            Succeeded = attempt.Succeeded,
+            IpAddress = new(attempt.IpAddress),
+            UserAgent = attempt.UserAgent,
+            DateTime = attempt.DateTime
+        };
     }
     #endregion
 }

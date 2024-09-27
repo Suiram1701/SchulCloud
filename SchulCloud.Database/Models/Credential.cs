@@ -5,7 +5,7 @@ namespace SchulCloud.Database.Models;
 /// <summary>
 /// A FIDO2 credential owned by a user.
 /// </summary>
-public class Fido2Credential
+internal class Credential
 {
     /// <summary>
     /// The id of the credential.
@@ -20,10 +20,10 @@ public class Fido2Credential
     /// <summary>
     /// The displayed name of the key.
     /// </summary>
-    public string? SecurityKeyName { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
-    /// Indicates whether this security key is allowed to perform a usernameless sign in.
+    /// Indicates whether this security key is allowed to perform a passkey sign in.
     /// </summary>
     public bool IsPasskey { get; set; }
 
