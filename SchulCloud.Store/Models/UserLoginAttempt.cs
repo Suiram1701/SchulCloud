@@ -28,6 +28,22 @@ public class UserLoginAttempt
     public IPAddress IpAddress { get; set; } = default!;
 
     /// <summary>
+    /// The located latitude of the client.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c> the client wasn't located on login.
+    /// </remarks>
+    public decimal? Latitude { get; set; }
+
+    /// <summary>
+    /// The located longitude of the client.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c> the client wasn't located on login.
+    /// </remarks>
+    public decimal? Longitude { get; set; }
+
+    /// <summary>
     /// The user agent used to login.
     /// </summary>
     public string? UserAgent { get; set; }

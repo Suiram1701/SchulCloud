@@ -365,6 +365,8 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             Method = attempt.Method,
             Succeeded = attempt.Succeeded,
             IpAddress = attempt.IpAddress.GetAddressBytes(),
+            Latitude = attempt.Latitude,
+            Longitude = attempt.Longitude,
             UserAgent = attempt.UserAgent,
             DateTime = attempt.DateTime
         };
@@ -398,6 +400,8 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             Method = attempt.Method,
             Succeeded = attempt.Succeeded,
             IpAddress = new(attempt.IpAddress),
+            Latitude = attempt.Latitude,
+            Longitude = attempt.Longitude,
             UserAgent = attempt.UserAgent,
             DateTime = attempt.DateTime
         };
