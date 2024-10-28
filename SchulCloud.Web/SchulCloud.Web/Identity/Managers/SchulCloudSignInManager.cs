@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using SchulCloud.Store.Enums;
 using SchulCloud.Store.Managers;
 using SchulCloud.Store.Models;
 using System.Net;
@@ -27,7 +28,7 @@ public class SchulCloudSignInManager(
     public override async Task<SignInResult> PasswordSignInAsync(ApplicationUser user, string password, bool isPersistent, bool lockoutOnFailure)
     {
         SignInResult result = await base.PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
-        await LogSignInAttemptIfPossibleAsync(user, result, "pwd");
+        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.Password);
 
         return result;
     }
@@ -65,17 +66,17 @@ public class SchulCloudSignInManager(
         SignInResult result = credential is not null
             ? await SignInOrTwoFactorAsync(user, isPersistent, loginProvider: "pka", bypassTwoFactor: true)     // 'pka' means Passkey Authentication
             : SignInResult.Failed;
-        await LogSignInAttemptIfPossibleAsync(user, result, "pka");
+        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.Passkey);
 
         return (result, user);
     }
 
-    public override async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
+    public override async Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
     {
-        SignInResult result = await base.TwoFactorSignInAsync(provider, code, isPersistent, rememberClient);
+        SignInResult result = await base.TwoFactorAuthenticatorSignInAsync(code, isPersistent, rememberClient);
 
         ApplicationUser user = (await GetTwoFactorAuthenticationUserAsync())!;
-        await LogSignInAttemptIfPossibleAsync(user, result, "mfa");
+        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.Authenticator);
 
         return result;
     }
@@ -90,7 +91,12 @@ public class SchulCloudSignInManager(
     public async Task<SignInResult> TwoFactorEmailSignInAsync(string code, bool isPersistent, bool rememberClient)
     {
         string providerName = _userManager.ExtendedTokenProviderOptions.EmailTwoFactorTokenProvider;
-        return await TwoFactorSignInAsync(providerName, code, isPersistent, rememberClient);
+        SignInResult result = await TwoFactorSignInAsync(providerName, code, isPersistent, rememberClient);
+
+        ApplicationUser user = (await GetTwoFactorAuthenticationUserAsync())!;
+        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.Email);
+
+        return result;
     }
 
     /// <summary>
@@ -122,7 +128,17 @@ public class SchulCloudSignInManager(
             ? await DoTwoFactorSignInAsync(twoFactorInfo, isPersistent, rememberClient)
             : SignInResult.Failed;
 
-        await LogSignInAttemptIfPossibleAsync(twoFactorInfo.User, result, "mfa");
+        await LogLoginAttemptAsync(twoFactorInfo.User, result, LoginAttemptMethod.SecurityKey);
+        return result;
+    }
+
+    public override async Task<SignInResult> TwoFactorRecoveryCodeSignInAsync(string recoveryCode)
+    {
+        SignInResult result = await base.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
+
+        ApplicationUser user = (await GetTwoFactorAuthenticationUserAsync())!;
+        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.RecoveryCode);
+
         return result;
     }
 
@@ -181,21 +197,28 @@ public class SchulCloudSignInManager(
         return SignInResult.Success;
     }
 
-    private async Task LogSignInAttemptIfPossibleAsync(ApplicationUser user, SignInResult signInResult, string method)
+    private async Task LogLoginAttemptAsync(ApplicationUser user, SignInResult result, LoginAttemptMethod method)
     {
-        if (!signInResult.RequiresTwoFactor && !signInResult.IsLockedOut && !signInResult.IsNotAllowed)
+        IPAddress clientIpAddress = Context.Connection.RemoteIpAddress ?? IPAddress.Any;
+        string? userAgent = Context.Request.Headers.UserAgent.ToString();
+        LoginAttemptFailReason? failReason = result switch
         {
-            IPAddress clientIpAddress = Context.Connection.RemoteIpAddress ?? IPAddress.Any;
-            string? userAgent = Context.Request.Headers.UserAgent.ToString();
+            { Succeeded: true } => null,
+            { RequiresTwoFactor: true } => LoginAttemptFailReason.TwoFactorRequired,
+            { IsLockedOut: true } => LoginAttemptFailReason.LockedOut,
+            { IsNotAllowed: true } => LoginAttemptFailReason.NotAllowed,
+            _ => LoginAttemptFailReason.Default
+        };
 
-            await _userManager.AddLogInAttemptAsync(user, new()
-            {
-                Method = method,
-                Succeeded = signInResult.Succeeded,
-                IpAddress = clientIpAddress,
-                UserAgent = userAgent
-            });
-        }
+        await _userManager.AddLoginAttemptAsync(user, new()
+        {
+            Method = method,
+            Succeeded = result.Succeeded,
+            FailReason = failReason,
+            IpAddress = clientIpAddress,
+            UserAgent = userAgent,
+            DateTime = DateTime.UtcNow
+        });
     }
 
     private record TwoFactorInfo(ApplicationUser User, string? LoginProvider);

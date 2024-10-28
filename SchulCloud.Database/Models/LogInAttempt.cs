@@ -1,4 +1,6 @@
-﻿namespace SchulCloud.Database.Models;
+﻿using SchulCloud.Database.Enums;
+
+namespace SchulCloud.Database.Models;
 
 /// <summary>
 /// Represents a login attempt for a user.
@@ -16,14 +18,19 @@ internal class LoginAttempt
     public string UserId { get; set; } = default!;
 
     /// <summary>
-    /// A code that represents the used login method.
+    /// The method that were used for the attempt.
     /// </summary>
-    public string Method { get; set; } = default!;
+    public LoginAttemptMethod Method { get; set; }
 
     /// <summary>
     /// Indicates whether the attempt succeeded.
     /// </summary>
     public bool Succeeded { get; set; }
+
+    /// <summary>
+    /// A more detailed reason why the attempt failed. If the attempt succeeded this property will be <c>null</c>.
+    /// </summary>
+    public LoginAttemptFailReason? FailReason { get; set; }
 
     /// <summary>
     /// The ip address of the client attempted to login.

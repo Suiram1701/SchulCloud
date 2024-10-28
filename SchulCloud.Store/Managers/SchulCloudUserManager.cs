@@ -371,7 +371,7 @@ public partial class SchulCloudUserManager<TUser>(
     /// <param name="ipAddress">The clients ip address.</param>
     /// <param name="userAgent">The user agent used by the client.</param>
     /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> AddLogInAttemptAsync(TUser user, UserLoginAttempt attempt)
+    public virtual async Task<IdentityResult> AddLoginAttemptAsync(TUser user, UserLoginAttempt attempt)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);

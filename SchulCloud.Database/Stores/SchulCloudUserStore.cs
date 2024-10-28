@@ -362,7 +362,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         LoginAttempt dbAttempt = new()
         {
             UserId = await GetUserIdAsync(user, ct),
-            Method = attempt.Method,
+            Method = (LoginAttemptMethod)attempt.Method,
             Succeeded = attempt.Succeeded,
             IpAddress = attempt.IpAddress.GetAddressBytes(),
             Latitude = attempt.Latitude,
@@ -397,7 +397,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         return new()
         {
             Id = attempt.Id,
-            Method = attempt.Method,
+            Method = (Store.Enums.LoginAttemptMethod)attempt.Method,
             Succeeded = attempt.Succeeded,
             IpAddress = new(attempt.IpAddress),
             Latitude = attempt.Latitude,

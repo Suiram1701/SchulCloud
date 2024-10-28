@@ -201,6 +201,9 @@ namespace SchulCloud.Database.Migrations
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("FailReason")
+                        .HasColumnType("integer");
+
                     b.Property<byte[]>("IpAddress")
                         .IsRequired()
                         .HasMaxLength(4)
@@ -214,10 +217,8 @@ namespace SchulCloud.Database.Migrations
                         .HasPrecision(9, 6)
                         .HasColumnType("numeric(9,6)");
 
-                    b.Property<string>("Method")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                    b.Property<int>("Method")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("Succeeded")
                         .ValueGeneratedOnAdd()

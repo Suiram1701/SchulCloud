@@ -111,8 +111,9 @@ namespace SchulCloud.Database.Migrations
                 {
                     Id = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     UserId = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    Method = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Method = table.Column<int>(type: "integer", nullable: false),
                     Succeeded = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    FailReason = table.Column<int>(type: "integer", nullable: true),
                     IpAddress = table.Column<byte[]>(type: "bytea", maxLength: 4, nullable: false),
                     UserAgent = table.Column<string>(type: "text", nullable: true),
                     DateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
