@@ -97,19 +97,79 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="tabOverview" xml:space="preserve">
-    <value>Overview</value>
-  </data>
-  <data name="tabHeader" xml:space="preserve">
-    <value>Account Security</value>
-  </data>
   <data name="title" xml:space="preserve">
-    <value>Account Security</value>
+    <value>Anmeldeverlauf</value>
   </data>
-  <data name="tabSecurityKeys" xml:space="preserve">
-    <value>Security key</value>
+  <data name="removeAllBtn" xml:space="preserve">
+    <value>Alle Einträge entfernen</value>
   </data>
-  <data name="tabLogInAttempts" xml:space="preserve">
-    <value>Login history</value>
+  <data name="attempt_DateTime" xml:space="preserve">
+    <value>Datum/Uhrzeit</value>
+  </data>
+  <data name="attempt_Method" xml:space="preserve">
+    <value>Anmeldemethode</value>
+  </data>
+  <data name="attempt_Device" xml:space="preserve">
+    <value>Gerät</value>
+  </data>
+  <data name="attempt_IpAddress" xml:space="preserve">
+    <value>IP-Adresse</value>
+  </data>
+  <data name="attempt_Action" xml:space="preserve">
+    <value>Aktion</value>
+  </data>
+  <data name="attempt_DetailsBtn" xml:space="preserve">
+    <value>Details anzeigen</value>
+  </data>
+  <data name="removeAllDialog_Message" xml:space="preserve">
+    <value>Alle Anmeldeversuche werden gelöscht. Diese Aktion ist unumkehrbar. Bestehende Sitzungen sind davon nicht betroffen, aber einige Daten zu bestehenden Sitzungen sind nicht mehr verfügbar. Möchten Sie wirklich fortfahren?</value>
+  </data>
+  <data name="removeAllSuccess" xml:space="preserve">
+    <value>Alle Anmeldeversuche wurden Entfernt</value>
+  </data>
+  <data name="removeAllError" xml:space="preserve">
+    <value>Fehler beim Entfernen der Versuche</value>
+  </data>
+  <data name="removeAllDialog" xml:space="preserve">
+    <value>Alle Anmeldeversuche entfernen</value>
+  </data>
+  <data name="deviceOn" xml:space="preserve">
+    <value>{0} auf {1}</value>
+  </data>
+  <data name="deviceUnknown" xml:space="preserve">
+    <value>Unbekannt</value>
+  </data>
+  <data name="loginAttempts" xml:space="preserve">
+    <value>Anmeldeversuche</value>
+  </data>
+  <data name="attempt_Result" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="result_Succeeded" xml:space="preserve">
+    <value>Erfolgreich</value>
+  </data>
+  <data name="result_TwoFactorRequired" xml:space="preserve">
+    <value>Warten auf 2FA</value>
+  </data>
+  <data name="result_Failed" xml:space="preserve">
+    <value>Fehlgeschlagen</value>
+  </data>
+  <data name="loginMethod_Password" xml:space="preserve">
+    <value>Passwort</value>
+  </data>
+  <data name="loginMethod_Passkey" xml:space="preserve">
+    <value>Passkey</value>
+  </data>
+  <data name="loginMethod_TwoFactorAuthenticator" xml:space="preserve">
+    <value>2FA über Authenticator-App</value>
+  </data>
+  <data name="loginMethod_TwoFactorEmail" xml:space="preserve">
+    <value>2FA über E-Mail</value>
+  </data>
+  <data name="loginMethod_TwoFactorSecurityKey" xml:space="preserve">
+    <value>2FA mit Sicherheitsschlüssel</value>
+  </data>
+  <data name="loginMethod_TwoFactorRecoveryCode" xml:space="preserve">
+    <value>2FA mit Wiederherstellungscode</value>
   </data>
 </root>

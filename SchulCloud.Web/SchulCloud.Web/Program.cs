@@ -15,6 +15,7 @@ using SchulCloud.Web.Identity.EmailSenders;
 using SchulCloud.Web.Identity.Managers;
 using SchulCloud.Web.Services;
 using SchulCloud.Web.Services.Interfaces;
+using GoogleMapsComponents;
 
 namespace SchulCloud.Web;
 
@@ -69,7 +70,7 @@ public class Program
             options.ReturnUrlParameter = "returnUrl";
 
             options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-            options.SlidingExpiration = true;
+            options.SlidingExpiration = true; 
         });
 
         builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
@@ -83,6 +84,12 @@ public class Program
             .AddBlazoredLocalStorage()
             .AddScoped<CookieService>()
             .AddScoped<IUserPreferencesStore, CookieUserPreferencesStore>();
+
+        string? mapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
+        if (!string.IsNullOrWhiteSpace(mapsApiKey))
+        {
+            builder.Services.AddBlazorGoogleMaps(mapsApiKey);
+        }
 
         WebApplication app = builder.Build();
         app.MapDefaultEndpoints();

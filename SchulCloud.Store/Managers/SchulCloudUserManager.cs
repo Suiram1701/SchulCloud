@@ -389,7 +389,7 @@ public partial class SchulCloudUserManager<TUser>(
     /// <param name="user">The user that this attempt is for.</param>
     /// <param name="attempt">The attempt to remove.</param>
     /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> RemoveLogInAttemptAsync(TUser user, UserLoginAttempt attempt)
+    public virtual async Task<IdentityResult> RemoveLoginAttemptAsync(TUser user, UserLoginAttempt attempt)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);

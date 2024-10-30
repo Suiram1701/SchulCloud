@@ -13,8 +13,8 @@ internal enum LoginAttemptMethod
 {
     Password,
     Passkey,
-    Authenticator,
-    Email,
-    SecurityKey,
-    RecoveryCode
+    TwoFactorAuthenticator,
+    TwoFactorEmail,
+    TwoFactorSecurityKey,
+    TwoFactorRecoveryCode
 }

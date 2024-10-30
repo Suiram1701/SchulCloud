@@ -76,7 +76,7 @@ public class SchulCloudSignInManager(
         SignInResult result = await base.TwoFactorAuthenticatorSignInAsync(code, isPersistent, rememberClient);
 
         ApplicationUser user = (await GetTwoFactorAuthenticationUserAsync())!;
-        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.Authenticator);
+        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.TwoFactorAuthenticator);
 
         return result;
     }
@@ -94,7 +94,7 @@ public class SchulCloudSignInManager(
         SignInResult result = await TwoFactorSignInAsync(providerName, code, isPersistent, rememberClient);
 
         ApplicationUser user = (await GetTwoFactorAuthenticationUserAsync())!;
-        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.Email);
+        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.TwoFactorEmail);
 
         return result;
     }
@@ -128,7 +128,7 @@ public class SchulCloudSignInManager(
             ? await DoTwoFactorSignInAsync(twoFactorInfo, isPersistent, rememberClient)
             : SignInResult.Failed;
 
-        await LogLoginAttemptAsync(twoFactorInfo.User, result, LoginAttemptMethod.SecurityKey);
+        await LogLoginAttemptAsync(twoFactorInfo.User, result, LoginAttemptMethod.TwoFactorSecurityKey);
         return result;
     }
 
@@ -137,7 +137,7 @@ public class SchulCloudSignInManager(
         SignInResult result = await base.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
 
         ApplicationUser user = (await GetTwoFactorAuthenticationUserAsync())!;
-        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.RecoveryCode);
+        await LogLoginAttemptAsync(user, result, LoginAttemptMethod.TwoFactorRecoveryCode);
 
         return result;
     }

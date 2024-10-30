@@ -109,4 +109,7 @@
   <data name="tabSecurityKeys" xml:space="preserve">
     <value>Sicherheitsschlüssel</value>
   </data>
+  <data name="tabLogInAttempts" xml:space="preserve">
+    <value>Anmeldeverlauf</value>
+  </data>
 </root>

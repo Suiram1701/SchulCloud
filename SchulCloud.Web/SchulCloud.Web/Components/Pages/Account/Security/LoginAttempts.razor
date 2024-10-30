@@ -1,0 +1,72 @@
+﻿@using MyCSharp.HttpUserAgentParser;
+@using SchulCloud.Store.Enums
+
+<SchulCloudPageTitle Title="@Localizer["title"]" />
+
+<MudTable @ref="_attemptTable" Class="px-3 py-3" Items="_attempts.OrderByDescending(attempt => attempt.DateTime)"
+          Breakpoint="Breakpoint.Sm" CurrentPage="@(Page ?? 0)" RowsPerPage="15" >
+    <ToolBarContent>
+        <MudText Typo="Typo.h5">@Localizer["loginAttempts"]</MudText>
+        <MudSpacer />
+        <MudButton Class="ml-2" Color="Color.Error" OnClick="RemoveAllAttempts_ClickAsync" Variant="Variant.Filled" Disabled="@(_attempts.Count() == 0)">
+            @Localizer["removeAllBtn"]
+        </MudButton>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>@Localizer["attempt_DateTime"]</MudTh>
+        <MudTh>@Localizer["attempt_Result"]</MudTh>
+        <MudTh>@Localizer["attempt_Method"]</MudTh>
+        <MudTh>@Localizer["attempt_Device"]</MudTh>
+        <MudTh>@Localizer["attempt_IpAddress"]</MudTh>
+        <MudTh>@Localizer["attempt_Action"]</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="@Localizer["attempt_DateTime"]">@context.DateTime.ToLocalTime()</MudTd>
+        <MudTd DataLabel="@Localizer["attempt_Result"]">
+            <div class="d-flex align-center flex-nowrap">
+                @if (context.Succeeded)
+                {
+                    <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.CheckCircle" Color="Color.Success" />
+                    <MudText Typo="Typo.inherit" Color="Color.Success">@Localizer["result_Succeeded"]</MudText>
+                }
+                else if (context.FailReason == LoginAttemptFailReason.TwoFactorRequired)
+                {
+                    <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Warning" Color="Color.Warning" />
+                    <MudText Typo="Typo.inherit" Color="Color.Warning">@Localizer["result_TwoFactorRequired"]</MudText>
+                }
+                else
+                {
+                    <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
+                    <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_Failed"]</MudText>
+                }
+            </div>
+        </MudTd>
+        <MudTd DataLabel="@Localizer["attempt_Method"]">@Localizer[$"loginMethod_{context.Method}"]</MudTd>
+        <MudTd DataLabel="@Localizer["attempt_Device"]">
+            @if (_userAgents.TryGetValue(context.Id, out HttpUserAgentInformation userAgent))
+            {
+                if (userAgent.Platform is not null)
+                {
+                    @Localizer["deviceOn", userAgent.Name ?? string.Empty, userAgent.Platform!.Value.Name]
+                }
+                else
+                {
+                    @userAgent.Name
+                }
+            }
+            else
+            {
+                @Localizer["deviceUnknown"]
+            }
+        </MudTd>
+        <MudTd DataLabel="@Localizer["attempt_IpAddress"]">@context.IpAddress.ToString()</MudTd>
+        <MudTd DataLabel="@Localizer["attempt_Action"]">
+            <MudButton Color="Color.Primary" Href="@Routes.LoginAttemptDetails(context.Id, originPage: _attemptTable.CurrentPage)" Variant="Variant.Filled">
+                @Localizer["attempt_DetailsBtn"]
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager HideRowsPerPage />
+    </PagerContent>
+</MudTable>

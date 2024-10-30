@@ -97,19 +97,79 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="tabOverview" xml:space="preserve">
-    <value>Overview</value>
+  <data name="loginMethod_Password" xml:space="preserve">
+    <value>Password</value>
   </data>
-  <data name="tabHeader" xml:space="preserve">
-    <value>Account Security</value>
+  <data name="loginMethod_Passkey" xml:space="preserve">
+    <value>Passkey</value>
+  </data>
+  <data name="loginMethod_TwoFactorAuthenticator" xml:space="preserve">
+    <value>2FA via Authenticator app</value>
+  </data>
+  <data name="loginMethod_TwoFactorEmail" xml:space="preserve">
+    <value>2FA via email</value>
+  </data>
+  <data name="loginMethod_TwoFactorRecoveryCode" xml:space="preserve">
+    <value>2FA with recovery code</value>
+  </data>
+  <data name="loginMethod_TwoFactorSecurityKey" xml:space="preserve">
+    <value>2FA with security key</value>
+  </data>
+  <data name="result_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="result_Succeeded" xml:space="preserve">
+    <value>Successful</value>
+  </data>
+  <data name="result_TwoFactorRequired" xml:space="preserve">
+    <value>Waiting for 2FA</value>
+  </data>
+  <data name="deviceOn" xml:space="preserve">
+    <value>{0} on {1}</value>
+  </data>
+  <data name="deviceUnknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="dateTime" xml:space="preserve">
+    <value>date/time</value>
+  </data>
+  <data name="ipAddress" xml:space="preserve">
+    <value>IP address</value>
+  </data>
+  <data name="method" xml:space="preserve">
+    <value>Login method</value>
+  </data>
+  <data name="result" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="device" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="result_NotAllowed" xml:space="preserve">
+    <value>Not allowed</value>
+  </data>
+  <data name="result_LockedOut" xml:space="preserve">
+    <value>user locked out</value>
+  </data>
+  <data name="result_LockedOut_Desc" xml:space="preserve">
+    <value>At the time you attempted to log in, you were either locked out due to too many failed login attempts or by an administrator.</value>
+  </data>
+  <data name="result_NotAllowed_Desc" xml:space="preserve">
+    <value>At the time of the login attempt, your account was not authorized for login. This is probably because your email address has not yet been confirmed.</value>
+  </data>
+  <data name="backBtn" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="removeBtn" xml:space="preserve">
+    <value>Remove this entry</value>
   </data>
   <data name="title" xml:space="preserve">
-    <value>Account Security</value>
+    <value>login attempt on {0}</value>
   </data>
-  <data name="tabSecurityKeys" xml:space="preserve">
-    <value>Security key</value>
+  <data name="removeError" xml:space="preserve">
+    <value>An error occurred while removing the entry.</value>
   </data>
-  <data name="tabLogInAttempts" xml:space="preserve">
-    <value>Login history</value>
+  <data name="removeSuccess" xml:space="preserve">
+    <value>The entry was successfully removed.</value>
   </data>
 </root>

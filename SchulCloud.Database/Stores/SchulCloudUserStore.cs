@@ -364,6 +364,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             UserId = await GetUserIdAsync(user, ct),
             Method = (LoginAttemptMethod)attempt.Method,
             Succeeded = attempt.Succeeded,
+            FailReason = (LoginAttemptFailReason?)attempt.FailReason,
             IpAddress = attempt.IpAddress.GetAddressBytes(),
             Latitude = attempt.Latitude,
             Longitude = attempt.Longitude,
@@ -379,7 +380,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ArgumentNullException.ThrowIfNull(attempt);
         ct.ThrowIfCancellationRequested();
 
-        await LoginAttempts.Where(attempt => attempt.Id.Equals(attempt.Id)).ExecuteDeleteAsync(ct);
+        await LoginAttempts.Where(dbAttempt => dbAttempt.Id.Equals(attempt.Id)).ExecuteDeleteAsync(ct);
     }
 
     public async Task RemoveAllLoginAttemptsAsync(TUser user, CancellationToken ct = default)
@@ -399,6 +400,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             Id = attempt.Id,
             Method = (Store.Enums.LoginAttemptMethod)attempt.Method,
             Succeeded = attempt.Succeeded,
+            FailReason = (Store.Enums.LoginAttemptFailReason?)attempt.FailReason,
             IpAddress = new(attempt.IpAddress),
             Latitude = attempt.Latitude,
             Longitude = attempt.Longitude,

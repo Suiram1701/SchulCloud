@@ -17,6 +17,13 @@
                 <MudText Align="Align.Center">@Localizer["tabSecurityKeys"]</MudText>
             </MudNavLink>
         }
+
+        @if (UserManager.SupportsUserLoginAttempts)
+        {
+            <MudNavLink ActiveClass="@ActiveNavLinkClasses" Href="@Routes.LoginAttempts()">
+                <MudText Align="Align.Center">@Localizer["tabLogInAttempts"]</MudText>
+            </MudNavLink>
+        }
     </MudStack>
 </MudPaper>
 

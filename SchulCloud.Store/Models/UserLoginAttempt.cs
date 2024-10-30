@@ -39,6 +39,7 @@ public class UserLoginAttempt
     /// <remarks>
     /// If <c>null</c> the client wasn't located on login.
     /// </remarks>
+    ///
     public decimal? Latitude { get; set; }
 
     /// <summary>
