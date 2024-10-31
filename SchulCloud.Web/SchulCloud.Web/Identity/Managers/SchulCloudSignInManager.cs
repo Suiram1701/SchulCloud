@@ -205,13 +205,13 @@ public class SchulCloudSignInManager(
         {
             IPAddress clientIpAddress = Context.Connection.RemoteIpAddress ?? IPAddress.Any;
             string? userAgent = Context.Request.Headers.UserAgent.ToString();
-            LoginAttemptFailReason? failReason = result switch
+            LoginAttemptResult? failReason = result switch
             {
-                { Succeeded: true } => null,
-                { RequiresTwoFactor: true } => LoginAttemptFailReason.TwoFactorRequired,
-                { IsLockedOut: true } => LoginAttemptFailReason.LockedOut,
-                { IsNotAllowed: true } => LoginAttemptFailReason.NotAllowed,
-                _ => LoginAttemptFailReason.Default
+                { Succeeded: true } => LoginAttemptResult.Succeeded,
+                { RequiresTwoFactor: true } => LoginAttemptResult.TwoFactorRequired,
+                { IsLockedOut: true } => LoginAttemptResult.LockedOut,
+                { IsNotAllowed: true } => LoginAttemptResult.NotAllowed,
+                _ => LoginAttemptResult.Failed
             };
 
             IPGeoLookupResult? ipLookupResult = await ipGeolocator.GetLocationAsync(clientIpAddress);
@@ -223,8 +223,7 @@ public class SchulCloudSignInManager(
             await _userManager.AddLoginAttemptAsync(user, new()
             {
                 Method = method,
-                Succeeded = result.Succeeded,
-                FailReason = failReason,
+                Result = failReason,
                 IpAddress = clientIpAddress,
                 Latitude = ipLookupResult?.Latitude,
                 Longitude = ipLookupResult?.Longitude,

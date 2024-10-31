@@ -19,14 +19,9 @@ public class UserLoginAttempt
     public LoginAttemptMethod Method { get; set; }
 
     /// <summary>
-    /// Indicates whether the attempt succeeded.
+    /// The result of the attempt.
     /// </summary>
-    public bool Succeeded { get; set; }
-
-    /// <summary>
-    /// A more detailed reason why the attempt failed. If the attempt succeeded this property will be <c>null</c>.
-    /// </summary>
-    public LoginAttemptFailReason? FailReason { get; set; }
+    public LoginAttemptResult? Result { get; set; }
 
     /// <summary>
     /// The ip address of the client attempted to login.

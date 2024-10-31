@@ -4,7 +4,7 @@
 <SchulCloudPageTitle Title="@Localizer["title"]" />
 
 <MudTable @ref="_attemptTable" Class="px-3 py-3" Items="_attempts.OrderByDescending(attempt => attempt.DateTime)"
-          Breakpoint="Breakpoint.Sm" CurrentPage="@(Page ?? 0)" RowsPerPage="15" >
+Breakpoint="Breakpoint.Sm" CurrentPage="@(Page ?? 0)" RowsPerPage="15" >
     <ToolBarContent>
         <MudText Typo="Typo.h5">@Localizer["loginAttempts"]</MudText>
         <MudSpacer />
@@ -24,20 +24,20 @@
         <MudTd DataLabel="@Localizer["attempt_DateTime"]">@context.DateTime.ToLocalTime()</MudTd>
         <MudTd DataLabel="@Localizer["attempt_Result"]">
             <div class="d-flex align-center flex-nowrap">
-                @if (context.Succeeded)
+                @switch (context.Result)
                 {
-                    <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.CheckCircle" Color="Color.Success" />
-                    <MudText Typo="Typo.inherit" Color="Color.Success">@Localizer["result_Succeeded"]</MudText>
-                }
-                else if (context.FailReason == LoginAttemptFailReason.TwoFactorRequired)
-                {
-                    <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Warning" Color="Color.Warning" />
-                    <MudText Typo="Typo.inherit" Color="Color.Warning">@Localizer["result_TwoFactorRequired"]</MudText>
-                }
-                else
-                {
-                    <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
-                    <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_Failed"]</MudText>
+                    case LoginAttemptResult.Succeeded:
+                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.CheckCircle" Color="Color.Success" />
+                        <MudText Typo="Typo.inherit" Color="Color.Success">@Localizer["result_Succeeded"]</MudText>
+                        break;
+                    case LoginAttemptResult.TwoFactorRequired:
+                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Warning" Color="Color.Warning" />
+                        <MudText Typo="Typo.inherit" Color="Color.Warning">@Localizer["result_TwoFactorRequired"]</MudText>
+                        break;
+                    default:
+                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
+                        <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_Failed"]</MudText>
+                        break;
                 }
             </div>
         </MudTd>

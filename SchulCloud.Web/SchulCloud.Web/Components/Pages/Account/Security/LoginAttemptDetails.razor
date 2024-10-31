@@ -19,34 +19,32 @@
                         <MudItem xs="6">@Localizer["result"]</MudItem>
                         <MudItem xs="6">
                             <div class="d-flex align-center flex-nowrap">
-                                @if (_attempt.Succeeded)
+                                @switch (_attempt.Result)
                                 {
-                                    <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.CheckCircle" Color="Color.Success" />
-                                    <MudText Typo="Typo.inherit" Color="Color.Success">@Localizer["result_Succeeded"]</MudText>
-                                }
-                                else if (_attempt.FailReason == LoginAttemptFailReason.TwoFactorRequired)
-                                {
-                                    <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Warning" Color="Color.Warning" />
-                                    <MudText Typo="Typo.inherit" Color="Color.Warning">@Localizer["result_TwoFactorRequired"]</MudText>
-                                }
-                                else if (_attempt.FailReason == LoginAttemptFailReason.LockedOut)
-                                {
-                                    <MudTooltip RootClass="d-flex align-center" Text="@Localizer["result_LockedOut_Desc"]">
+                                    case LoginAttemptResult.Succeeded:
+                                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.CheckCircle" Color="Color.Success" />
+                                        <MudText Typo="Typo.inherit" Color="Color.Success">@Localizer["result_Succeeded"]</MudText>
+                                        break;
+                                    case LoginAttemptResult.TwoFactorRequired:
+                                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Warning" Color="Color.Warning" />
+                                        <MudText Typo="Typo.inherit" Color="Color.Warning">@Localizer["result_TwoFactorRequired"]</MudText>
+                                        break;
+                                    case LoginAttemptResult.LockedOut:
+                                        <MudTooltip RootClass="d-flex align-center" Text="@Localizer["result_LockedOut_Desc"]">
+                                            <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
+                                            <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_LockedOut"]</MudText>
+                                        </MudTooltip>
+                                        break;
+                                    case LoginAttemptResult.NotAllowed:
+                                        <MudTooltip RootClass="d-flex align-center" Text="@Localizer["result_NotAllowed_Desc"]">
+                                            <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
+                                            <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_NotAllowed"]</MudText>
+                                        </MudTooltip>
+                                        break;
+                                    default:
                                         <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
-                                        <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_LockedOut"]</MudText>
-                                    </MudTooltip>
-                                }
-                                else if (_attempt.FailReason == LoginAttemptFailReason.NotAllowed)
-                                {
-                                    <MudTooltip RootClass="d-flex align-center" Text="@Localizer["result_NotAllowed_Desc"]">
-                                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
-                                        <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_NotAllowed"]</MudText>
-                                    </MudTooltip>
-                                }
-                                else
-                                {
-                                    <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
-                                    <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_Failed"]</MudText>
+                                        <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_Failed"]</MudText>
+                                        break;
                                 }
                             </div>
                         </MudItem>
