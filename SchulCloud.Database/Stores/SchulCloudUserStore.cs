@@ -363,7 +363,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         {
             UserId = await GetUserIdAsync(user, ct),
             Method = (LoginAttemptMethod)attempt.Method,
-            Result = (LoginAttemptResult?)attempt.Result,
+            Result = (LoginAttemptResult)attempt.Result,
             IpAddress = attempt.IpAddress.GetAddressBytes(),
             Latitude = attempt.Latitude,
             Longitude = attempt.Longitude,
@@ -392,13 +392,32 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         await LoginAttempts.Where(attempt => attempt.UserId.Equals(userId)).ExecuteDeleteAsync(ct);
     }
 
+    public async Task<IReadOnlyDictionary<Store.Enums.LoginAttemptMethod, DateTime>> GetLatestLoginMethodUseTimeAsync(TUser user, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
+
+        string userId = await GetUserIdAsync(user, ct);
+        IEnumerable<dynamic> attempts = await LoginAttempts
+            .Select(attempt => new { attempt.UserId, attempt.Method, attempt.Result, attempt.DateTime })
+            .Where(attempt => attempt.UserId.Equals(userId))
+            .Where(attempt => attempt.Result == LoginAttemptResult.Succeeded || attempt.Result == LoginAttemptResult.TwoFactorRequired)
+            .GroupBy(attempt => attempt.Method).Select(group => group.OrderByDescending(attempt => attempt.DateTime).First())     // DistinctBy isn't currently supported by ef core. The expression in this line does the same.
+            .ToListAsync(ct);
+
+        return attempts.ToDictionary<dynamic, Store.Enums.LoginAttemptMethod, DateTime>(
+            keySelector: attempt => (Store.Enums.LoginAttemptMethod)attempt.Method,
+            elementSelector: attempt => attempt.DateTime);
+    }
+
     private static UserLoginAttempt ToUserAttempt(LoginAttempt attempt)
     {
         return new()
         {
             Id = attempt.Id,
             Method = (Store.Enums.LoginAttemptMethod)attempt.Method,
-            Result = (Store.Enums.LoginAttemptResult?)attempt.Result,
+            Result = (Store.Enums.LoginAttemptResult)attempt.Result,
             IpAddress = new(attempt.IpAddress),
             Latitude = attempt.Latitude,
             Longitude = attempt.Longitude,

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using MyCSharp.HttpUserAgentParser;
 using MyCSharp.HttpUserAgentParser.Providers;
 using SchulCloud.Store.Abstractions;
+using SchulCloud.Store.Enums;
 using SchulCloud.Store.Models;
 using SchulCloud.Store.Options;
 using System.Net;
@@ -406,7 +407,7 @@ public partial class SchulCloudUserManager<TUser>(
     /// </summary>
     /// <param name="user">The user to remove all attempts from.</param>
     /// <returns>The result of operation.</returns>
-    public virtual async Task<IdentityResult> RemoveAllLogInAttemptsOfUserAsync(TUser user)
+    public virtual async Task<IdentityResult> RemoveAllLoginAttemptsOfUserAsync(TUser user)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
@@ -415,6 +416,23 @@ public partial class SchulCloudUserManager<TUser>(
         await store.RemoveAllLoginAttemptsAsync(user, CancellationToken);
 
         return await Store.UpdateAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Gets the for every login method the last time they were successfully used.
+    /// </summary>
+    /// <remarks>
+    /// This methods depends on <see cref="SupportsUserLoginAttempts"/>.
+    /// </remarks>
+    /// <param name="user">The user to get these last use times from.</param>
+    /// <returns>Key-value-pairs that contains the method and their last use tim. If a method isn't contained the method wasn't used yet.</returns>
+    public virtual async Task<IReadOnlyDictionary<LoginAttemptMethod, DateTime>> GetLatestLoginMethodUseTimeOfUserAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        return await store.GetLatestLoginMethodUseTimeAsync(user, CancellationToken);
     }
 
     /// <summary>

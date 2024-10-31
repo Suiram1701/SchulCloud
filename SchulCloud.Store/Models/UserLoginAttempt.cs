@@ -21,7 +21,7 @@ public class UserLoginAttempt
     /// <summary>
     /// The result of the attempt.
     /// </summary>
-    public LoginAttemptResult? Result { get; set; }
+    public LoginAttemptResult Result { get; set; }
 
     /// <summary>
     /// The ip address of the client attempted to login.

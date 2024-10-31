@@ -1,4 +1,5 @@
-﻿using SchulCloud.Store.Models;
+﻿using SchulCloud.Store.Enums;
+using SchulCloud.Store.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SchulCloud.Store.Abstractions;
 
-/// <summary>
+ /// <summary>
 /// A store interface that provides login attempts to a user's account.
 /// </summary>
 /// <typeparam name="TUser">The type of the user.</typeparam>
@@ -60,4 +61,15 @@ public interface IUserLoginAttemptStore<TUser>
     /// <param name="user">The user to delete the attempts for.</param>
     /// <param name="ct">Cancellation token</param>
     public Task RemoveAllLoginAttemptsAsync(TUser user, CancellationToken ct = default);
+
+    /// <summary>
+    /// Gets the date time of the latest successful login attempt of every login method.
+    /// </summary>
+    /// <param name="user">The user to get the login attempts from.</param>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>
+    /// A dictionary containing pairs of the used method and the last use time.
+    /// If method isn't contained method wasn't used yet.
+    /// </returns>
+    public Task<IReadOnlyDictionary<LoginAttemptMethod, DateTime>> GetLatestLoginMethodUseTimeAsync(TUser user, CancellationToken ct = default);
 }

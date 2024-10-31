@@ -203,9 +203,9 @@ public class SchulCloudSignInManager(
     {
         if (_userManager.SupportsUserLoginAttempts)
         {
-            IPAddress clientIpAddress = Context.Connection.RemoteIpAddress ?? IPAddress.Any;
+            IPAddress clientIpAddress = Context.Connection.RemoteIpAddress ?? IPAddress.None;
             string? userAgent = Context.Request.Headers.UserAgent.ToString();
-            LoginAttemptResult? failReason = result switch
+            LoginAttemptResult attemptResult = result switch
             {
                 { Succeeded: true } => LoginAttemptResult.Succeeded,
                 { RequiresTwoFactor: true } => LoginAttemptResult.TwoFactorRequired,
@@ -223,7 +223,7 @@ public class SchulCloudSignInManager(
             await _userManager.AddLoginAttemptAsync(user, new()
             {
                 Method = method,
-                Result = failReason,
+                Result = attemptResult,
                 IpAddress = clientIpAddress,
                 Latitude = ipLookupResult?.Latitude,
                 Longitude = ipLookupResult?.Longitude,

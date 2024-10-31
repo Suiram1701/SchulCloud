@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using MudBlazor;
+using SchulCloud.Store.Enums;
 using SchulCloud.Store.Managers;
 using SchulCloud.Web.Components.Dialogs;
 using SchulCloud.Web.Extensions;
@@ -49,6 +50,7 @@ public sealed partial class Index : ComponentBase, IDisposable
     private int _securityKeysCount;
     private bool _mfaSecurityKeyEnabled;
     private int _mfaRemainingRecoveryCodes;
+    private IReadOnlyDictionary<LoginAttemptMethod, DateTime> _latestUseTimes = new Dictionary<LoginAttemptMethod, DateTime>();
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
@@ -65,20 +67,16 @@ public sealed partial class Index : ComponentBase, IDisposable
                 out _mfaEmailEnabled,
                 out _securityKeysCount,
                 out _mfaSecurityKeyEnabled,
-                out _mfaRemainingRecoveryCodes);
-
+                out _mfaRemainingRecoveryCodes,
+                out _latestUseTimes);
             _user = (await UserManager.GetUserAsync(authenticationState.User))!;
         }
         else
         {
             _user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
-            if (UserManager.SupportsUserPasskeys)
-            {
-                _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user);
-                _passkeysCount = await UserManager.GetPasskeyCountAsync(_user); 
-            }
-            await UpdateMfaStatesAsync();
+            await UpdateSecurityStateAsync();
+            _latestUseTimes = await UserManager.GetLatestLoginMethodUseTimeOfUserAsync(_user);
 
             _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
             {
@@ -89,11 +87,39 @@ public sealed partial class Index : ComponentBase, IDisposable
                     _mfaEmailEnabled,
                     _securityKeysCount,
                     _mfaSecurityKeyEnabled,
-                    _mfaRemainingRecoveryCodes);
+                    _mfaRemainingRecoveryCodes,
+                    _latestUseTimes);
                 ComponentState.PersistAsJson("state", state);
 
                 return Task.CompletedTask;
             });
+        }
+    }
+
+    private async Task UpdateSecurityStateAsync()
+    {
+        if (UserManager.SupportsUserPasskeys)
+        {
+            _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user);
+            _passkeysCount = await UserManager.GetPasskeyCountAsync(_user);
+        }
+
+        if (UserManager.SupportsUserTwoFactor)
+        {
+            _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user);
+
+            _mfaEmailEnabled = UserManager.SupportsUserTwoFactorEmail
+                && await UserManager.GetTwoFactorEmailEnabledAsync(_user);
+
+            if (UserManager.SupportsUserTwoFactorSecurityKeys)
+            {
+                _securityKeysCount = await UserManager.GetTwoFactorSecurityKeysCountAsync(_user);
+                _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
+            }
+
+            _mfaRemainingRecoveryCodes = UserManager.SupportsUserTwoFactorRecoveryCodes
+                ? await UserManager.CountRecoveryCodesAsync(_user)
+                : 0;
         }
     }
 
@@ -129,7 +155,7 @@ public sealed partial class Index : ComponentBase, IDisposable
             IdentityResult disableResult = await UserManager.SetTwoFactorEnabledAsync(_user, false);
             if (disableResult.Succeeded)
             {
-                await UpdateMfaStatesAsync();
+                await UpdateSecurityStateAsync();
             }
             else
             {
@@ -189,28 +215,6 @@ public sealed partial class Index : ComponentBase, IDisposable
         }
     }
 
-    private async Task UpdateMfaStatesAsync()
-    {
-        if (!UserManager.SupportsUserTwoFactor)
-        {
-            return;
-        }
-        _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user);
-
-        _mfaEmailEnabled = UserManager.SupportsUserTwoFactorEmail
-            && await UserManager.GetTwoFactorEmailEnabledAsync(_user);
-
-        if (UserManager.SupportsUserTwoFactorSecurityKeys)
-        {
-            _securityKeysCount = await UserManager.GetTwoFactorSecurityKeysCountAsync(_user);
-            _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
-        }
-
-        _mfaRemainingRecoveryCodes = UserManager.SupportsUserTwoFactorRecoveryCodes
-            ? await UserManager.CountRecoveryCodesAsync(_user)
-            : 0;
-    }
-
     public void Dispose()
     {
         _persistingSubscription?.Dispose();
@@ -223,5 +227,6 @@ public sealed partial class Index : ComponentBase, IDisposable
         bool MfaEmailEnabled,
         int SecurityKeysCount,
         bool MfaSecurityKeysEnabled,
-        int MfaRemainingRecoveryCodes);
+        int MfaRemainingRecoveryCodes,
+        IReadOnlyDictionary<LoginAttemptMethod, DateTime> LatestUseTimes);
 }

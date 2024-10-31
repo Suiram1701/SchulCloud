@@ -82,7 +82,7 @@ public sealed partial class LoginAttempts : ComponentBase, IDisposable
             confirmColor: Color.Error);
         if (await dialogReference.GetReturnValueAsync<bool?>() ?? false)
         {
-            IdentityResult removeResult = await UserManager.RemoveAllLogInAttemptsOfUserAsync(_user);
+            IdentityResult removeResult = await UserManager.RemoveAllLoginAttemptsOfUserAsync(_user);
             if (removeResult.Succeeded)
             {
                 SnackbarService.AddSuccess(Localizer["removeAllSuccess"]);
