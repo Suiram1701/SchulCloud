@@ -19,6 +19,7 @@
     <PackageReference Include="MudBlazor" Version="7.15.0" />
     <PackageReference Include="MudBlazor.FontIcons.MaterialSymbols" Version="1.2.0" />
     <PackageReference Include="MyCSharp.HttpUserAgentParser" Version="3.0.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="Suiram1.BlazorRoutesGenerator" Version="1.0.0" />
   </ItemGroup>

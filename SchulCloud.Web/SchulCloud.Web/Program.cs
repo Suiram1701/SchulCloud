@@ -83,7 +83,8 @@ public class Program
             .AddMudServices()
             .AddBlazoredLocalStorage()
             .AddScoped<CookieService>()
-            .AddScoped<IUserPreferencesStore, CookieUserPreferencesStore>();
+            .AddScoped<IUserPreferencesStore, CookieUserPreferencesStore>()
+            .AddScoped<IIPGeolocator, IPApiGeolocator>();
 
         string? mapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
         if (!string.IsNullOrWhiteSpace(mapsApiKey))

@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SchulCloud.Store.Enums;
-using SchulCloud.Store.Managers;
 using SchulCloud.Store.Models;
+using SchulCloud.Web.Services.Interfaces;
+using SchulCloud.Web.Services.Models;
 using System.Net;
 using System.Security.Claims;
 
@@ -16,6 +17,7 @@ namespace SchulCloud.Web.Identity.Managers;
 public class SchulCloudSignInManager(
     AppUserManager userManager,
     IHttpContextAccessor contextAccessor,
+    IIPGeolocator ipGeolocator,
     IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory,
     IOptions<IdentityOptions> optionsAccessor,
     ILogger<SignInManager<ApplicationUser>> logger,
@@ -199,26 +201,37 @@ public class SchulCloudSignInManager(
 
     private async Task LogLoginAttemptAsync(ApplicationUser user, SignInResult result, LoginAttemptMethod method)
     {
-        IPAddress clientIpAddress = Context.Connection.RemoteIpAddress ?? IPAddress.Any;
-        string? userAgent = Context.Request.Headers.UserAgent.ToString();
-        LoginAttemptFailReason? failReason = result switch
+        if (_userManager.SupportsUserLoginAttempts)
         {
-            { Succeeded: true } => null,
-            { RequiresTwoFactor: true } => LoginAttemptFailReason.TwoFactorRequired,
-            { IsLockedOut: true } => LoginAttemptFailReason.LockedOut,
-            { IsNotAllowed: true } => LoginAttemptFailReason.NotAllowed,
-            _ => LoginAttemptFailReason.Default
-        };
+            IPAddress clientIpAddress = Context.Connection.RemoteIpAddress ?? IPAddress.Any;
+            string? userAgent = Context.Request.Headers.UserAgent.ToString();
+            LoginAttemptFailReason? failReason = result switch
+            {
+                { Succeeded: true } => null,
+                { RequiresTwoFactor: true } => LoginAttemptFailReason.TwoFactorRequired,
+                { IsLockedOut: true } => LoginAttemptFailReason.LockedOut,
+                { IsNotAllowed: true } => LoginAttemptFailReason.NotAllowed,
+                _ => LoginAttemptFailReason.Default
+            };
 
-        await _userManager.AddLoginAttemptAsync(user, new()
-        {
-            Method = method,
-            Succeeded = result.Succeeded,
-            FailReason = failReason,
-            IpAddress = clientIpAddress,
-            UserAgent = userAgent,
-            DateTime = DateTime.UtcNow
-        });
+            IPGeoLookupResult? ipLookupResult = await ipGeolocator.GetLocationAsync(clientIpAddress);
+            if (ipLookupResult is null)
+            {
+                Logger.LogDebug("Unable to log ip addresses location on login attempt caused by a failed ip address lookup.");
+            }
+
+            await _userManager.AddLoginAttemptAsync(user, new()
+            {
+                Method = method,
+                Succeeded = result.Succeeded,
+                FailReason = failReason,
+                IpAddress = clientIpAddress,
+                Latitude = ipLookupResult?.Latitude,
+                Longitude = ipLookupResult?.Longitude,
+                UserAgent = userAgent,
+                DateTime = DateTime.UtcNow
+            });
+        }
     }
 
     private record TwoFactorInfo(ApplicationUser User, string? LoginProvider);
