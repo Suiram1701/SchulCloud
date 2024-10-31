@@ -63,7 +63,7 @@ public class IPApiGeolocator(ILogger<IPApiGeolocator> logger, HttpClient client)
             }
             else
             {
-                string errorMessage = responseObj["message"]!.Value<string>()!;
+                string errorMessage = responseObj["message"]?.Value<string>() ?? "unknown";
                 logger.LogDebug("Could not lookup ip address {ipAddress}. Error message: {errorMessage}", address, errorMessage);
 
                 return null;

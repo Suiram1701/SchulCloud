@@ -1,3 +1,9 @@
+/* _content/SchulCloud.Web/Components/Layouts/PageLayouts/AccountSecurityLayout.razor.rz.scp.css */
+@media (max-width: 650px) {
+    [b-pejc76rrhu].securityNavbar div[role='group'] {
+        flex-wrap: wrap;
+    }
+}
 /* _content/SchulCloud.Web/Components/Pages/Account/Security/LoginAttemptDetails.razor.rz.scp.css */
 div.embeddedMap[b-m0i0ftvv9j] {
     height: 500px;

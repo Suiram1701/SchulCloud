@@ -6,25 +6,27 @@
 <MudText Class="mb-2" Typo="Typo.h4" Align="Align.Center">@Localizer["tabHeader"]</MudText>
 
 <MudPaper Class="mb-5" Elevation="1">
-    <MudStack AlignItems="AlignItems.Center" Row>
-        <MudNavLink ActiveClass="@ActiveNavLinkClasses" Href="@Routes.SecurityIndex()" Match="NavLinkMatch.All">
-            <MudText Align="Align.Center">@Localizer["tabOverview"]</MudText>
-        </MudNavLink>
-        
-        @if (UserManager.SupportsUserCredentials && (UserManager.SupportsUserPasskeys || UserManager.SupportsUserTwoFactorSecurityKeys))
-        {
-            <MudNavLink ActiveClass="@ActiveNavLinkClasses" Href="@Routes.SecurityKeys()">
-                <MudText Align="Align.Center">@Localizer["tabSecurityKeys"]</MudText>
+    <div class="securityNavbar">
+        <MudStack AlignItems="AlignItems.Center" Row>
+            <MudNavLink Href="@Routes.SecurityIndex()" Match="NavLinkMatch.All" ActiveClass="border-solid border-b-2 mud-border-primary mud-primary-text">
+                <MudText Align="Align.Center">@Localizer["tabOverview"]</MudText>
             </MudNavLink>
-        }
 
-        @if (UserManager.SupportsUserLoginAttempts)
-        {
-            <MudNavLink ActiveClass="@ActiveNavLinkClasses" Href="@Routes.LoginAttempts()">
-                <MudText Align="Align.Center">@Localizer["tabLogInAttempts"]</MudText>
-            </MudNavLink>
-        }
-    </MudStack>
+            @if (UserManager.SupportsUserCredentials && (UserManager.SupportsUserPasskeys || UserManager.SupportsUserTwoFactorSecurityKeys))
+            {
+                <MudNavLink Href="@Routes.SecurityKeys()" ActiveClass="border-solid border-b-2 mud-border-primary mud-primary-text">
+                    <MudText Align="Align.Center">@Localizer["tabSecurityKeys"]</MudText>
+                </MudNavLink>
+            }
+
+            @if (UserManager.SupportsUserLoginAttempts)
+            {
+                <MudNavLink Href="@Routes.LoginAttempts()" ActiveClass="border-solid border-b-2 mud-border-primary mud-primary-text">
+                    <MudText Align="Align.Center">@Localizer["tabLogInAttempts"]</MudText>
+                </MudNavLink>
+            }
+        </MudStack>
+    </div>
 </MudPaper>
 
 @Body
