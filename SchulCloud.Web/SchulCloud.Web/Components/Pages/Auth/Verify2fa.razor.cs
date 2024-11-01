@@ -202,7 +202,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
                 throw new Exception("An unknown error occurred during the email code generation.");
             }
 
-            // Show the Toast before the email is sent for better user experience (sending the mail is time expensive).
+            // Show the Toast before the email is sent for better user experience (sending the email is sometimes time expensive).
             string anonymizedAddress = await UserManager.GetAnonymizedEmailAsync(user);
             SnackbarService.AddInfo(Localizer["emailConfirmation", anonymizedAddress]);
 

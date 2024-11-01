@@ -83,8 +83,12 @@ public class Program
             .AddMudServices()
             .AddBlazoredLocalStorage()
             .AddScoped<CookieService>()
-            .AddScoped<IUserPreferencesStore, CookieUserPreferencesStore>()
-            .AddScoped<IIPGeolocator, IPApiGeolocator>();
+            .AddScoped<IUserPreferencesStore, CookieUserPreferencesStore>();
+
+        builder.Services
+            .AddSingleton<IIPGeolocator, IPApiGeolocator>()
+            .AddSingleton<LoginLogBackgroundService>()
+            .AddHostedService(sp => sp.GetRequiredService<LoginLogBackgroundService>());
 
         string? mapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
         if (!string.IsNullOrWhiteSpace(mapsApiKey))

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SchulCloud.Store.Enums;
 using SchulCloud.Store.Models;
+using SchulCloud.Web.Services;
 using SchulCloud.Web.Services.Interfaces;
 using SchulCloud.Web.Services.Models;
 using System.Net;
@@ -16,8 +17,8 @@ namespace SchulCloud.Web.Identity.Managers;
 /// </summary>
 public class SchulCloudSignInManager(
     AppUserManager userManager,
+    LoginLogBackgroundService loginLogService,
     IHttpContextAccessor contextAccessor,
-    IIPGeolocator ipGeolocator,
     IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory,
     IOptions<IdentityOptions> optionsAccessor,
     ILogger<SignInManager<ApplicationUser>> logger,
@@ -214,22 +215,15 @@ public class SchulCloudSignInManager(
                 _ => LoginAttemptResult.Failed
             };
 
-            IPGeoLookupResult? ipLookupResult = await ipGeolocator.GetLocationAsync(clientIpAddress);
-            if (ipLookupResult is null)
-            {
-                Logger.LogDebug("Unable to log ip addresses location on login attempt caused by a failed ip address lookup.");
-            }
-
-            await _userManager.AddLoginAttemptAsync(user, new()
+            UserLoginAttempt attempt = new()
             {
                 Method = method,
                 Result = attemptResult,
                 IpAddress = clientIpAddress,
-                Latitude = ipLookupResult?.Latitude,
-                Longitude = ipLookupResult?.Longitude,
                 UserAgent = userAgent,
                 DateTime = DateTime.UtcNow
-            });
+            };
+            await loginLogService.EnqueueAttemptAsync(user, attempt);
         }
     }
 
