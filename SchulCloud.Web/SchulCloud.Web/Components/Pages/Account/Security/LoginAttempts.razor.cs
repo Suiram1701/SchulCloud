@@ -13,7 +13,7 @@ using System.Net;
 namespace SchulCloud.Web.Components.Pages.Account.Security;
 
 [Route("/account/security/loginAttempts")]
-public sealed partial class LoginAttempts : ComponentBase, IDisposable
+public sealed partial class LoginAttempts : ComponentBase
 {
     #region
     [Inject]
@@ -30,12 +30,7 @@ public sealed partial class LoginAttempts : ComponentBase, IDisposable
 
     [Inject]
     private AppUserManager UserManager { get; set; } = default!;
-
-    [Inject]
-    private PersistentComponentState ComponentState { get; set; } = default!;
     #endregion
-
-    private PersistingComponentStateSubscription? _persistingSubscription;
 
     private ApplicationUser _user = default!;
 
@@ -93,10 +88,5 @@ public sealed partial class LoginAttempts : ComponentBase, IDisposable
                 SnackbarService.AddError(removeResult.Errors, Localizer["removeAllError"]);
             }
         }
-    }
-
-    public void Dispose()
-    {
-        _persistingSubscription?.Dispose();
     }
 }

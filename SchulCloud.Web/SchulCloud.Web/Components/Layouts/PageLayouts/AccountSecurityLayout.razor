@@ -1,14 +1,14 @@
 ﻿@inherits LayoutComponentBase
 @layout Layouts.MainLayout
 
-<SchulCloudPageTitle Title="@Localizer["title"]" />
+<AppPageTitle Title="@Localizer["title"]" />
 
 <MudText Class="mb-2" Typo="Typo.h4" Align="Align.Center">@Localizer["tabHeader"]</MudText>
 
 <MudPaper Class="mb-5" Elevation="1">
     <div class="securityNavbar">
         <MudStack AlignItems="AlignItems.Center" Row>
-            <MudNavLink Href="@Routes.SecurityIndex()" Match="NavLinkMatch.All" ActiveClass="border-solid border-b-2 mud-border-primary mud-primary-text">
+            <MudNavLink Href="@Routes.SecurityOverview()" Match="NavLinkMatch.All" ActiveClass="border-solid border-b-2 mud-border-primary mud-primary-text">
                 <MudText Align="Align.Center">@Localizer["tabOverview"]</MudText>
             </MudNavLink>
 

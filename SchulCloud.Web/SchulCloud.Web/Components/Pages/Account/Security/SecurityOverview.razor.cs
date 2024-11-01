@@ -12,11 +12,11 @@ using SchulCloud.Web.Extensions;
 namespace SchulCloud.Web.Components.Pages.Account.Security;
 
 [Route("/account/security")]
-public sealed partial class Index : ComponentBase, IDisposable
+public sealed partial class SecurityOverview : ComponentBase, IDisposable
 {
     #region Injections
     [Inject]
-    private IStringLocalizer<Index> Localizer { get; set; } = default!;
+    private IStringLocalizer<SecurityOverview> Localizer { get; set; } = default!;
 
     [Inject]
     private ISnackbar SnackbarService { get; set; } = default!;
@@ -211,7 +211,7 @@ public sealed partial class Index : ComponentBase, IDisposable
         IDialogReference dialogReference = await DialogService.ShowConfirmDialogAsync(Localizer["recovery_RenewBtn"], Localizer["recovery_RenewMessage"]);
         if (await dialogReference.GetReturnValueAsync<bool?>() ?? false)
         {
-            NavigationManager.NavigateToRecoveryCodes();
+            NavigationManager.NavigateToRecovery();
         }
     }
 

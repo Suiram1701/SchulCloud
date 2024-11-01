@@ -10,11 +10,11 @@
                 <NotAuthorized>
                     @if (_isAuthenticated)
                     {
-                        <Index Code="@StatusCodes.Status403Forbidden" />     @* The general purpose error page. *@
+                        <Forbidden />
                     }
                     else
                     {
-                        <RedirectToSignIn />
+                        <RedirectToLogin />
                     }
                 </NotAuthorized>
             </AuthorizeRouteView>

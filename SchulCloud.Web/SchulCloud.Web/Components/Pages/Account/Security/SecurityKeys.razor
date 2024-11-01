@@ -35,7 +35,7 @@
             {
                 <MudExpansionPanel>
                     <TitleContent>
-                        <MudStack AlignItems="AlignItems.Center" Row>
+                        <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
                             @{
                                 string iconName = securityKey.Transports?.Any(transport => new[] { AuthenticatorTransport.Internal, AuthenticatorTransport.Hybrid }.Contains(transport)) ?? false
                                     ? MaterialSymbols.Outlined.Devices

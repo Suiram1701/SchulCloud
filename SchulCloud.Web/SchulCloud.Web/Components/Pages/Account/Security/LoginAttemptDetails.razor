@@ -2,7 +2,7 @@
 @using SchulCloud.Store.Enums
 @using SchulCloud.Web.Components.Pages.Error
 
-<SchulCloudPageTitle Title="@Localizer["title", _attempt?.DateTime.ToString("d") ?? string.Empty]" />
+<AppPageTitle Title="@Localizer["title", _attempt?.DateTime.ToString("d") ?? string.Empty]" />
 
 @if (_loaded)
 {
@@ -92,7 +92,7 @@
                     <MudButton Class="mr-2" Color="Color.Primary" Href="@Routes.LoginAttempts(page: OriginPage)" Variant="Variant.Filled">
                         @Localizer["backBtn"]
                     </MudButton>
-                    <MudButton Color="Color.Error" OnClick="Remove_ClickAsync">
+                    <MudButton Color="Color.Error" StartIcon="@MaterialSymbols.Outlined.Delete" OnClick="Remove_ClickAsync">
                         @Localizer["removeBtn"]
                     </MudButton>
                 </MudItem>

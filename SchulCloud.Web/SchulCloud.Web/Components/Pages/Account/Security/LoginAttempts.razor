@@ -1,15 +1,20 @@
 ﻿@using MyCSharp.HttpUserAgentParser;
 @using SchulCloud.Store.Enums
 
-<SchulCloudPageTitle Title="@Localizer["title"]" />
+<AppPageTitle Title="@Localizer["title"]" />
 
 <MudTable @ref="_attemptTable" Class="px-3 py-3" Items="_attempts.OrderByDescending(attempt => attempt.DateTime)"
-Breakpoint="Breakpoint.Sm" CurrentPage="@(Page ?? 0)" RowsPerPage="15" >
+          Breakpoint="Breakpoint.Sm" CurrentPage="@(Page ?? 0)" RowsPerPage="15" >
     <ToolBarContent>
         <MudText Typo="Typo.h5">@Localizer["loginAttempts"]</MudText>
         <MudSpacer />
-        <MudButton Class="ml-2" Color="Color.Error" OnClick="RemoveAllAttempts_ClickAsync" Variant="Variant.Filled" Disabled="@(_attempts.Count() == 0)">
-            @Localizer["removeAllBtn"]
+        
+        <MudButton Color="Color.Error" OnClick="RemoveAllAttempts_ClickAsync" Variant="Variant.Filled" Disabled="@(_attempts.Count() == 0)">
+            <MudIcon Icon="@MaterialSymbols.Outlined.DeleteHistory" />
+
+            <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert>
+                <span class="ml-2">@Localizer["removeAllBtn"]</span>
+            </MudHidden>
         </MudButton>
     </ToolBarContent>
     <HeaderContent>

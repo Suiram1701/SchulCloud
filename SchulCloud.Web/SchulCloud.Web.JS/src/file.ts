@@ -1,4 +1,4 @@
-import { DotNetStreamReference } from "./declarations/dotnetStreamReference";
+import { DotNetStreamReference } from "./Declarations/DotnetStreamReference";
 
 export namespace File {
     export async function download(streamReference: DotNetStreamReference, fileName: string, mimeType?: string, endings?: EndingType): Promise<void> {

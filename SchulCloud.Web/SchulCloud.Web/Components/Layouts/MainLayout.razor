@@ -33,18 +33,18 @@
                 </MudButton>
             </ActivatorContent>
             <ChildContent>
-                <MudMenuItem Href="@Routes.AccountIndex()" Icon="@MaterialSymbols.Outlined.AccountCircle">
+                <MudMenuItem Href="@Routes.AccountOverview()" Icon="@MaterialSymbols.Outlined.AccountCircle">
                     <MudText Class="ml-n5">@Localizer["accountNav_Account"]</MudText>
                 </MudMenuItem>
-                <MudMenuItem Href="@Routes.Settings()" Icon="@MaterialSymbols.Outlined.Settings">
+                <MudMenuItem Href="@Routes.AccountSettings()" Icon="@MaterialSymbols.Outlined.Settings">
                     <MudText Class="ml-n5">@Localizer["accountNav_Settings"]</MudText>
                 </MudMenuItem>
-                <MudMenuItem Href="@Routes.SecurityIndex()" Icon="@MaterialSymbols.Outlined.Security">
+                <MudMenuItem Href="@Routes.SecurityOverview()" Icon="@MaterialSymbols.Outlined.Security">
                     <MudText Class="ml-n5">@Localizer["accountNav_Security"]</MudText>
                 </MudMenuItem>
 
                 <MudDivider />
-                <MudMenuItem Href="@Routes.SignOut()" Icon="@MaterialSymbols.Outlined.Logout" ForceLoad>
+                <MudMenuItem Href="@Routes.Logout()" Icon="@MaterialSymbols.Outlined.Logout" ForceLoad>
                     <MudText Class="ml-n5">@Localizer["accountNav_SignOut"]</MudText>
                 </MudMenuItem>
             </ChildContent>
@@ -52,7 +52,7 @@
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="DrawerVariant.Mini">
         <MudNavMenu Rounded>
-            <MudNavLink Href="@Routes.PagesIndex()" Match="NavLinkMatch.All" Icon="@MaterialSymbols.Outlined.Dashboard">
+            <MudNavLink Href="@Routes.Dashboard()" Match="NavLinkMatch.All" Icon="@MaterialSymbols.Outlined.Dashboard">
                 @Localizer["navMenu_Dashboard"]
             </MudNavLink>
         </MudNavMenu>

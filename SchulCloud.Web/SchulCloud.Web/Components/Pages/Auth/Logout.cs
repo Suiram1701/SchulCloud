@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Identity;
 namespace SchulCloud.Web.Components.Pages.Auth;
 
 [AllowAnonymous]     // it doesn't have a .razor page so _Imports.razor won't be applied.
-[Route("/auth/signOut")]
-public sealed class SignOut : ComponentBase
+[Route("/auth/logout")]
+public sealed class Logout : ComponentBase
 {
     [Inject]
-    private ILogger<SignOut> Logger { get; set; } = default!;
+    private ILogger<Logout> Logger { get; set; } = default!;
 
     [Inject]
     private SignInManager<ApplicationUser> SignInManager { get; set; } = default!;
@@ -44,6 +44,6 @@ public sealed class SignOut : ComponentBase
             Logger.LogDebug("User {id} signed out.", userId);
         }
 
-        NavigationManager.NavigateToSignIn();
+        NavigationManager.NavigateToLogin();
     }
 }

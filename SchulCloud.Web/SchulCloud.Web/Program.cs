@@ -63,9 +63,9 @@ public class Program
 
         builder.Services.ConfigureApplicationCookie(options =>
         {
-            options.LoginPath = Routes.SignIn();
-            options.LogoutPath = Routes.SignOut();
-            options.AccessDeniedPath = Routes.ErrorIndex(StatusCodes.Status403Forbidden);
+            options.LoginPath = Routes.Login();
+            options.LogoutPath = Routes.Logout();
+            options.AccessDeniedPath = Routes.Forbidden();
 
             options.ReturnUrlParameter = "returnUrl";
 

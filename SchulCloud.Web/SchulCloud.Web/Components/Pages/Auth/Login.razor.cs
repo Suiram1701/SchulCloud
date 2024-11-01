@@ -19,15 +19,15 @@ using System.Security.Cryptography;
 
 namespace SchulCloud.Web.Components.Pages.Auth;
 
-[Route("/auth/signIn")]
-public sealed partial class SignIn : ComponentBase, IDisposable
+[Route("/auth/login")]
+public sealed partial class Login : ComponentBase, IDisposable
 {
     #region Injections
     [Inject]
     private IMemoryCache Cache { get; set; } = default!;
 
     [Inject]
-    private IStringLocalizer<SignIn> Localizer { get; set; } = default!;
+    private IStringLocalizer<Login> Localizer { get; set; } = default!;
 
     [Inject]
     private ISnackbar SnackbarService { get; set; } = default!;
@@ -55,7 +55,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
     #endregion
 
     private ElementReference _formRef = default!;
-    private const string _formName = "signInForm";
+    private const string _formName = "loginForm";
 
     private string? _errorMessage;
     private PersistingComponentStateSubscription? _persistingSubscription;
@@ -217,7 +217,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
         switch (signInResult)
         {
             case { Succeeded: true }:
-                NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.PagesIndex());
+                NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.Dashboard());
                 break;
             case { RequiresTwoFactor: true }:
                 NavigationManager.NavigateToVerify2fa(persistent: Model.IsPersistent, returnUrl: ReturnUrl, forceLoad: true);

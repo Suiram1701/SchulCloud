@@ -46,10 +46,12 @@
                         @ShowWhenTrue(options.RequireDigit, ErrorDescriber.PasswordRequiresDigit)
                     </MudText>
 
-                    <MudButton Color="Color.Primary" Href="@Routes.ChangePassword()">@Localizer["password_ChangeBtn"]</MudButton>
-                    <MudButton Class="ml-2" Color="Color.Error" Href="@Routes.ResetPassword(returnUrl: NavigationManager.GetRelativeUri())">
-                        @Localizer["password_ResetBtn"]
-                    </MudButton>
+                    <MudStack Spacing="1" Wrap="Wrap.Wrap" Row>
+                        <MudButton Color="Color.Primary" Href="@Routes.ChangePassword()">@Localizer["password_ChangeBtn"]</MudButton>
+                        <MudButton Color="Color.Error" Href="@Routes.ResetPassword(returnUrl: NavigationManager.GetRelativeUri())">
+                            @Localizer["password_ResetBtn"]
+                        </MudButton>
+                    </MudStack>
                 </ChildContent>
             </MudExpansionPanel>
         }
@@ -82,22 +84,24 @@
                 <ChildContent>
                     <MudText Class="mb-3" Typo="Typo.body1">@Localizer["passkey_Desc"]</MudText>
 
-                    @if (_passkeysEnabled)
-                    {
-                        <MudButton Color="Color.Error" OnClick="@(async () => await SetPasskeysEnabled_ClickAsync(false))">@Localizer["disableBtn"]</MudButton>
-                    }
-                    else
-                    {
-                        <MudTooltip Text="@Localizer["passkey_AtLeastOne"]" Disabled="@(_passkeysCount > 0)">
-                            <MudButton Color="Color.Primary" OnClick="@(async () => await SetPasskeysEnabled_ClickAsync(true))" Disabled="@(_passkeysCount <= 0)">
-                                @Localizer["enableBtn"]
-                            </MudButton>
-                        </MudTooltip>
-                    }
+                    <MudStack Spacing="1" Wrap="Wrap.Wrap" Row>
+                        @if (_passkeysEnabled)
+                        {
+                            <MudButton Color="Color.Error" OnClick="@(async () => await SetPasskeysEnabled_ClickAsync(false))">@Localizer["disableBtn"]</MudButton>
+                        }
+                        else
+                        {
+                            <MudTooltip Text="@Localizer["passkey_AtLeastOne"]" Disabled="@(_passkeysCount > 0)">
+                                <MudButton Color="Color.Primary" OnClick="@(async () => await SetPasskeysEnabled_ClickAsync(true))" Disabled="@(_passkeysCount <= 0)">
+                                    @Localizer["enableBtn"]
+                                </MudButton>
+                            </MudTooltip>
+                        }
 
-                    <MudButton Class="ml-2" Color="Color.Secondary" Href="@Routes.SecurityKeys()">
-                        @Localizer["securityKey_ManageBtn"]
-                    </MudButton>
+                        <MudButton Color="Color.Secondary" Href="@Routes.SecurityKeys()">
+                            @Localizer["securityKey_ManageBtn"]
+                        </MudButton>
+                    </MudStack>
                 </ChildContent>
             </MudExpansionPanel>
         }
@@ -108,7 +112,7 @@
         <MudText Class="mt-7" Typo="Typo.h6">@Localizer["mfaMethods"]</MudText>
         <MudText Class="my-2" Typo="Typo.body1">@Localizer["mfa_Desc"]</MudText>
 
-        <MudExpansionPanels>
+        <MudExpansionPanels Elevation="4">
 
             @* App 2FA *@
             @if (UserManager.SupportsUserAuthenticatorKey)
@@ -220,24 +224,27 @@
                     <ChildContent>
                         <MudText Class="mb-3" Typo="Typo.body1">@Localizer["securityKey_Desc"]</MudText>
 
-                        @if (_mfaSecurityKeyEnabled)
-                        {
-                            <MudButton Color="Color.Error" OnClick="@(async () => await SetSecurityKeyEnabled_ClickAsync(false))">@Localizer["disableBtn"]</MudButton>
-                        }
-                        else
-                        {
-                            <MudTooltip Text="@Localizer["authenticator_EnableFirst"]" Disabled="_mfaEnabled">
-                                <MudTooltip Text="@Localizer["securityKey_AtLeastOne"]" Disabled="@(_securityKeysCount > 0)">
-                                    <MudButton Color="Color.Primary" OnClick="@(async () => await SetSecurityKeyEnabled_ClickAsync(true))" Disabled="@(!_mfaEnabled || _securityKeysCount == 0)">
-                                        @Localizer["enableBtn"]
-                                    </MudButton>
-                                </MudTooltip>
-                            </MudTooltip>
-                        }
 
-                        <MudButton Class="ml-2" Color="Color.Secondary" Href="@Routes.SecurityKeys()">
-                            @Localizer["securityKey_ManageBtn"]
-                        </MudButton>
+                        <MudStack Spacing="1" Wrap="Wrap.Wrap" Row>
+                            @if (_mfaSecurityKeyEnabled)
+                            {
+                                <MudButton Color="Color.Error" OnClick="@(async () => await SetSecurityKeyEnabled_ClickAsync(false))">@Localizer["disableBtn"]</MudButton>
+                            }
+                            else
+                            {
+                                <MudTooltip Text="@Localizer["authenticator_EnableFirst"]" Disabled="_mfaEnabled">
+                                    <MudTooltip Text="@Localizer["securityKey_AtLeastOne"]" Disabled="@(_securityKeysCount > 0)">
+                                        <MudButton Color="Color.Primary" OnClick="@(async () => await SetSecurityKeyEnabled_ClickAsync(true))" Disabled="@(!_mfaEnabled || _securityKeysCount == 0)">
+                                            @Localizer["enableBtn"]
+                                        </MudButton>
+                                    </MudTooltip>
+                                </MudTooltip>
+                            }
+
+                            <MudButton Color="Color.Secondary" Href="@Routes.SecurityKeys()">
+                                @Localizer["securityKey_ManageBtn"]
+                            </MudButton>
+                        </MudStack>
                     </ChildContent>
                 </MudExpansionPanel>
             }
@@ -275,7 +282,7 @@
                         <MudTooltip Text="@Localizer["authenticator_EnableFirst"]" Disabled="_mfaEnabled">
                             @if (_mfaRemainingRecoveryCodes == 0)
                             {
-                                <MudButton Color="Color.Primary" Href="@Routes.RecoveryCodes()" Disabled="!_mfaEnabled">
+                                <MudButton Color="Color.Primary" Href="@Routes.Recovery()" Disabled="!_mfaEnabled">
                                     @Localizer["recovery_GenerateNewBtn"]
                                 </MudButton>
                             }

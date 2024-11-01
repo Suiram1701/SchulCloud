@@ -3,7 +3,7 @@ using SchulCloud.Web.Extensions;
 
 namespace SchulCloud.Web.Components.Routing;
 
-public class RedirectToSignIn : ComponentBase
+public class RedirectToLogin : ComponentBase
 {
     #region Injections
     [Inject]
@@ -12,6 +12,6 @@ public class RedirectToSignIn : ComponentBase
 
     protected override void OnInitialized()
     {
-        NavigationManager.NavigateToSignIn(returnUrl: NavigationManager.GetRelativeUri());
+        NavigationManager.NavigateToLogin(returnUrl: NavigationManager.GetRelativeUri());
     }
 }

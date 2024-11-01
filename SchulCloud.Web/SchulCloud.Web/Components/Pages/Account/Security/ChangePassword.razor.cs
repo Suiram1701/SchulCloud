@@ -41,7 +41,7 @@ public sealed partial class ChangePassword : ComponentBase
     {
         if (!UserManager.SupportsUserPassword)
         {
-            NavigationManager.NavigateToSecurityIndex();
+            NavigationManager.NavigateToSecurityOverview();
             return;
         }
 
@@ -55,7 +55,7 @@ public sealed partial class ChangePassword : ComponentBase
         if (result.Succeeded)
         {
             SnackbarService.AddSuccess(Localizer["changeSuccess"]);
-            NavigationManager.NavigateToSecurityIndex();
+            NavigationManager.NavigateToSecurityOverview();
         }
         else
         {

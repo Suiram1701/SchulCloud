@@ -11,12 +11,12 @@ using System.Text;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security.TwoFactor;
 
-[Route("/account/security/twoFactor/recoveryCodes")]
-public sealed partial class RecoveryCodes : ComponentBase
+[Route("/account/security/twoFactor/recovery")]
+public sealed partial class Recovery : ComponentBase
 {
     #region Injections
     [Inject]
-    private IStringLocalizer<RecoveryCodes> Localizer { get; set; } = default!;
+    private IStringLocalizer<Recovery> Localizer { get; set; } = default!;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -46,7 +46,7 @@ public sealed partial class RecoveryCodes : ComponentBase
     {
         if (!UserManager.SupportsUserTwoFactor || !UserManager.SupportsUserTwoFactorRecoveryCodes)
         {
-            NavigationManager.NavigateToSecurityIndex();
+            NavigationManager.NavigateToSecurityOverview();
             return;
         }
 

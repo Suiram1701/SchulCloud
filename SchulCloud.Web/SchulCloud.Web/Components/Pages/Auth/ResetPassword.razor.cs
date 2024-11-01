@@ -135,7 +135,7 @@ public sealed partial class ResetPassword : ComponentBase
         if (result.Succeeded)
         {
             SnackbarService.AddSuccess(Localizer["success"]);
-            NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.SignIn());
+            NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.Login());
         }
         else
         {

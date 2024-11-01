@@ -5,7 +5,7 @@ const outputPath = './../SchulCloud.Web/wwwroot/dist';
 
 export default {
     input: {
-        'schulcloud.web': './src/main.ts'
+        'schulcloud.web': './src/Main.ts'
     },
     output: [
         {

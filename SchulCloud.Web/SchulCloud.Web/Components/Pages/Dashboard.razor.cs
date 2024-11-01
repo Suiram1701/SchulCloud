@@ -4,10 +4,10 @@ using Microsoft.Extensions.Localization;
 namespace SchulCloud.Web.Components.Pages;
 
 [Route("/")]
-public sealed partial class Index : ComponentBase
+public sealed partial class Dashboard : ComponentBase
 {
     #region Injections
     [Inject]
-    private IStringLocalizer<Index> Localizer { get; set; } = default!;
+    private IStringLocalizer<Dashboard> Localizer { get; set; } = default!;
     #endregion
 }

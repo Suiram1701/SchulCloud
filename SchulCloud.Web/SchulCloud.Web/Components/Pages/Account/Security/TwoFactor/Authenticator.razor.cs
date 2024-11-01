@@ -39,7 +39,7 @@ public sealed partial class Authenticator : ComponentBase
     {
         if (!UserManager.SupportsUserTwoFactor || !UserManager.SupportsUserAuthenticatorKey)
         {
-            NavigationManager.NavigateToSecurityIndex();
+            NavigationManager.NavigateToSecurityOverview();
             return;
         }
 
@@ -48,7 +48,7 @@ public sealed partial class Authenticator : ComponentBase
 
         if (await UserManager.GetTwoFactorEnabledAsync(_user))
         {
-            NavigationManager.NavigateToSecurityIndex();
+            NavigationManager.NavigateToSecurityOverview();
             return;
         }
     }
@@ -74,7 +74,7 @@ public sealed partial class Authenticator : ComponentBase
         if (enableResult.Succeeded)
         {
             SnackbarService.AddSuccess(Localizer["enableSuccess"]);
-            NavigationManager.NavigateToSecurityIndex();
+            NavigationManager.NavigateToSecurityOverview();
         }
         else
         {

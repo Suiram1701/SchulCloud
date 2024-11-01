@@ -92,7 +92,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
     {
         if (!UserManager.SupportsUserTwoFactor)
         {
-            NavigationManager.NavigateToSignIn(returnUrl: ReturnUrl);
+            NavigationManager.NavigateToLogin(returnUrl: ReturnUrl);
             return;
         }
 
@@ -132,7 +132,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
             }
             else
             {
-                NavigationManager.NavigateToSignIn(returnUrl: ReturnUrl, forceLoad: true);
+                NavigationManager.NavigateToLogin(returnUrl: ReturnUrl, forceLoad: true);
                 return;
             }
 
@@ -273,7 +273,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
         switch (verifyResult)
         {
             case { Succeeded: true }:
-                NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.PagesIndex());
+                NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.Dashboard());
                 break;
             case { IsLockedOut: true }:
                 DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(_user)).Value;

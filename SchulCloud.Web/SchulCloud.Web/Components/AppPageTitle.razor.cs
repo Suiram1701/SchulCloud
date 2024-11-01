@@ -7,7 +7,7 @@ namespace SchulCloud.Web.Components;
 /// <summary>
 /// Sets the page title in the default format.
 /// </summary>
-public partial class SchulCloudPageTitle : ComponentBase
+public partial class AppPageTitle : ComponentBase
 {
     #region Injections
     [Inject]

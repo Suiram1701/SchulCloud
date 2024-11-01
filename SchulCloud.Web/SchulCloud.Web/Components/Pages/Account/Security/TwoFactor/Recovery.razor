@@ -1,4 +1,4 @@
-﻿<SchulCloudPageTitle Title="@Localizer["title"]" />
+﻿<AppPageTitle Title="@Localizer["title"]" />
 
 <MudPaper Class="px-3 py-3">
     <MudText Class="mb-2" Typo="Typo.h6" Align="Align.Center">@Localizer["title"]</MudText>
@@ -25,7 +25,7 @@
     }
 
     <MudStack Justify="Justify.Center" Row>
-        <MudButton Color="Color.Secondary" OnClick="Download_ClickAsync">@Localizer["downloadBtn"]</MudButton>
-        <MudButton Color="Color.Primary" Href="@Routes.SecurityIndex()">@Localizer["doneBtn"]</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Download_ClickAsync" Variant="Variant.Filled">@Localizer["downloadBtn"]</MudButton>
+        <MudButton Class="ml-2" Color="Color.Secondary" Href="@Routes.SecurityOverview()">@Localizer["doneBtn"]</MudButton>
     </MudStack>
 </MudPaper>

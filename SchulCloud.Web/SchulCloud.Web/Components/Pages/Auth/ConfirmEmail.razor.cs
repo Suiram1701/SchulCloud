@@ -49,14 +49,14 @@ public sealed partial class ConfirmEmail : ComponentBase
             : null;
         if (user is null)
         {
-            NavigationManager.NavigateToSignIn();
+            NavigationManager.NavigateToLogin();
             return;
         }
         _user = user;
 
         if (await UserManager.IsEmailConfirmedAsync(_user))
         {
-            NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.PagesIndex());
+            NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.Dashboard());
             return;
         }
 
@@ -65,7 +65,7 @@ public sealed partial class ConfirmEmail : ComponentBase
             IdentityResult confirmResult = await UserManager.ConfirmEmailAsync(_user, ConfirmToken);
             if (confirmResult.Succeeded)
             {
-                NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.PagesIndex());
+                NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.Dashboard());
             }
             else
             {
