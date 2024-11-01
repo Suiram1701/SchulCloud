@@ -1,14 +1,14 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
 
-export namespace webAuthn {
-    type authenticatorResponse = {
+export namespace WebAuthn {
+    type AuthenticatorResponse = {
         id: string,
         rawId: string,
         type: string,
         extensions: AuthenticationExtensionsClientOutputs
     }
 
-    type attestationResponse = authenticatorResponse & {
+    type AttestationResponse = AuthenticatorResponse & {
         response: {
             AttestationObject: string,
             clientDataJSON: string,
@@ -16,7 +16,7 @@ export namespace webAuthn {
         }
     }
 
-    type assertionResponse = authenticatorResponse & {
+    type AssertionResponse = AuthenticatorResponse & {
         response: {
             authenticatorData: string,
             clientDataJSON: string,
@@ -50,7 +50,7 @@ export namespace webAuthn {
                 throw new Error('The authenticator returned an unexpected credential type.');
             }
 
-            const response: attestationResponse = {
+            const response: AttestationResponse = {
                 id: credential.id,
                 rawId: coerceToBase64Url(credential.rawId),
                 type: credential.type,
@@ -61,7 +61,8 @@ export namespace webAuthn {
                     transports: credential.response.getTransports()
                 }
             }
-            await objReference.invokeMethodAsync('onOperationCompleted', response, null);
+
+            await operationCompleted(objReference, response);
         }).catch(async error => {
             if (abortController.signal.aborted) {
                 return;
@@ -72,7 +73,7 @@ export namespace webAuthn {
                 errorMessage = error.message;
             }
 
-            await objReference.invokeMethodAsync('onOperationCompleted', null, errorMessage);
+            await operationCompleted(objReference, errorMessage);
         });
 
         return abortController;
@@ -100,7 +101,7 @@ export namespace webAuthn {
                 userHandle = coerceToBase64Url(credential.response.userHandle);
             }
 
-            const response: assertionResponse = {
+            const response: AssertionResponse = {
                 id: credential.id,
                 rawId: coerceToBase64Url(credential.rawId),
                 type: credential.type,
@@ -112,7 +113,7 @@ export namespace webAuthn {
                     userHandle: userHandle
                 }
             }
-            await objReference.invokeMethodAsync('onOperationCompleted', response, null);
+            await operationCompleted(objReference, response);
         }).catch(async error => {
             if (abortController.signal.aborted) {
                 return;
@@ -123,11 +124,21 @@ export namespace webAuthn {
                 errorMessage = error.message;
             }
 
-            await objReference.invokeMethodAsync('onOperationCompleted', null, errorMessage);
+            await operationCompleted(objReference, errorMessage);
         });
 
-
         return abortController;
+    }
+
+    async function operationCompleted(objReference: DotNet.DotNetObject, result: AuthenticatorResponse | string): Promise<void> {
+        const callbackName = 'operationCompleted';
+
+        if (typeof result !== "string") {
+            await objReference.invokeMethodAsync(callbackName, result, null);
+        }
+        else {
+            await objReference.invokeMethod(callbackName, null, result);
+        }
     }
 
     function coerceToArrayBuffer(object: string | number[] | Uint8Array | BufferSource): ArrayBuffer {

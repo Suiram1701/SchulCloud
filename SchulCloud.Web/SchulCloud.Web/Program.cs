@@ -69,7 +69,7 @@ public class Program
 
             options.ReturnUrlParameter = "returnUrl";
 
-            options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+            options.ExpireTimeSpan = TimeSpan.FromDays(31);     // this time is used for persistent sessions.
             options.SlidingExpiration = true; 
         });
 

@@ -1,5 +1,6 @@
 ﻿using Fido2NetLib;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Implementation;
 using SchulCloud.Web.Services.Exceptions;
 using static SchulCloud.Web.Constants.JSNames;
 
@@ -10,8 +11,6 @@ namespace SchulCloud.Web.Services;
 /// </summary>
 public class WebAuthnService(IJSRuntime runtime)
 {
-    private readonly IJSRuntime _runtime = runtime;
-
     /// <summary>
     /// Indicates whether the client supports webauthn.
     /// </summary>
@@ -19,7 +18,7 @@ public class WebAuthnService(IJSRuntime runtime)
     /// <returns>The result.</returns>
     public async ValueTask<bool> IsSupportedAsync(CancellationToken ct = default)
     {
-        return await _runtime.InvokeAsync<bool>($"{WebAuthn}.isSupported", ct);
+        return await runtime.InvokeAsync<bool>($"{WebAuthn}.isSupported", ct);
     }
 
     /// <summary>
@@ -35,7 +34,7 @@ public class WebAuthnService(IJSRuntime runtime)
         ct.ThrowIfCancellationRequested();
 
         WebAuthnOperation<AuthenticatorAttestationRawResponse> operation = new(ct);
-        IJSObjectReference abortControllerRef = await _runtime.InvokeAsync<IJSObjectReference>($"{WebAuthn}.createCredential", ct, operation.OperationReference, options);
+        IJSObjectReference abortControllerRef = await runtime.InvokeAsync<IJSObjectReference>($"{WebAuthn}.createCredential", ct, operation.OperationReference, options);
         operation.AbortControllerRef = abortControllerRef;
 
         return await operation.Task;
@@ -54,7 +53,7 @@ public class WebAuthnService(IJSRuntime runtime)
         ct.ThrowIfCancellationRequested();
 
         WebAuthnOperation<AuthenticatorAssertionRawResponse> operation = new(ct);
-        IJSObjectReference abortControllerRef = await _runtime.InvokeAsync<IJSObjectReference>($"{WebAuthn}.getCredential", ct, operation.OperationReference, options);
+        IJSObjectReference abortControllerRef = await runtime.InvokeAsync<IJSObjectReference>($"{WebAuthn}.getCredential", ct, operation.OperationReference, options);
         operation.AbortControllerRef = abortControllerRef;
 
         return await operation.Task;
@@ -77,36 +76,36 @@ public class WebAuthnService(IJSRuntime runtime)
             OperationReference = DotNetObjectReference.Create(this);
 
             _completionSource = new();
-            _cancellationTokenRegistration = cancellationToken.Register(OnCancelled, null);
+            _cancellationTokenRegistration = cancellationToken.Register(CancellationToken_OnCancelled, null);
         }
 
-        private async void OnCancelled(object? state, CancellationToken ct)
+        private async void CancellationToken_OnCancelled(object? state, CancellationToken ct)
         {
             _completionSource.SetCanceled(ct);
-            await DisposeAsync();
+            await DisposeAsync(abortClientSide: true);
         }
 
-        [JSInvokable("onOperationCompleted")]
+        [JSInvokable("operationCompleted")]
         public async void OnOperationCompleted(TResult? result, string? errorMessage)
         {
-            if (_disposed)
+            if (!_disposed)
             {
-                return;
-            }
+                if (result is not null)
+                {
+                    _completionSource.SetResult(result);
+                }
+                else
+                {
+                    _completionSource.SetException(new WebAuthnException(errorMessage));
+                }
 
-            if (result is not null)
-            {
-                _completionSource.SetResult(result);
+                await DisposeAsync(abortClientSide: false);
             }
-            else
-            {
-                _completionSource.SetException(new WebAuthnException(errorMessage));
-            }
-
-            await DisposeAsync();
         }
 
-        public async ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync() => await DisposeAsync(true);
+
+        private async ValueTask DisposeAsync(bool abortClientSide)
         {
             if (!_disposed)
             {
@@ -115,8 +114,12 @@ public class WebAuthnService(IJSRuntime runtime)
                 try
                 {
                     OperationReference.Dispose();
-                    await AbortControllerRef.InvokeVoidAsync("abort", "Operation disposed by server");
-                    await AbortControllerRef.DisposeAsync();
+
+                    if (abortClientSide)     // If the operation ends on client side first an abort signal will cause an exception.
+                    {
+                        await AbortControllerRef.InvokeVoidAsync("abort", "Operation disposed by server.");
+                        await AbortControllerRef.DisposeAsync();
+                    }
                 }
                 catch (JSDisconnectedException)
                 {

@@ -28,7 +28,7 @@
             <MudText Class="mt-2" Typo="Typo.subtitle1" Color="Color.Error">@_errorMessage</MudText>
         }
 
-        <MudCheckBox Class="mt-2" @bind-Value="Model.Persistent" For="@(() => Model.Persistent)" name="@($"{nameof(Model)}.{nameof(Model.Persistent)}")" Label="@Localizer["form_Persistent"]" />
+        <MudCheckBox Class="mt-2" Value="Model.IsPersistent" Label="@Localizer["form_Persistent"]" name="@($"{nameof(Model)}.{nameof(Model.Persistent)}")" />
 
         <MudStack Class="mt-3">
             @if (UserManager.SupportsUserPassword)

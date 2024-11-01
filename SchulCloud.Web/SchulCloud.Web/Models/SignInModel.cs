@@ -24,7 +24,12 @@ public class SignInModel
     public string Password { get; set; } = string.Empty;
 
     /// <summary>
+    /// A value that internally used by the html checkbox to store the result of <see cref="IsPersistent"/>.
+    /// </summary>
+    public string? Persistent { get; set; }
+
+    /// <summary>
     /// Indicates whether the client should be remembered.
     /// </summary>
-    public bool Persistent { get; set; } = false;
+    public bool IsPersistent => Persistent == "on";
 }

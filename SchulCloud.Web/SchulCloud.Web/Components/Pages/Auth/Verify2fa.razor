@@ -36,7 +36,7 @@
 
         @if (Model.Method != TwoFactorMethod.Recovery)
         {
-            <MudCheckBox Class="mt-2" @bind-Value="Model.RememberClient" name="@($"{nameof(Model)}.{nameof(Model.RememberClient)}")" Label="@Localizer["form_RememberClient"]" />
+            <MudCheckBox Class="mt-2" Value="Model.ShouldRememberClient" Label="@Localizer["form_RememberClient"]" name="@($"{nameof(Model)}.{nameof(Model.RememberClient)}")" />
         }
 
         <MudSelect Class="mb-3 mt-4" @bind-Value="Model.Method" Label="@Localizer["methods"]" Variant="Variant.Outlined">

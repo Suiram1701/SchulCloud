@@ -1,7 +1,7 @@
-import { dotNetStreamReference } from "./declarations/dotnetStreamReference";
+import { DotNetStreamReference } from "./declarations/dotnetStreamReference";
 
-export namespace file {
-    export async function download(streamReference: dotNetStreamReference, fileName: string, mimeType?: string, endings?: EndingType): Promise<void> {
+export namespace File {
+    export async function download(streamReference: DotNetStreamReference, fileName: string, mimeType?: string, endings?: EndingType): Promise<void> {
         const arrayBuffer: ArrayBuffer = await streamReference.arrayBuffer();
         const blob: Blob = new Blob([arrayBuffer], {
             type: mimeType,

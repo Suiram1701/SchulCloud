@@ -263,9 +263,9 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
 
         SignInResult verifyResult = await (Model.Method switch
         {
-            TwoFactorMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
-            TwoFactorMethod.Email => SignInManager.TwoFactorEmailSignInAsync(Model.TrimmedCode, Persistent, Model.RememberClient),
-            TwoFactorMethod.SecurityKey => VerifyTwoFactorSecurityKeyAsync(Model.AuthenticatorDataAccessKey, Persistent, Model.RememberClient),
+            TwoFactorMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.ShouldRememberClient),
+            TwoFactorMethod.Email => SignInManager.TwoFactorEmailSignInAsync(Model.TrimmedCode, Persistent, Model.ShouldRememberClient),
+            TwoFactorMethod.SecurityKey => VerifyTwoFactorSecurityKeyAsync(Model.AuthenticatorDataAccessKey, Persistent, Model.ShouldRememberClient),
             TwoFactorMethod.Recovery => SignInManager.TwoFactorRecoveryCodeSignInAsync(Model.TrimmedCode),
             _ => Task.FromResult(SignInResult.Failed)
         });

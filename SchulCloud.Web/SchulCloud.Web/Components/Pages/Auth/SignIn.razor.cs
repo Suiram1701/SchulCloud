@@ -99,7 +99,8 @@ public sealed partial class SignIn : ComponentBase, IDisposable
 
             if (HttpMethods.IsPost(HttpContext.Request.Method))
             {
-                if (!await SignInAsync())
+                bool succeeded = await SignInAsync();
+                if (!succeeded)
                 {
                     // Persist state from initial HTTP request to interactivity begin.
                     _persistingSubscription = ComponentState.RegisterOnPersisting(() =>
@@ -195,7 +196,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
     {
         ApplicationUser? user = null;
         SignInResult signInResult = SignInResult.Failed;
-        if (UserManager.SupportsUserPassword && string.IsNullOrWhiteSpace(Model.AuthenticatorDataAccessKey))
+        if (UserManager.SupportsUserPassword && string.IsNullOrWhiteSpace(Model.AuthenticatorDataAccessKey) && !string.IsNullOrEmpty(Model.User))
         {
             user = await UserManager.FindByEmailAsync(Model.User);
             user ??= await UserManager.FindByNameAsync(Model.User);
@@ -205,11 +206,11 @@ public sealed partial class SignIn : ComponentBase, IDisposable
                 return false;
             }
 
-            signInResult = await SignInManager.PasswordSignInAsync(user, Model.Password, Model.Persistent, lockoutOnFailure: true);
+            signInResult = await SignInManager.PasswordSignInAsync(user, Model.Password, Model.IsPersistent, lockoutOnFailure: true);
         }
         else if (UserManager.SupportsUserPasskeys)
         {
-            (signInResult, user) = await SecurityKeySignInAsync(Model.AuthenticatorDataAccessKey, Model.Persistent);
+            (signInResult, user) = await SecurityKeySignInAsync(Model.AuthenticatorDataAccessKey, Model.IsPersistent);
             Model.AuthenticatorDataAccessKey = null;
         }
 
@@ -219,7 +220,7 @@ public sealed partial class SignIn : ComponentBase, IDisposable
                 NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.PagesIndex());
                 break;
             case { RequiresTwoFactor: true }:
-                NavigationManager.NavigateToVerify2fa(persistent: Model.Persistent, returnUrl: ReturnUrl, forceLoad: true);
+                NavigationManager.NavigateToVerify2fa(persistent: Model.IsPersistent, returnUrl: ReturnUrl, forceLoad: true);
                 break;
             case { IsLockedOut: true }:
                 DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(user!)).Value;

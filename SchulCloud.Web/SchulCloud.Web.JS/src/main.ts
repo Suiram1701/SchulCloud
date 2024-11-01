@@ -1,5 +1,5 @@
-import { elementHelpers } from './elementHelpers';
-import { webAuthn } from './webAuthn';
-import { file } from './file';
+import { ElementHelpers } from './elementHelpers';
+import { WebAuthn } from './webAuthn';
+import { File } from './file';
 
-export { elementHelpers, webAuthn, file }
+export { ElementHelpers, WebAuthn, File }

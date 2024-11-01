@@ -10,9 +10,14 @@ public class Verify2faModel : AuthenticatorModel
     public string? AuthenticatorDataAccessKey { get; set; }
 
     /// <summary>
+    /// A value that is internally used by the html checkbox to store the result of <see cref="ShouldRememberClient"/>.
+    /// </summary>
+    public string? RememberClient { get; set; }
+
+    /// <summary>
     /// Indicates whether the client should be remembered for further 2fa logins.
     /// </summary>
-    public bool RememberClient { get; set; }
+    public bool ShouldRememberClient => RememberClient == "on";
 
     /// <summary>
     /// The 2fa method the <see cref="AuthenticatorModel.Code"/> is used for.
