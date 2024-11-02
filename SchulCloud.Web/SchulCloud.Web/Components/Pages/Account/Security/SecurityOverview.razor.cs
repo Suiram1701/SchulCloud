@@ -8,6 +8,7 @@ using SchulCloud.Store.Enums;
 using SchulCloud.Store.Managers;
 using SchulCloud.Web.Components.Dialogs;
 using SchulCloud.Web.Extensions;
+using SchulCloud.Web.Services;
 
 namespace SchulCloud.Web.Components.Pages.Account.Security;
 
@@ -31,6 +32,9 @@ public sealed partial class SecurityOverview : ComponentBase, IDisposable
     private AppUserManager UserManager { get; set; } = default!;
 
     [Inject]
+    private SignInManager<ApplicationUser> SignInManager { get; set; } = default!;
+
+    [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject]
@@ -52,12 +56,24 @@ public sealed partial class SecurityOverview : ComponentBase, IDisposable
     private int _mfaRemainingRecoveryCodes;
     private IReadOnlyDictionary<LoginAttemptMethod, DateTime> _latestUseTimes = new Dictionary<LoginAttemptMethod, DateTime>();
 
+    [SupplyParameterFromQuery(Name = "forget2faClient")]
+    public bool? Forget2faClient { get; set; }
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
         AuthenticationState authenticationState = await AuthenticationState;
+        if (Forget2faClient ?? false)
+        {
+            await Forget2faClientAsync(authenticationState);
+            return;
+        }
+
         if (ComponentState.TryTakeFromJson("state", out SecurityState? state))
         {
             state!.Deconstruct(
@@ -90,36 +106,9 @@ public sealed partial class SecurityOverview : ComponentBase, IDisposable
                     _mfaRemainingRecoveryCodes,
                     _latestUseTimes);
                 ComponentState.PersistAsJson("state", state);
-
+                
                 return Task.CompletedTask;
             });
-        }
-    }
-
-    private async Task UpdateSecurityStateAsync()
-    {
-        if (UserManager.SupportsUserPasskeys)
-        {
-            _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user);
-            _passkeysCount = await UserManager.GetPasskeyCountAsync(_user);
-        }
-
-        if (UserManager.SupportsUserTwoFactor)
-        {
-            _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user);
-
-            _mfaEmailEnabled = UserManager.SupportsUserTwoFactorEmail
-                && await UserManager.GetTwoFactorEmailEnabledAsync(_user);
-
-            if (UserManager.SupportsUserTwoFactorSecurityKeys)
-            {
-                _securityKeysCount = await UserManager.GetTwoFactorSecurityKeysCountAsync(_user);
-                _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
-            }
-
-            _mfaRemainingRecoveryCodes = UserManager.SupportsUserTwoFactorRecoveryCodes
-                ? await UserManager.CountRecoveryCodesAsync(_user)
-                : 0;
         }
     }
 
@@ -212,6 +201,51 @@ public sealed partial class SecurityOverview : ComponentBase, IDisposable
         if (await dialogReference.GetReturnValueAsync<bool?>() ?? false)
         {
             NavigationManager.NavigateToRecovery();
+        }
+    }
+
+    private async Task Forget2faClientAsync(AuthenticationState authenticationState)
+    {
+        if (HttpContext is not null)
+        {
+            ApplicationUser user = (await UserManager.GetUserAsync(authenticationState.User))!;
+            if (await SignInManager.IsTwoFactorClientRememberedAsync(user))
+            {
+                await SignInManager.ForgetTwoFactorClientAsync();
+            }
+
+            NavigationManager.NavigateToSecurityOverview();
+        }
+        else
+        {
+            NavigationManager.Refresh(forceReload: true);
+        }
+    }
+
+    private async Task UpdateSecurityStateAsync()
+    {
+        if (UserManager.SupportsUserPasskeys)
+        {
+            _passkeysEnabled = await UserManager.GetPasskeySignInEnabledAsync(_user);
+            _passkeysCount = await UserManager.GetPasskeyCountAsync(_user);
+        }
+
+        if (UserManager.SupportsUserTwoFactor)
+        {
+            _mfaEnabled = await UserManager.GetTwoFactorEnabledAsync(_user);
+
+            _mfaEmailEnabled = UserManager.SupportsUserTwoFactorEmail
+                && await UserManager.GetTwoFactorEmailEnabledAsync(_user);
+
+            if (UserManager.SupportsUserTwoFactorSecurityKeys)
+            {
+                _securityKeysCount = await UserManager.GetTwoFactorSecurityKeysCountAsync(_user);
+                _mfaSecurityKeyEnabled = await UserManager.GetTwoFactorSecurityKeyEnableAsync(_user);
+            }
+
+            _mfaRemainingRecoveryCodes = UserManager.SupportsUserTwoFactorRecoveryCodes
+                ? await UserManager.CountRecoveryCodesAsync(_user)
+                : 0;
         }
     }
 

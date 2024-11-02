@@ -211,4 +211,10 @@
   <data name="recovery_RenewMessage" xml:space="preserve">
     <value>Generating new recovery codes will invalidate all existing ones. Are you sure you want to continue?</value>
   </data>
+  <data name="mfaForgetClient" xml:space="preserve">
+    <value>Forgot 2FA Client</value>
+  </data>
+  <data name="mfaForgetClient_Desc" xml:space="preserve">
+    <value>During 2FA verification, you can select that no further 2FA verifications should be carried out on a device. By clicking this button you will undo this for this device.</value>
+  </data>
 </root>

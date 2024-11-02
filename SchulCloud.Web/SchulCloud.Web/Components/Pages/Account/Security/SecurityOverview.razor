@@ -297,5 +297,10 @@
                 </MudExpansionPanel>
             }
         </MudExpansionPanels>
+
+        <MudText Class="mt-4" Typo="Typo.body1">@Localizer["mfaForgetClient_Desc"]</MudText>
+        <MudButton Color="Color.Error" OnClick="@(() => NavigationManager.NavigateToSecurityOverview(forget2faClient: true, forceLoad: true))">
+            @Localizer["mfaForgetClient"]
+        </MudButton>
     }
 </MudPaper>

@@ -147,7 +147,7 @@ public class SchulCloudSignInManager(
 
     private async Task<TwoFactorInfo?> GetTwoFactorInfoAsync()
     {
-        // logic from UserManager<ApplicationUser>.RetrieveTwoFactorInfoAsync
+        // logic from SignInManager<TUser>.RetrieveTwoFactorInfoAsync
         AuthenticateResult result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
         if (result?.Principal is null)
         {
@@ -172,7 +172,7 @@ public class SchulCloudSignInManager(
 
     private async Task<SignInResult> DoTwoFactorSignInAsync(TwoFactorInfo info, bool isPersistent, bool rememberClient)
     {
-        // logic from UserManager<ApplicationUser>.DoTwoFactorSignInAsync
+        // logic from SignInManager<TUser>.DoTwoFactorSignInAsync
 
         if (_userManager.SupportsUserLockout)
         {
