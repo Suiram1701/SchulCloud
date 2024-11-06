@@ -29,6 +29,11 @@ public sealed partial class RenameDialog : ComponentBase
     [Parameter]
     public IEnumerable<string>? ExcludedNames { get; set; }
 
+    protected override void OnInitialized()
+    {
+        _newName = OldName ?? string.Empty;
+    }
+
     private void Cancel_Click() => DialogInstance.Cancel();
 
     private async Task Rename_ClickAsync()

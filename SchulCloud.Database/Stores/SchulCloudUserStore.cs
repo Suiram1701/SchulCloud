@@ -1,5 +1,6 @@
 ﻿using Fido2NetLib;
 using Fido2NetLib.Objects;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,20 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     private DbSet<Credential> Credentials => Context.Set<Credential>();
 
     private DbSet<LoginAttempt> LoginAttempts => Context.Set<LoginAttempt>();
+
+    private static readonly TypeAdapterConfig _credentialAdaptConfig;
+    private static readonly TypeAdapterConfig _loginAttemptAdaptConfig;
+
+    static SchulCloudUserStore()
+    {
+        _credentialAdaptConfig = new();
+        _credentialAdaptConfig.ForDestinationType<Credential>().Ignore(credential => credential.Id);
+
+        _loginAttemptAdaptConfig = new();
+        _loginAttemptAdaptConfig.ForDestinationType<LoginAttempt>().Ignore(attempt => attempt.Id);
+        _loginAttemptAdaptConfig.ForType<IPAddress, byte[]>().MapWith(ip => ip.GetAddressBytes());
+        _loginAttemptAdaptConfig.ForType<byte[], IPAddress>().MapWith(ip => new IPAddress(ip));
+    }
 
     public override Task<bool> GetTwoFactorEnabledAsync(TUser user, CancellationToken ct = default)
     {
@@ -126,12 +141,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ct.ThrowIfCancellationRequested();
 
         Credential? credential = await Credentials.FindAsync([id], ct).AsTask();
-        if (credential is not null)
-        {
-            return ToUserCredential(credential);
-        }
-
-        return null;
+        return credential?.Adapt<UserCredential>(_credentialAdaptConfig);
     }
 
     public async Task<TUser?> FindUserByCredentialAsync(UserCredential credential, CancellationToken ct = default)
@@ -156,11 +166,10 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ct.ThrowIfCancellationRequested();
 
         string userId = await GetUserIdAsync(user, ct);
-        IEnumerable<Credential> credentials = await Credentials
-            .AsNoTracking()
+        return await Credentials
             .Where(cred => cred.UserId.Equals(userId))
+            .ProjectToType<UserCredential>(_credentialAdaptConfig)
             .ToListAsync(ct);
-        return credentials.Select(ToUserCredential);
     }
 
     public async Task AddCredentialAsync(TUser user, UserCredential credential, CancellationToken ct)
@@ -169,23 +178,9 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ArgumentNullException.ThrowIfNull(user);
         ct.ThrowIfCancellationRequested();
 
-        Credential dbCredential = new()
-        {
-            Id = credential.Id,
-            UserId = await GetUserIdAsync(user, ct),
-            Name = credential.Name,
-            PublicKey = credential.PublicKey,
-            SignCount = credential.SignCount,
-            Transports = credential.Transports,
-            IsBackupEligible = credential.IsBackupEligible,
-            IsBackedUp = credential.IsBackedUp,
-            AttestationObject = credential.AttestationObject,
-            AttestationClientDataJson = credential.AttestationClientDataJson,
-            AttestationFormat = credential.AttestationFormat,
-            RegDate = credential.RegDate,
-            AaGuid = credential.AaGuid
-        };
-        await Credentials.AddAsync(dbCredential, ct).AsTask();
+        Credential dbDto = credential.Adapt<Credential>(_credentialAdaptConfig);
+        dbDto.UserId = await GetUserIdAsync(user, ct);
+        await Credentials.AddAsync(dbDto, ct).AsTask();
     }
 
     public async Task UpdateCredentialAsync(UserCredential credential, CancellationToken ct = default)
@@ -194,23 +189,16 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ArgumentNullException.ThrowIfNull(credential);
         ct.ThrowIfCancellationRequested();
 
-        Credential? dbCredential = await Credentials.FindAsync([credential.Id], ct).AsTask();
-        if (dbCredential is not null)
+        Credential? dbDto = await Credentials.FindAsync([credential.Id], ct).AsTask();
+        if (dbDto is not null)
         {
-            dbCredential.Name = credential.Name;
-            dbCredential.PublicKey = credential.PublicKey;
-            dbCredential.SignCount = credential.SignCount;
-            dbCredential.Transports = credential.Transports;
-            dbCredential.IsBackupEligible = credential.IsBackupEligible;
-            dbCredential.IsBackedUp = credential.IsBackedUp;
-            dbCredential.AttestationObject = credential.AttestationObject;
-            dbCredential.AttestationClientDataJson = credential.AttestationClientDataJson;
-            dbCredential.AttestationFormat = credential.AttestationFormat;
-            dbCredential.AaGuid = credential.AaGuid;
+            credential.BuildAdapter(_credentialAdaptConfig)
+                .EntityFromContext(Context)
+                .AdaptTo(dbDto);
         }
         else
         {
-            throw new InvalidOperationException($"Not entity found with id {string.Join('-', credential.Id)}.");
+            throw new InvalidOperationException($"Unable to find a credential dto with id '{credential.Id}'");
         }
     }
 
@@ -232,25 +220,6 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
 
         string userId = await GetUserIdAsync(user, ct);
         return await Credentials.AnyAsync(cred => cred.UserId.Equals(userId) || cred.Id.SequenceEqual(credential.Id), ct);
-    }
-
-    private static UserCredential ToUserCredential(Credential credential)
-    {
-        return new()
-        {
-            Id = credential.Id,
-            Name = credential.Name,
-            PublicKey = credential.PublicKey,
-            SignCount = credential.SignCount,
-            Transports = credential.Transports,
-            IsBackupEligible = credential.IsBackupEligible,
-            IsBackedUp = credential.IsBackedUp,
-            AttestationObject = credential.AttestationObject,
-            AttestationClientDataJson = credential.AttestationClientDataJson,
-            AttestationFormat = credential.AttestationFormat,
-            RegDate = credential.RegDate,
-            AaGuid = credential.AaGuid
-        };
     }
     #endregion
 
@@ -307,7 +276,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     }
     #endregion
 
-    #region IUserLogInAttemptStore
+    #region IUserLoginAttemptStore
     public async Task<UserLoginAttempt?> FindLoginAttemptAsync(string id, CancellationToken ct = default)
     {
         ThrowIfDisposed();
@@ -315,12 +284,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ct.ThrowIfCancellationRequested();
 
         LoginAttempt? attempt = await LoginAttempts.FindAsync([id], ct).AsTask();
-        if (attempt is not null)
-        {
-            return ToUserAttempt(attempt);
-        }
-
-        return null;
+        return attempt?.Adapt<UserLoginAttempt>(_loginAttemptAdaptConfig);
     }
 
     public async Task<TUser?> FindUserByLoginAttemptAsync(UserLoginAttempt attempt, CancellationToken ct = default)
@@ -345,11 +309,10 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ct.ThrowIfCancellationRequested();
 
         string userId = await GetUserIdAsync(user, ct);
-        IEnumerable<LoginAttempt> attempts = await LoginAttempts
-            .AsNoTracking()
+        return await LoginAttempts
             .Where(attempt => attempt.UserId.Equals(userId))
+            .ProjectToType<UserLoginAttempt>(_loginAttemptAdaptConfig)
             .ToListAsync(ct);
-        return attempts.Select(ToUserAttempt);
     }
 
     public async Task AddLoginAttemptAsync(TUser user, UserLoginAttempt attempt, CancellationToken ct = default)
@@ -359,18 +322,9 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ArgumentNullException.ThrowIfNull(attempt);
         ct.ThrowIfCancellationRequested();
 
-        LoginAttempt dbAttempt = new()
-        {
-            UserId = await GetUserIdAsync(user, ct),
-            Method = (LoginAttemptMethod)attempt.Method,
-            Result = (LoginAttemptResult)attempt.Result,
-            IpAddress = attempt.IpAddress.GetAddressBytes(),
-            Latitude = attempt.Latitude,
-            Longitude = attempt.Longitude,
-            UserAgent = attempt.UserAgent,
-            DateTime = attempt.DateTime
-        };
-        await LoginAttempts.AddAsync(dbAttempt, ct).AsTask();
+        LoginAttempt dbDto = attempt.Adapt<LoginAttempt>(_loginAttemptAdaptConfig);
+        dbDto.UserId = await GetUserIdAsync(user, ct);
+        await LoginAttempts.AddAsync(dbDto, ct).AsTask();
     }
 
     public async Task RemoveLoginAttemptAsync(UserLoginAttempt attempt, CancellationToken ct = default)
@@ -379,7 +333,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ArgumentNullException.ThrowIfNull(attempt);
         ct.ThrowIfCancellationRequested();
 
-        await LoginAttempts.Where(dbAttempt => dbAttempt.Id.Equals(attempt.Id)).ExecuteDeleteAsync(ct);
+        await Credentials.Where(dto => dto.Id.Equals(dto.Id)).ExecuteDeleteAsync(ct);
     }
 
     public async Task RemoveAllLoginAttemptsAsync(TUser user, CancellationToken ct = default)
@@ -400,6 +354,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
 
         string userId = await GetUserIdAsync(user, ct);
         IEnumerable<dynamic> attempts = await LoginAttempts
+            .AsNoTracking()
             .Select(attempt => new { attempt.UserId, attempt.Method, attempt.Result, attempt.DateTime })
             .Where(attempt => attempt.UserId.Equals(userId))
             .Where(attempt => attempt.Result == LoginAttemptResult.Succeeded || attempt.Result == LoginAttemptResult.TwoFactorRequired)
@@ -409,21 +364,6 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         return attempts.ToDictionary<dynamic, Store.Enums.LoginAttemptMethod, DateTime>(
             keySelector: attempt => (Store.Enums.LoginAttemptMethod)attempt.Method,
             elementSelector: attempt => attempt.DateTime);
-    }
-
-    private static UserLoginAttempt ToUserAttempt(LoginAttempt attempt)
-    {
-        return new()
-        {
-            Id = attempt.Id,
-            Method = (Store.Enums.LoginAttemptMethod)attempt.Method,
-            Result = (Store.Enums.LoginAttemptResult)attempt.Result,
-            IpAddress = new(attempt.IpAddress),
-            Latitude = attempt.Latitude,
-            Longitude = attempt.Longitude,
-            UserAgent = attempt.UserAgent,
-            DateTime = attempt.DateTime
-        };
     }
     #endregion
 }
