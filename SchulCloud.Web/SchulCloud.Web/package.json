@@ -1,13 +1,7 @@
 {
-  "name": "schulcloud.web.js",
   "version": "1.0.0",
-  "scripts": {
-    "build": "rollup -c"
-  },
-  "keywords": [],
-  "author": "Suiram1701",
-  "license": "GPL-3.0-only",
-  "description": "",
+  "name": "schulcloud",
+  "private": true,
   "devDependencies": {
     "@microsoft/dotnet-js-interop": "^8.0.0",
     "@rollup/plugin-terser": "^0.4.4",

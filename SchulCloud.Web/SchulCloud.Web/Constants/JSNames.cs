@@ -2,7 +2,7 @@
 
 internal static class JSNames
 {
-    private const string _jsPrefix = "_schulCloud.";
+    private const string _jsPrefix = "SchulCloud.";
 
     public const string File = _jsPrefix + "File";
 
