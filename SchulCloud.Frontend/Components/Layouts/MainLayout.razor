@@ -1,0 +1,65 @@
+﻿@using SchulCloud.Frontend.Options
+
+@inherits LayoutComponentBase
+
+<MudThemeProvider IsDarkMode />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Dense>
+        <MudIconButton Icon="@MaterialSymbols.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleMenu_Click" />
+
+        @{
+            PresentationOptions.Favicon? favicon = PresentationOptionsAccessor.Value.Favicons.FirstOrDefault(fav => fav.Sizes == "any");
+            favicon ??= PresentationOptionsAccessor.Value.Favicons.FirstOrDefault();
+
+            if (favicon is not null)
+            {
+                <MudImage Class="mx-2" Src="@favicon.Path" Width="40" Fluid />
+            }
+        }
+        <MudText Typo="Typo.h5">@PresentationOptionsAccessor.Value.ApplicationName</MudText>
+        <MudSpacer />
+
+        <MudMenu AnchorOrigin="Origin.BottomRight">
+            <ActivatorContent>
+                <MudButton>
+                    @{
+                        string username = UserManager.GetUserName(_userPrincipial)!;
+                    }
+                    <MudAvatar Size="Size.Medium">@NameToDisplayedAvatar(username)</MudAvatar>
+                    <MudText Class="ml-2" Typo="Typo.subtitle1"><b>@username</b></MudText>
+
+                    <MudIcon Icon="@MaterialSymbols.Outlined.ArrowDropDown" />
+                </MudButton>
+            </ActivatorContent>
+            <ChildContent>
+                <MudMenuItem Href="@Routes.AccountOverview()" Icon="@MaterialSymbols.Outlined.AccountCircle">
+                    <MudText Class="ml-n5">@Localizer["accountNav_Account"]</MudText>
+                </MudMenuItem>
+                <MudMenuItem Href="@Routes.AccountSettings()" Icon="@MaterialSymbols.Outlined.Settings">
+                    <MudText Class="ml-n5">@Localizer["accountNav_Settings"]</MudText>
+                </MudMenuItem>
+                <MudMenuItem Href="@Routes.SecurityOverview()" Icon="@MaterialSymbols.Outlined.Security">
+                    <MudText Class="ml-n5">@Localizer["accountNav_Security"]</MudText>
+                </MudMenuItem>
+
+                <MudDivider />
+                <MudMenuItem Href="@Routes.Logout()" Icon="@MaterialSymbols.Outlined.Logout" ForceLoad>
+                    <MudText Class="ml-n5">@Localizer["accountNav_SignOut"]</MudText>
+                </MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    </MudAppBar>
+    <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="DrawerVariant.Mini">
+        <MudNavMenu Rounded>
+            <MudNavLink Href="@Routes.Dashboard()" Match="NavLinkMatch.All" Icon="@MaterialSymbols.Outlined.Dashboard">
+                @Localizer["navMenu_Dashboard"]
+            </MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+    <MudMainContent Class="pt-16 px-2">
+        <MudContainer>
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>

@@ -1,0 +1,6 @@
+﻿@using SchulCloud.Frontend.Options;
+
+@foreach (PresentationOptions.Favicon favicon in PresentationOptionsAccessor.Value.Favicons)
+{
+    <link rel="icon" href="@favicon.Path" type="@favicon.MimeType" sizes="@favicon.Sizes" />
+}

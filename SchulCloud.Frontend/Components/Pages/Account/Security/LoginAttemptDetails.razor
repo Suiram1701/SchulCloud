@@ -1,0 +1,145 @@
+﻿@using GoogleMapsComponents
+@using SchulCloud.Store.Enums
+@using SchulCloud.Frontend.Components.Pages.Error
+
+<AppPageTitle Title="@Localizer["title", _attempt?.DateTime.ToString("d") ?? string.Empty]" />
+
+@if (_loaded)
+{
+    @if (_attempt is not null && _authorizedAccess)
+    {
+        <MudPaper Class="py-3 px-3">
+            <MudGrid>
+                <MudItem xs="12" lg="@(_mapOptions is not null ? 6 : 12)">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="6">@Localizer["dateTime"]</MudItem>
+                        <MudItem xs="6">@_attempt.DateTime.ToLocalTime()</MudItem>
+                        <MudItem xs="12"><MudDivider /></MudItem>
+
+                        <MudItem xs="6">@Localizer["result"]</MudItem>
+                        <MudItem xs="6">
+                            <div class="d-flex align-center flex-nowrap">
+                                @switch (_attempt.Result)
+                                {
+                                    case LoginAttemptResult.Succeeded:
+                                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.CheckCircle" Color="Color.Success" />
+                                        <MudText Typo="Typo.inherit" Color="Color.Success">@Localizer["result_Succeeded"]</MudText>
+                                        break;
+                                    case LoginAttemptResult.TwoFactorRequired:
+                                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Warning" Color="Color.Warning" />
+                                        <MudText Typo="Typo.inherit" Color="Color.Warning">@Localizer["result_TwoFactorRequired"]</MudText>
+                                        break;
+                                    case LoginAttemptResult.LockedOut:
+                                        <MudTooltip RootClass="d-flex align-center" Text="@Localizer["result_LockedOut_Desc"]">
+                                            <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
+                                            <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_LockedOut"]</MudText>
+                                        </MudTooltip>
+                                        break;
+                                    case LoginAttemptResult.NotAllowed:
+                                        <MudTooltip RootClass="d-flex align-center" Text="@Localizer["result_NotAllowed_Desc"]">
+                                            <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
+                                            <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_NotAllowed"]</MudText>
+                                        </MudTooltip>
+                                        break;
+                                    default:
+                                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
+                                        <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["result_Failed"]</MudText>
+                                        break;
+                                }
+                            </div>
+                        </MudItem>
+                        <MudItem xs="12"><MudDivider /></MudItem>
+
+                        <MudItem xs="6">@Localizer["method"]</MudItem>
+                        <MudItem xs="6">@Localizer[$"loginMethod_{_attempt.Method}"]</MudItem>
+                        <MudItem xs="12"><MudDivider /></MudItem>
+
+                        <MudItem xs="6">@Localizer["device"]</MudItem>
+                        <MudItem xs="6">
+                            @if (_userAgent is not null)
+                            {
+                                if (_userAgent.Value.Platform is not null)
+                                {
+                                    @Localizer["deviceOn", _userAgent.Value.Name ?? string.Empty, _userAgent.Value.Platform!.Value.Name]
+                                }
+                                else
+                                {
+                                    @_userAgent.Value.Name
+                                }
+                            }
+                            else
+                            {
+                                @Localizer["deviceUnknown"]
+                            }
+                        </MudItem>
+                        <MudItem xs="12"><MudDivider /></MudItem>
+
+                        <MudItem xs="6">@Localizer["ipAddress"]</MudItem>
+                        <MudItem xs="6">@_attempt.IpAddress.ToString()</MudItem>
+                    </MudGrid>
+                </MudItem>
+
+                @if (_mapOptions is not null)
+                {
+                    <MudItem Class="d-flex justify-center" xs="12" lg="6">
+                        <div class="embeddedMap">
+                            <GoogleMap @ref="_map" Options="_mapOptions" OnAfterInit="Map_OnAfterInitAsync" />
+                        </div>
+                    </MudItem>
+                }
+
+                <MudItem xs="12">
+                    <MudButton Class="mr-2" Color="Color.Primary" Href="@Routes.LoginAttempts(page: OriginPage)" Variant="Variant.Filled">
+                        @Localizer["backBtn"]
+                    </MudButton>
+                    <MudButton Color="Color.Error" StartIcon="@MaterialSymbols.Outlined.Delete" OnClick="Remove_ClickAsync">
+                        @Localizer["removeBtn"]
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+    else if (_attempt is not null && !_authorizedAccess)
+    {
+        <Forbidden />
+    }
+    else
+    {
+        <NotFound />
+    }
+}
+else
+{
+    <MudPaper Class="py-3 px-3">
+        <MudGrid>
+            <MudItem xs="12" lg="6">
+                <MudGrid Spacing="2">
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="12"><MudDivider /></MudItem>
+
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="12"><MudDivider /></MudItem>
+
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="12"><MudDivider /></MudItem>
+
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="12"><MudDivider /></MudItem>
+
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                </MudGrid>
+            </MudItem>
+
+            <MudItem Class="d-flex justify-center mt-2" xs="12" lg="6">
+                <div class="embeddedMap">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="100%" Width="100%" />
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}

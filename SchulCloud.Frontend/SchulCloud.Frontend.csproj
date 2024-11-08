@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>3aada3c3-44d9-44cb-8e25-9be67af78b8d</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.2.2" />
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageReference Include="BlazorGoogleMaps" Version="4.7.14" />
+    <PackageReference Include="Fido2.AspNet" Version="4.0.0-beta.13" />
+    <PackageReference Include="Humanizer.Core" Version="2.14.1" />
+    <PackageReference Include="Humanizer.Core.de" Version="2.14.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.10" />
+    <PackageReference Include="MudBlazor" Version="7.15.0" />
+    <PackageReference Include="MudBlazor.FontIcons.MaterialSymbols" Version="1.2.0" />
+    <PackageReference Include="MyCSharp.HttpUserAgentParser" Version="3.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="Suiram1.BlazorRoutesGenerator" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MailKit.Client\MailKit.Client.csproj" />
+    <ProjectReference Include="..\SchulCloud.Store\SchulCloud.Store.csproj" />
+    <ProjectReference Include="..\SchulCloud.Database\SchulCloud.Database.csproj" />
+    <ProjectReference Include="..\SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj" />
+  </ItemGroup>
+    
+  <ItemGroup>
+    <Folder Include="wwwroot\dist\" />
+    <Folder Include="wwwroot\dist\js\" />
+  </ItemGroup>
+
+  <Target Name="CopyIsolatedCss" AfterTargets="Build">
+    <Copy SourceFiles="$(IntermediateOutputPath)scopedcss\bundle\$(PackageId).styles.css" DestinationFiles="wwwroot\dist\css\AppBundle.styles.css" ContinueOnError="true" />
+  </Target>
+
+  <Target Name="BuildJS" AfterTargets="Build">
+    <Exec Command="npm install" WorkingDirectory="$(ProjectDir)\" />
+    <Exec Command="npx rollup -c" WorkingDirectory="$(ProjectDir)\" />
+  </Target>
+
+  <ItemGroup>
+    <Content Update="wwwroot\**\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+    
+</Project>

@@ -1,0 +1,13 @@
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Options;
+using SchulCloud.Frontend.Options;
+
+namespace SchulCloud.Frontend.Components;
+
+public partial class FaviconLinks : ComponentBase
+{
+    #region Injections
+    [Inject]
+    private IOptions<PresentationOptions> PresentationOptionsAccessor { get; set; } = default!;
+    #endregion
+}

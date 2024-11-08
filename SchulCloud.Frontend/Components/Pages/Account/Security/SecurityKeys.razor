@@ -1,0 +1,128 @@
+﻿@using Fido2NetLib.Objects;
+@using Fido2NetLib;
+@using SchulCloud.Store.Models
+@using SchulCloud.Frontend.Extensions
+
+<MudPaper Class="px-3 py-3">
+    @if (UserManager.SupportsUserTwoFactorSecurityKeys)
+    {
+        <MudText Class="mb-1" Align="Align.Center">@Localizer["desc"]</MudText>
+    }
+    @if (UserManager.SupportsUserPasskeys)
+    {
+        <MudText Class="mb-1" Align="Align.Center">@Localizer["desc_Passkey"]</MudText>
+    }
+
+    <MudTooltip RootClass="mud-width-full mt-4" Text="@Localizer["webAuthn_NotSupported"]" Disabled="_webAuthnSupported">
+        @{
+            string endIcon = !_webAuthnSupported
+                ? MaterialSymbols.Outlined.Exclamation
+                : string.Empty;
+        }
+        <MudButton Class="my-3" Color="Color.Primary" OnClick="RegisterSecurityKey_ClickAsync" EndIcon="@endIcon" Variant="Variant.Filled"
+                   Disabled="!_webAuthnSupported" FullWidth>
+            @Localizer["registerBtn"]
+        </MudButton>
+    </MudTooltip>
+
+    @if (_securityKeys is not null)
+    {
+        <MudExpansionPanels Elevation="4" MultiExpansion>
+            @foreach (UserCredential securityKey in _securityKeys
+                .OrderByDescending(key => key.RegDate)
+                .Skip((_selectedPage - 1) * _keysPerPage)
+                .Take(_keysPerPage))
+            {
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
+                            @{
+                                string iconName = securityKey.Transports?.Any(transport => new[] { AuthenticatorTransport.Internal, AuthenticatorTransport.Hybrid }.Contains(transport)) ?? false
+                                    ? MaterialSymbols.Outlined.Devices
+                                    : MaterialSymbols.Outlined.SecurityKey;
+                            }
+                            <MudIcon Icon="@iconName" />
+                            <span class="ms-2">@securityKey.Name</span>
+
+                            @if (_passkeys.Contains(securityKey.Id))
+                            {
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small">@Localizer["securityKey_IsPasskey"]</MudChip>
+                            }
+
+                            <MudSpacer />
+                            <span class="mr-2">@Localizer["securityKey_Added", securityKey.RegDate.ToDisplayedString()]</span>
+                        </MudStack>
+                    </TitleContent>
+                    <ChildContent>
+                        @if (_metadata.TryGetValue(securityKey.Id, out MetadataStatement? metadataStatement))
+                        {
+
+                            <div class="d-flex">
+                                <MudPaper Elevation="2" Square>
+                                    <MudImage Src="@metadataStatement.Icon" Fluid />
+                                </MudPaper>
+
+                                <MudText HtmlTag="ul" Class="ml-2 mt-2" Typo="Typo.body2">
+                                    <li>@Localizer["securityKey_Desc", metadataStatement.Description]</li>
+                                    <li>@Localizer["securityKey_Protocol", metadataStatement.ProtocolFamily]</li>
+                                </MudText>
+                            </div>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2">@Localizer["securityKey_NoDesc"]</MudText>
+                        }
+
+                        <MudStack Class="mt-2" Row>
+                            <MudButton Color="Color.Secondary" OnClick="@(async () => await SecurityKeyChangeName_ClickAsync(securityKey))"
+                                       StartIcon="@MaterialSymbols.Outlined.Edit">
+                                @Localizer["securityKey_RenameBtn"]
+                            </MudButton>
+                            <MudButton Class="ml-2" Color="Color.Error" OnClick="@(async () => await SecurityKeyRemove_ClickAsync(securityKey))"
+                                       StartIcon="@MaterialSymbols.Outlined.Delete">
+                                @Localizer["securityKey_RemoveBtn"]
+                            </MudButton>
+                        </MudStack>
+                    </ChildContent>
+                </MudExpansionPanel>
+            }
+        </MudExpansionPanels>
+        <div class="d-flex justify-center mt-2">
+            <MudPagination @bind-Selected="_selectedPage" Count="@((int)Math.Ceiling((_securityKeys?.Count ?? 0) / (double)_keysPerPage))" />
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-center">
+            <MudProgressCircular Color="Color.Primary" Indeterminate />
+        </div>
+    }
+</MudPaper>
+
+<MudDialog @ref="_registerDialog" ContentStyle="width:350px;">
+    <TitleContent>@Localizer["registerDialog"]</TitleContent>
+    <DialogContent>
+        <MudForm @ref="_registerForm" Model="_registerModel">
+            <MudTextField @bind-Value="_registerModel.SecurityKeyName" Label="@Localizer["registerDialog_KeyName"]"
+                          Validation="@((string value) => RegisterForm_ValidateSecurityKeyName(value))" RequiredError="@Localizer["form_NotEmpty"]" Required />
+
+            @if (UserManager.SupportsUserPasskeys && UserManager.SupportsUserTwoFactorSecurityKeys)
+            {
+                <MudCheckBox @bind-Value="_registerModel.IsPasskey" Label="@Localizer["registerDialog_IsPasskey"]" />
+            }
+            else if (UserManager.SupportsUserPasskeys)
+            {
+                _registerModel.IsPasskey = true;
+                <MudCheckBox Value="true" Label="@Localizer["registerDialog_IsPasskey"]" Disabled />
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(async () => await _registerDialog.CloseAsync())">
+            @Localizer["registerDialog_CancelBtn"]
+        </MudButton>
+        <MudButton Color="Color.Primary" OnClick="RegisterForm_Register_ClickAsync" Variant="Variant.Filled">
+            @Localizer["registerDialog_RegisterBtn"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>

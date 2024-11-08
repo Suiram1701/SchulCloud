@@ -1,0 +1,30 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Options;
+@using SchulCloud.Frontend.Components.Pages.Error
+@using SchulCloud.Frontend.Options;
+
+<GlobalErrorBoundary>
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="LayoutType">
+                <NotAuthorized>
+                    @if (_isAuthenticated)
+                    {
+                        <Forbidden />
+                    }
+                    else
+                    {
+                        <RedirectToLogin />
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="LayoutType">
+                <NotFound />
+            </LayoutView>
+        </NotFound>
+    </Router>
+</GlobalErrorBoundary>

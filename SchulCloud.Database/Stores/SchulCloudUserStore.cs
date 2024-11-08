@@ -27,14 +27,10 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
 
     private DbSet<LoginAttempt> LoginAttempts => Context.Set<LoginAttempt>();
 
-    private static readonly TypeAdapterConfig _credentialAdaptConfig;
     private static readonly TypeAdapterConfig _loginAttemptAdaptConfig;
 
     static SchulCloudUserStore()
     {
-        _credentialAdaptConfig = new();
-        _credentialAdaptConfig.ForDestinationType<Credential>().Ignore(credential => credential.Id);
-
         _loginAttemptAdaptConfig = new();
         _loginAttemptAdaptConfig.ForDestinationType<LoginAttempt>().Ignore(attempt => attempt.Id);
         _loginAttemptAdaptConfig.ForType<IPAddress, byte[]>().MapWith(ip => ip.GetAddressBytes());
@@ -141,7 +137,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ct.ThrowIfCancellationRequested();
 
         Credential? credential = await Credentials.FindAsync([id], ct).AsTask();
-        return credential?.Adapt<UserCredential>(_credentialAdaptConfig);
+        return credential?.Adapt<UserCredential>();
     }
 
     public async Task<TUser?> FindUserByCredentialAsync(UserCredential credential, CancellationToken ct = default)
@@ -168,7 +164,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         string userId = await GetUserIdAsync(user, ct);
         return await Credentials
             .Where(cred => cred.UserId.Equals(userId))
-            .ProjectToType<UserCredential>(_credentialAdaptConfig)
+            .ProjectToType<UserCredential>()
             .ToListAsync(ct);
     }
 
@@ -178,7 +174,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ArgumentNullException.ThrowIfNull(user);
         ct.ThrowIfCancellationRequested();
 
-        Credential dbDto = credential.Adapt<Credential>(_credentialAdaptConfig);
+        Credential dbDto = credential.Adapt<Credential>();
         dbDto.UserId = await GetUserIdAsync(user, ct);
         await Credentials.AddAsync(dbDto, ct).AsTask();
     }
@@ -192,7 +188,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         Credential? dbDto = await Credentials.FindAsync([credential.Id], ct).AsTask();
         if (dbDto is not null)
         {
-            credential.BuildAdapter(_credentialAdaptConfig)
+            credential.BuildAdapter()
                 .EntityFromContext(Context)
                 .AdaptTo(dbDto);
         }

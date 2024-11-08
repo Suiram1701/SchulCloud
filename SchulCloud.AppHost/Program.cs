@@ -1,5 +1,5 @@
 using Aspire.Hosting.MailDev;
-using Microsoft.Extensions.Hosting;
+using SchulCloud.ServiceDefaults;
 
 namespace SchulCloud.AppHost;
 
@@ -9,41 +9,18 @@ public class Program
     {
         IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-        IResourceBuilder<PostgresDatabaseResource> postgresDb = AddPostgresDatabase(builder);
-        IResourceBuilder<MailDevResource> mailDev = AddMailDev(builder);
+        IResourceBuilder<PostgresServerResource> postgresServer = builder.AddPostgresServer("postgres-server");
+        IResourceBuilder<PostgresDatabaseResource> identityDb = postgresServer.AddDatabase(ResourceNames.IdentityDatabase);
 
-        builder.AddProject<Projects.SchulCloud_DbManager>("schulcloud-dbmanager")
-            .WithReference(postgresDb);
+        IResourceBuilder<MailDevResource> mailDev = builder.AddMailDev(ResourceNames.MailServer);
 
-        builder.AddProject<Projects.SchulCloud_Web>("schulcloud-web")
-            .WithReference(postgresDb)
+        builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
+            .WithReference(identityDb);
+
+        builder.AddProject<Projects.SchulCloud_Frontend>("frontend")
+            .WithReference(identityDb)
             .WithReference(mailDev);
 
         builder.Build().Run();
-    }
-
-    private static IResourceBuilder<PostgresDatabaseResource> AddPostgresDatabase(IDistributedApplicationBuilder builder)
-    {
-        IResourceBuilder<ParameterResource> username = builder.AddParameter("postgresUsername");
-        IResourceBuilder<ParameterResource> password = builder.AddParameter("postgresPassword");
-
-        IResourceBuilder<PostgresServerResource> postgreServer = builder
-            .AddPostgres("postgres-server", username, password)
-            .WithDataVolume();
-
-        if (builder.Environment.IsDevelopment())
-        {
-            postgreServer.WithPgAdmin();
-        }
-
-        return postgreServer.AddDatabase("schulcloud-db");
-    }
-
-    private static IResourceBuilder<MailDevResource> AddMailDev(IDistributedApplicationBuilder builder)
-    {
-        IResourceBuilder<ParameterResource> username = builder.AddParameter("maildevUsername");
-        IResourceBuilder<ParameterResource> password = builder.AddParameter("maildevPassword");
-
-        return builder.AddMailDev("maildev", username: username, password: password);
     }
 }
