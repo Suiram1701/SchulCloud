@@ -33,7 +33,6 @@
     
   <ItemGroup>
     <Folder Include="wwwroot\dist\" />
-    <Folder Include="wwwroot\dist\js\" />
   </ItemGroup>
 
   <Target Name="CopyIsolatedCss" AfterTargets="Build">

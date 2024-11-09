@@ -23,6 +23,8 @@
             <MudIcon Class="d-inline me-2" Icon="@MaterialSymbols.Outlined.Login" />
             @Localizer["signInLink"]
         </MudButton>
+        <MudButton Href="@Routes.Privacy()">@Localizer["privacyLink"]</MudButton>
+
         <MudSpacer />
 
         @{
@@ -48,7 +50,7 @@
     </MudAppBar>
 
     <MudMainContent Class="pt-16 px-2">
-        <MudContainer>
+        <MudContainer Class="mt-15">
             @Body
         </MudContainer>
     </MudMainContent>

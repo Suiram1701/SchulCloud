@@ -10,7 +10,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.DbManager", "Sch
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.ServiceDefaults", "SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj", "{343F3D5F-3780-9E38-C4B1-7AF1FA0C75B1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.Web", "SchulCloud.Frontend\SchulCloud.Frontend.csproj", "{1F51F7CF-E9A4-5382-F687-A46F5E397344}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchulCloud.Frontend", "SchulCloud.Frontend\SchulCloud.Frontend.csproj", "{1F51F7CF-E9A4-5382-F687-A46F5E397344}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aspire.Hosting.MailDev", "Aspire.Hosting.MailDev\Aspire.Hosting.MailDev.csproj", "{42EAE53C-0CB6-4C45-B68A-48D45BDB7C97}"
 EndProject

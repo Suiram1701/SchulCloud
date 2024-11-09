@@ -25,10 +25,12 @@
 
     <Routes @rendermode="InteractiveServer" />
 
-    <script src="/_framework/blazor.web.js"></script>
-    <script src="/_static/_content/MudBlazor/MudBlazor.min.js"></script>
-    <script src="/_static/_content/BlazorGoogleMaps/js/objectManager.js"></script>
-    <script src="/_static/dist/js/Main.min.js"></script>
+    <CookieConsent />
+
+    <script src="/_framework/blazor.web.js" data-cookie-consent="strictly-necessary"></script>
+    <script src="/_static/_content/MudBlazor/MudBlazor.min.js" data-cookie-consent="strictly-necessary"></script>
+    <script src="/_static/_content/BlazorGoogleMaps/js/objectManager.js" data-cookie-consent="strictly-necessary"></script>
+    <script src="/_static/dist/js/Main.min.js" data-cookie-consent="strictly-necessary"></script>
 </body>
 
 </html>

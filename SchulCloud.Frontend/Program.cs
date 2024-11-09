@@ -83,6 +83,7 @@ public class Program
             .AddMudServices()
             .AddBlazoredLocalStorage()
             .AddScoped<CookieService>()
+            .AddScoped<CookieConsentService>()
             .AddScoped<IUserPreferencesStore, CookieUserPreferencesStore>();
 
         builder.Services

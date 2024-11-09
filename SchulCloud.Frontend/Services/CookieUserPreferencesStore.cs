@@ -1,22 +1,21 @@
 ﻿using Microsoft.AspNetCore.Localization;
 using SchulCloud.Frontend.Enums;
 using SchulCloud.Frontend.Services.Interfaces;
+using SchulCloud.Frontend.Services.Models;
 
 namespace SchulCloud.Frontend.Services;
 
 /// <summary>
 /// An implementation of <see cref="IUserPreferencesStore"/> that uses cookie to store the preferences.
 /// </summary>
-public class CookieUserPreferencesStore(CookieService cookieService) : IUserPreferencesStore
+public class CookieUserPreferencesStore(CookieConsentService cookieConsentService, CookieService cookieService) : IUserPreferencesStore
 {
     private readonly string _themeCookieName = ".AspNetCore.ColorTheme";
-    private readonly TimeSpan _maxCookieAge = TimeSpan.FromDays(400);
-
-    private readonly CookieService _cookieService = cookieService;
+    private readonly CookieOptions _cookieOptions = new() { Expires = DateTime.UtcNow.AddDays(400) };
 
     public async Task<ColorTheme> GetPreferredColorThemeAsync(CancellationToken ct = default)
     {
-        string? value = await _cookieService.GetCookieAsync(_themeCookieName, ct);
+        string? value = await cookieService.GetCookieAsync(_themeCookieName, ct);
         if (string.IsNullOrWhiteSpace(value) || !Enum.TryParse(value, out ColorTheme result))
         {
             return ColorTheme.Auto;
@@ -28,15 +27,15 @@ public class CookieUserPreferencesStore(CookieService cookieService) : IUserPref
     {
         ArgumentNullException.ThrowIfNull(theme);
 
-        await _cookieService.SetCookieAsync(_themeCookieName, theme.ToString(), new()
+        if (await IsFunctionalCookiesAllowedAsync(ct))
         {
-            Expires = DateTime.UtcNow.Add(_maxCookieAge)
-        }, ct);
+            await cookieService.SetCookieAsync(_themeCookieName, theme.ToString(), _cookieOptions, ct);
+        }
     }
 
     public async Task<RequestCulture?> GetPreferredCulturesAsync(CancellationToken ct = default)
     {
-        string? value = await _cookieService.GetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, ct);
+        string? value = await cookieService.GetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, ct);
         if (string.IsNullOrWhiteSpace(value) || CookieRequestCultureProvider.ParseCookieValue(value) is not ProviderCultureResult cultureResult)
         {
             return null;
@@ -56,16 +55,26 @@ public class CookieUserPreferencesStore(CookieService cookieService) : IUserPref
     {
         if (culture is not null)
         {
-            string cookieValue = CookieRequestCultureProvider.MakeCookieValue(culture);
-
-            await _cookieService.SetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, cookieValue, new()
+            if (await IsFunctionalCookiesAllowedAsync(ct))
             {
-                Expires = DateTime.UtcNow.Add(_maxCookieAge)
-            }, ct);
+                string cookieValue = CookieRequestCultureProvider.MakeCookieValue(culture);
+                await cookieService.SetCookieAsync(CookieRequestCultureProvider.DefaultCookieName, cookieValue, _cookieOptions, ct);
+            }
         }
         else
         {
-            await _cookieService.RemoveCookieAsync(CookieRequestCultureProvider.DefaultCookieName, ct: ct);
+            await cookieService.RemoveCookieAsync(CookieRequestCultureProvider.DefaultCookieName, ct: ct);
         }
+    }
+
+    /// <summary>
+    /// Checks whether the cookies that are used by this service are permitted by the user.
+    /// </summary>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>The result.</returns>
+    public async Task<bool> IsFunctionalCookiesAllowedAsync(CancellationToken ct)
+    {
+        CookieConsentSettings? cookieConsent = await cookieConsentService.GetCookieConsentSettingsAsync(ct);
+        return cookieConsent is not null && cookieConsent.Functionality;
     }
 }

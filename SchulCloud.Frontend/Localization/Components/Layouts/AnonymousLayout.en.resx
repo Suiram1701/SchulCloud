@@ -109,4 +109,7 @@
   <data name="selectColorTheme_Dark" xml:space="preserve">
     <value>Dark</value>
   </data>
+  <data name="privacyLink" xml:space="preserve">
+    <value>Privacy Policy</value>
+  </data>
 </root>
