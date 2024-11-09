@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SchulCloud.Authorization\SchulCloud.Authorization.csproj" />
     <ProjectReference Include="..\SchulCloud.Store\SchulCloud.Store.csproj" />
   </ItemGroup>
 

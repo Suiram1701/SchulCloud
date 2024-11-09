@@ -14,4 +14,8 @@
     <PackageReference Include="Fido2" Version="4.0.0-beta.13" />
     <PackageReference Include="MyCSharp.HttpUserAgentParser" Version="3.0.8" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SchulCloud.Authorization\SchulCloud.Authorization.csproj" />
+  </ItemGroup>
 </Project>

@@ -16,6 +16,7 @@ using SchulCloud.Frontend.Identity.Managers;
 using SchulCloud.Frontend.Services;
 using SchulCloud.Frontend.Services.Interfaces;
 using GoogleMapsComponents;
+using SchulCloud.Authorization.Extensions;
 
 namespace SchulCloud.Frontend;
 
@@ -56,6 +57,9 @@ public class Program
             .AddRequestLimiter<CachedRequestLimiter<ApplicationUser>>()
             .AddDefaultTokenProviders()
             .AddTokenProviders();
+
+        builder.Services.AddAuthorizationBuilder()
+            .AddPermissionsPolicies();
 
         builder.Services
             .AddFido2Services()

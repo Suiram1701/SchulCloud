@@ -4,11 +4,13 @@ using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SchulCloud.Authorization;
 using SchulCloud.Database.Enums;
 using SchulCloud.Database.Models;
 using SchulCloud.Store.Abstractions;
 using SchulCloud.Store.Models;
 using System.Net;
+using System.Security.Claims;
 
 namespace SchulCloud.Database.Stores;
 
@@ -18,7 +20,8 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     IUserTwoFactorEmailStore<TUser>,
     IUserTwoFactorSecurityKeyStore<TUser>,
     IUserPasskeysStore<TUser>,
-    IUserLoginAttemptStore<TUser>
+    IUserLoginAttemptStore<TUser>,
+    IUserPermissionStore<TUser>
     where TUser : SchulCloudUser
     where TRole : IdentityRole
     where TContext : DbContext
@@ -360,6 +363,58 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         return attempts.ToDictionary<dynamic, Store.Enums.LoginAttemptMethod, DateTime>(
             keySelector: attempt => (Store.Enums.LoginAttemptMethod)attempt.Method,
             elementSelector: attempt => attempt.DateTime);
+    }
+    #endregion
+
+    #region IUserPermissionStore
+    public async Task SetPermissionLevel(TUser user, string permissionName, PermissionLevel level, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentException.ThrowIfNullOrWhiteSpace(permissionName);
+        ct.ThrowIfCancellationRequested();
+
+        Claim? existingClaim = await GetClaimOfPermissionTypeAsync(user, permissionName, ct);     // Check whether the same permission type is already stored.
+        if (level != PermissionLevel.None)
+        {
+            Claim claim = new(Authorization.ClaimTypes.Permission, $"{permissionName}:{level}");
+            if (existingClaim is null)
+            {
+                await AddClaimsAsync(user, [claim], ct);
+            }
+            else
+            {
+                await ReplaceClaimAsync(user, existingClaim, claim, ct);
+            }
+        }
+        else if (existingClaim is not null) 
+        {
+            await RemoveClaimsAsync(user, [existingClaim], ct);
+        }
+    }
+
+    public async Task<PermissionLevel> GetPermissionLevel(TUser user, string permissionName, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentException.ThrowIfNullOrWhiteSpace(permissionName);
+        ct.ThrowIfCancellationRequested();
+
+        Claim? claim = await GetClaimOfPermissionTypeAsync(user, permissionName, ct);
+        if (claim is not null)
+        {
+            string[] values = claim.Value.Split(':', 2);
+            return Enum.Parse<PermissionLevel>(values[1]);
+        }
+        else
+        {
+            return PermissionLevel.None;
+        }
+    }
+
+    private async Task<Claim?> GetClaimOfPermissionTypeAsync(TUser user, string permissionName, CancellationToken ct)
+    {
+        IEnumerable<Claim> userClaims = await GetClaimsAsync(user, ct);
+        return userClaims.FirstOrDefault(claim => claim.Type == Authorization.ClaimTypes.Permission && claim.Value.Split(':')[0] == permissionName);
     }
     #endregion
 }

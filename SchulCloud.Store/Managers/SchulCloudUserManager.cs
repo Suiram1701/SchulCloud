@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyCSharp.HttpUserAgentParser;
 using MyCSharp.HttpUserAgentParser.Providers;
+using SchulCloud.Authorization;
 using SchulCloud.Store.Abstractions;
 using SchulCloud.Store.Enums;
 using SchulCloud.Store.Models;
@@ -342,7 +343,7 @@ public partial class SchulCloudUserManager<TUser>(
         ThrowIfDisposed();
         ArgumentException.ThrowIfNullOrWhiteSpace(id); 
 
-        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        IUserLoginAttemptStore<TUser> store = GetLoginAttemptStore();
         return await store.FindLoginAttemptAsync(id, CancellationToken);
     }
 
@@ -356,7 +357,7 @@ public partial class SchulCloudUserManager<TUser>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        IUserLoginAttemptStore<TUser> store = GetLoginAttemptStore();
         return await store.FindLoginAttemptsByUserAsync(user, CancellationToken);
     }
 
@@ -378,7 +379,7 @@ public partial class SchulCloudUserManager<TUser>(
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(attempt);
 
-        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        IUserLoginAttemptStore<TUser> store = GetLoginAttemptStore();
         await store.AddLoginAttemptAsync(user, attempt, CancellationToken);
 
         return await Store.UpdateAsync(user, CancellationToken);
@@ -396,7 +397,7 @@ public partial class SchulCloudUserManager<TUser>(
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(attempt);
 
-        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        IUserLoginAttemptStore<TUser> store = GetLoginAttemptStore();
         await store.RemoveLoginAttemptAsync(attempt, CancellationToken);
 
         return await Store.UpdateAsync(user, CancellationToken);
@@ -412,7 +413,7 @@ public partial class SchulCloudUserManager<TUser>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        IUserLoginAttemptStore<TUser> store = GetLoginAttemptStore();
         await store.RemoveAllLoginAttemptsAsync(user, CancellationToken);
 
         return await Store.UpdateAsync(user, CancellationToken);
@@ -431,7 +432,7 @@ public partial class SchulCloudUserManager<TUser>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
-        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        IUserLoginAttemptStore<TUser> store = GetLoginAttemptStore();
         return await store.GetLatestLoginMethodUseTimeAsync(user, CancellationToken);
     }
 
@@ -445,8 +446,42 @@ public partial class SchulCloudUserManager<TUser>(
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(attempt);
 
-        IUserLoginAttemptStore<TUser> store = GetLogInAttemptStore();
+        IUserLoginAttemptStore<TUser> store = GetLoginAttemptStore();
         return await store.FindUserByLoginAttemptAsync(attempt, CancellationToken);
+    }
+
+    /// <summary>
+    /// Sets the permission level of a user for a permission type.
+    /// </summary>
+    /// <param name="user">The user to the set the permission for.</param>
+    /// <param name="permissionName">The name of the permission type,</param>
+    /// <param name="level">The permission level to set.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> SetPermissionLevelAsync(TUser user, string permissionName, PermissionLevel level)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentException.ThrowIfNullOrWhiteSpace(permissionName);
+
+        IUserPermissionStore<TUser> store = GetPermissionsStore();
+        await store.SetPermissionLevel(user, permissionName, level, CancellationToken);
+
+        return await UpdateAsync(user);
+    }
+
+    /// <summary>
+    /// Gets the level of a permission type of a user.
+    /// </summary>
+    /// <param name="user">The user to get the permission from.</param>
+    /// <param name="permissionName">The name of the permission type.</param>
+    /// <returns>The level of the permission. If no level were set for the permission type <see cref="PermissionLevel.None"/> will be returned.</returns>
+    public virtual async Task<PermissionLevel> GetPermissionLevelAsync(TUser user, string permissionName)
+    {
+        ThrowIfDisposed();
+        ArgumentException.ThrowIfNullOrWhiteSpace(permissionName);
+
+        IUserPermissionStore<TUser> store = GetPermissionsStore();
+        return await store.GetPermissionLevel(user, permissionName, CancellationToken);
     }
 
     private IUserPasskeysStore<TUser> GetPasskeysStore()
@@ -503,11 +538,20 @@ public partial class SchulCloudUserManager<TUser>(
         return cast;
     }
 
-    private IUserLoginAttemptStore<TUser> GetLogInAttemptStore()
+    private IUserLoginAttemptStore<TUser> GetLoginAttemptStore()
     {
         if (Store is not IUserLoginAttemptStore<TUser> cast)
         {
             throw new NotSupportedException($"{nameof(IUserLoginAttemptStore<TUser>)} isn't supported by the store.");
+        }
+        return cast;
+    }
+
+    private IUserPermissionStore<TUser> GetPermissionsStore()
+    {
+        if (Store is not IUserPermissionStore<TUser> cast)
+        {
+            throw new NotSupportedException($"{nameof(IUserPermissionStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }
