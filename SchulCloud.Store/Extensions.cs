@@ -8,13 +8,19 @@ namespace SchulCloud.Store;
 
 public static class Extensions
 {
+    /// <summary>
+    /// Configures options required for the managers.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
     public static IHostApplicationBuilder ConfigureManagers(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services
             .Configure<IdentityFido2Options>(builder.Configuration.GetSection("Identity:Fido2"))
-            .Configure<ExtendedTokenProviderOptions>(builder.Configuration.GetSection("Identity:Tokens"));
+            .Configure<ExtendedTokenProviderOptions>(builder.Configuration.GetSection("Identity:Tokens"))
+            .Configure<ApiKeyOptions>(builder.Configuration.GetSection("Identity:ApiKeys"));
         return builder;
     }
 

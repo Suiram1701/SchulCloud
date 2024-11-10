@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,7 @@ public partial class SchulCloudUserManager<TUser>(
     IUserStore<TUser> store,
     IOptions<IdentityOptions> optionsAccessor,
     IOptions<ExtendedTokenProviderOptions> tokenProviderOptionsAccessor,
+    IOptions<ApiKeyOptions> apiKeysOptionsAccessor,
     IPasswordHasher<TUser> passwordHasher,
     IEnumerable<IUserValidator<TUser>> userValidators,
     IEnumerable<IPasswordValidator<TUser>> passwordValidators,
@@ -38,7 +40,12 @@ public partial class SchulCloudUserManager<TUser>(
     /// <summary>
     /// Extended token provider options
     /// </summary>
-    public ExtendedTokenProviderOptions ExtendedTokenProviderOptions { get; set; } = tokenProviderOptionsAccessor.Value;
+    public ExtendedTokenProviderOptions ExtendedTokenProviderOptions { get; } = tokenProviderOptionsAccessor.Value;
+
+    /// <summary>
+    /// Options for api keys.
+    /// </summary>
+    public ApiKeyOptions ApiKeyOptions { get; } = apiKeysOptionsAccessor.Value;
 
     /// <summary>
     /// Indicate whether the internal store supports passkey sign ins.
@@ -85,6 +92,18 @@ public partial class SchulCloudUserManager<TUser>(
         {
             ThrowIfDisposed();
             return Store is IUserLoginAttemptStore<TUser>;
+        }
+    }
+
+    /// <summary>
+    /// Indicates whether the internal store supports user api keys.
+    /// </summary>
+    public virtual bool SupportsUserApiKeys
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return Store is IUserApiKeyStore<TUser>;
         }
     }
 
@@ -484,6 +503,148 @@ public partial class SchulCloudUserManager<TUser>(
         return await store.GetPermissionLevel(user, permissionName, CancellationToken);
     }
 
+    /// <summary>
+    /// Finds an api key by its id.
+    /// </summary>
+    /// <param name="id">The id of the api key.</param>
+    /// <returns>The key. If <c>null</c> no key belongs to this id.</returns>
+    public virtual async Task<UserApiKey?> FindApiKeyById(string id)
+    {
+        ThrowIfDisposed();
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+
+        IUserApiKeyStore<TUser> store = GetApiKeyStore();
+        return await store.FindApiKeyByIdAsync(id, CancellationToken);
+    }
+
+    /// <summary>
+    /// Tries to find an api key and its owner by the raw key.
+    /// </summary>
+    /// <param name="apiKey">The raw api key.</param>
+    /// <returns>The api key and its owner. If <c>null</c> no such was found.</returns>
+    public virtual async Task<(UserApiKey key, TUser user)?> FindApiKeyAsync(string apiKey)
+    {
+        ThrowIfDisposed();
+        ArgumentException.ThrowIfNullOrEmpty(apiKey);
+
+        IUserApiKeyStore<TUser> store = GetApiKeyStore();
+        UserApiKey? key = await store.FindApiKeyByKeyHashAsync(HashApiKey(apiKey), CancellationToken);
+        
+        if (key is not null)
+        {
+            TUser user = (await store.FindUserByApiKeyAsync(key, CancellationToken))!;
+            return (key, user);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Finds the owner of an api key.
+    /// </summary>
+    /// <param name="apiKey">The key to find the owner from.</param>
+    /// <returns>The owner of the key. If <c>null</c> the owner wasn't found.</returns>
+    public virtual async Task<TUser?> FindUserByApiKeyAsync(UserApiKey apiKey)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(apiKey);
+
+        IUserApiKeyStore<TUser> store = GetApiKeyStore();
+        return await store.FindUserByApiKeyAsync(apiKey, CancellationToken);
+    }
+
+    /// <summary>
+    /// Gets the api keys of a user.
+    /// </summary>
+    /// <param name="user">The user to get the key from.</param>
+    /// <param name="onlyEnabled">Indicates whether only useable key should be returned. If <c>true</c> disabled or expired keys will be excluded.</param>
+    /// <returns>The keys found for the user.</returns>
+    public virtual async Task<UserApiKey[]> GetApiKeysByUserAsync(TUser user, bool onlyEnabled)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserApiKeyStore<TUser> store = GetApiKeyStore();
+        return onlyEnabled
+            ? await store.GetEnabledApiKeysByUserAsync(user, CancellationToken)
+            : await store.GetApiKeysByUserAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Adds an api key to a user's account.
+    /// </summary>
+    /// <param name="user">The user that should own the key.</param>
+    /// <param name="apiKey">The api key to add.</param>
+    /// <returns>The raw key that will be associated with this user and key. If <c>null</c> an error occurred while adding the key.</returns>
+    public virtual async Task<string?> AddApiKeyToUserAsync(TUser user, UserApiKey apiKey)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(apiKey);
+
+        string key = GenerateApiKey();
+        apiKey.KeyHash = HashApiKey(key);
+
+        IUserApiKeyStore<TUser> store = GetApiKeyStore();
+        await store.AddApiKeyAsync(user, apiKey, CancellationToken);
+
+        IdentityResult result = await UpdateSecurityStampAsync(user);
+        return result.Succeeded ? key : null;
+    }
+
+    private string GenerateApiKey()
+    {
+        string key = RandomNumberGenerator.GetString(ApiKeyOptions.AllowedChars, ApiKeyOptions.KeyLength);
+
+        if (!string.IsNullOrWhiteSpace(ApiKeyOptions.KeyPrefix))
+        {
+            return $"{ApiKeyOptions.KeyPrefix}-{key}";
+        }
+        return key;
+    }
+
+    private string HashApiKey(string key)
+    {
+        byte[] saltBytes = Encoding.UTF8.GetBytes(ApiKeyOptions.GlobalSalt);
+        byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+        return Convert.ToBase64String(HMACSHA256.HashData(saltBytes, keyBytes));
+    }
+
+    /// <summary>
+    /// Updates an api key.
+    /// </summary>
+    /// <param name="user">The user that owns the key to update.</param>
+    /// <param name="apiKey">The key with the updated values.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> UpdateApiKeyAsync(TUser user, UserApiKey apiKey)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(apiKey);
+
+        IUserApiKeyStore<TUser> store = GetApiKeyStore();
+        await store.UpdateApiKeyAsync(apiKey, CancellationToken);
+
+        return await UpdateSecurityStampAsync(user);
+    }
+
+    /// <summary>
+    /// Removes an api from a user's account.
+    /// </summary>
+    /// <param name="user">The user that owns the key.</param>
+    /// <param name="apiKey">The key to remove.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> RemoveApiKeyAsync(TUser user, UserApiKey apiKey)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(apiKey);
+
+        IUserApiKeyStore<TUser> store = GetApiKeyStore();
+        await store.RemoveApiKeyAsync(apiKey, CancellationToken);
+
+        return await UpdateSecurityStampAsync(user);
+    }
+
     private IUserPasskeysStore<TUser> GetPasskeysStore()
     {
         if (Store is not IUserPasskeysStore<TUser> cast)
@@ -552,6 +713,15 @@ public partial class SchulCloudUserManager<TUser>(
         if (Store is not IUserPermissionStore<TUser> cast)
         {
             throw new NotSupportedException($"{nameof(IUserPermissionStore<TUser>)} isn't supported by the store.");
+        }
+        return cast;
+    }
+
+    private IUserApiKeyStore<TUser> GetApiKeyStore()
+    {
+        if (Store is not IUserApiKeyStore<TUser> cast)
+        {
+            throw new NotSupportedException($"{nameof(IUserApiKeyStore<TUser>)} isn't supported by the store.");
         }
         return cast;
     }

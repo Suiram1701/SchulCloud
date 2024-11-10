@@ -12,6 +12,7 @@ public class SchulCloudDbContext(DbContextOptions options) : IdentityDbContext<S
         base.OnModelCreating(builder);
         builder.ApplyConfiguration(new Fido2CredentialConfig());
         builder.ApplyConfiguration(new LoginAttemptConfig());
+        builder.ApplyConfiguration(new ApiKeyConfig());
 
         builder.Entity<SchulCloudUser>(b =>
         {
@@ -21,6 +22,7 @@ public class SchulCloudDbContext(DbContextOptions options) : IdentityDbContext<S
 
             b.HasMany<Credential>().WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
             b.HasMany<LoginAttempt>().WithOne().HasForeignKey(la => la.UserId).IsRequired();
+            b.HasMany<ApiKey>().WithOne().HasForeignKey(key => key.UserId).IsRequired();
         });
     }
 }

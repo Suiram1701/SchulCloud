@@ -1,6 +1,4 @@
-﻿using Fido2NetLib;
-using Fido2NetLib.Objects;
-using Mapster;
+﻿using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +19,8 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     IUserTwoFactorSecurityKeyStore<TUser>,
     IUserPasskeysStore<TUser>,
     IUserLoginAttemptStore<TUser>,
-    IUserPermissionStore<TUser>
+    IUserPermissionStore<TUser>,
+    IUserApiKeyStore<TUser>
     where TUser : SchulCloudUser
     where TRole : IdentityRole
     where TContext : DbContext
@@ -30,7 +29,10 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
 
     private DbSet<LoginAttempt> LoginAttempts => Context.Set<LoginAttempt>();
 
+    private DbSet<ApiKey> ApiKeys => Context.Set<ApiKey>();
+
     private static readonly TypeAdapterConfig _loginAttemptAdaptConfig;
+    private static readonly TypeAdapterConfig _apiKeyAdaptConfig;
 
     static SchulCloudUserStore()
     {
@@ -38,6 +40,9 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         _loginAttemptAdaptConfig.ForDestinationType<LoginAttempt>().Ignore(attempt => attempt.Id);
         _loginAttemptAdaptConfig.ForType<IPAddress, byte[]>().MapWith(ip => ip.GetAddressBytes());
         _loginAttemptAdaptConfig.ForType<byte[], IPAddress>().MapWith(ip => new IPAddress(ip));
+
+        _apiKeyAdaptConfig = new();
+        _apiKeyAdaptConfig.ForDestinationType<ApiKey>().Ignore(key => key.Id);
     }
 
     public override Task<bool> GetTwoFactorEnabledAsync(TUser user, CancellationToken ct = default)
@@ -415,6 +420,110 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     {
         IEnumerable<Claim> userClaims = await GetClaimsAsync(user, ct);
         return userClaims.FirstOrDefault(claim => claim.Type == Authorization.ClaimTypes.Permission && claim.Value.Split(':')[0] == permissionName);
+    }
+    #endregion
+
+    #region IUserApiKeyStore
+    public async Task<UserApiKey?> FindApiKeyByIdAsync(string id, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(id);
+        ct.ThrowIfCancellationRequested();
+
+        ApiKey? key = await ApiKeys.FindAsync([id], ct).AsTask();
+        return key?.Adapt<UserApiKey>(_apiKeyAdaptConfig);
+    }
+
+    public async Task<UserApiKey?> FindApiKeyByKeyHashAsync(string keyHash, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(keyHash);
+        ct.ThrowIfCancellationRequested();
+
+        return await ApiKeys
+            .Where(key => key.KeyHash.Equals(keyHash))
+            .ProjectToType<UserApiKey>(_apiKeyAdaptConfig)
+            .SingleOrDefaultAsync(ct);
+    }
+
+    public async Task<TUser?> FindUserByApiKeyAsync(UserApiKey apiKey, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(apiKey);
+        ct.ThrowIfCancellationRequested();
+
+        ApiKey? key = await ApiKeys.FindAsync([apiKey.Id], ct).AsTask();
+        if (key is not null)
+        {
+            return await FindUserAsync(key.UserId, ct);
+        }
+
+        return null;
+    }
+
+    public async Task<UserApiKey[]> GetApiKeysByUserAsync(TUser user, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
+
+        string userId = await GetUserIdAsync(user, ct);
+        return await ApiKeys
+            .Where(key => key.UserId.Equals(userId))
+            .ProjectToType<UserApiKey>(_apiKeyAdaptConfig)
+            .ToArrayAsync(ct);
+    }
+
+    public async Task<UserApiKey[]> GetEnabledApiKeysByUserAsync(TUser user, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
+
+        string userId = await GetUserIdAsync(user, ct);
+        return await ApiKeys
+            .Where(key => key.UserId.Equals(userId) && key.Enabled)
+            .Where(key => key.Expiration == null || key.Expiration > DateTime.UtcNow)
+            .ProjectToType<UserApiKey>(_apiKeyAdaptConfig)
+            .ToArrayAsync(ct);
+    }
+
+    public async Task AddApiKeyAsync(TUser user, UserApiKey apiKey, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(apiKey);
+        ct.ThrowIfCancellationRequested();
+
+        await ApiKeys.AddAsync(apiKey.Adapt<ApiKey>(_apiKeyAdaptConfig), ct).AsTask();
+    }
+
+    public async Task UpdateApiKeyAsync(UserApiKey apiKey, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(apiKey);
+        ct.ThrowIfCancellationRequested();
+
+        ApiKey? key = await ApiKeys.FindAsync([apiKey.Id], ct).AsTask();
+        if (key is not null)
+        {
+            apiKey.BuildAdapter()
+                .EntityFromContext(Context)
+                .AdaptTo(key);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unable to find api key with id '{apiKey.Id}'.");
+        }
+    }
+
+    public async Task RemoveApiKeyAsync(UserApiKey apiKey, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(apiKey);
+        ct.ThrowIfCancellationRequested();
+
+        await ApiKeys.Where(key => key.Id.Equals(apiKey.Id)).ExecuteDeleteAsync(ct);
     }
     #endregion
 }
