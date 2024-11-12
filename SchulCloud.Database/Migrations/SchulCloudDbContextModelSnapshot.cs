@@ -143,7 +143,6 @@ namespace SchulCloud.Database.Migrations
                         .HasDefaultValue(true);
 
                     b.Property<DateTime?>("Expiration")
-                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("KeyHash")

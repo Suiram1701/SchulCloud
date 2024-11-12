@@ -6,7 +6,7 @@
 <MudTable @ref="_attemptTable" Class="px-3 py-3" Items="_attempts.OrderByDescending(attempt => attempt.DateTime)"
           Breakpoint="Breakpoint.Sm" CurrentPage="@(Page ?? 0)" RowsPerPage="15" >
     <ToolBarContent>
-        <MudText Typo="Typo.h5">@Localizer["loginAttempts"]</MudText>
+        <MudText Typo="Typo.h6">@Localizer["loginAttempts"]</MudText>
         <MudSpacer />
         
         <MudButton Color="Color.Error" OnClick="RemoveAllAttempts_ClickAsync" Variant="Variant.Filled" Disabled="@(_attempts.Count() == 0)">

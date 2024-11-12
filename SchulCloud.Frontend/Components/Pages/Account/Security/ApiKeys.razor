@@ -1,0 +1,58 @@
+﻿@using SchulCloud.Store.Models
+@using Humanizer;
+
+<AppPageTitle Title="@Localizer["title"]" />
+
+<MudPaper Class="py-3 px-3">
+    <MudText Typo="Typo.h6">@Localizer["title"]</MudText>
+    <MudText Class="my-2" Typo="Typo.body1">@Localizer["desc"]</MudText>
+
+    <MudTable Class="py-3 px-3" Items="_apiKeys.OrderByDescending(key => key.Created)" Elevation="0">
+        <HeaderContent>
+            <MudTh>@Localizer["key_Name"]</MudTh>
+            <MudTh>@Localizer["key_Notes"]</MudTh>
+            <MudTh>@Localizer["key_Enabled"]</MudTh>
+            <MudTh>@Localizer["key_Created"]</MudTh>
+            <MudTh>@Localizer["key_Expires"]</MudTh>
+            <MudTh>@Localizer["key_Action"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="apiKey">
+            <MudTd DataLabel="@Localizer["key_Name"]">@apiKey.Name</MudTd>
+            <MudHidden Breakpoint="Breakpoint.Xs">
+                <MudTd DataLabel="@Localizer["key_Notes"]">
+                    <div class="notes-text"><TextTruncate>@apiKey.Notes</TextTruncate></div>
+                </MudTd>
+            </MudHidden>
+            <MudTd DataLabel="@Localizer["key_Enabled"]">
+                <div class="d-flex align-center flex-nowrap">
+                    @if (apiKey.Enabled)
+                    {
+                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.CheckCircle" Color="Color.Success" />
+                        <MudText Typo="Typo.inherit" Color="Color.Success">@Localizer["key_Enabled_True"]</MudText>
+                    }
+                    else
+                    {
+                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
+                        <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["key_Enabled_False"]</MudText>
+                    }
+                </div>
+            </MudTd>
+            <MudTd DataLabel="@Localizer["key_Created"]">@apiKey.Created.ToLocalTime()</MudTd>
+            <MudTd DataLabel="@Localizer["key_Expires"]">
+                @if (apiKey.Expiration is not null)
+                {
+                    @apiKey.Expiration?.ToLocalTime()
+                }
+                else
+                {
+                    @(((DateTime?)null).Humanize())
+                }
+            </MudTd>
+            <MudTd DataLabel="@Localizer["key_Action"]">
+                <MudButton Color="Color.Primary" Href="@Routes.ApiKeyDetails(apiKey.Id)" Variant="Variant.Filled">
+                    @Localizer["key_DetailsBtn"]
+                </MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>

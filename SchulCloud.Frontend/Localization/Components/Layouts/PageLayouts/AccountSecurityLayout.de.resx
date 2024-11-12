@@ -112,4 +112,7 @@
   <data name="tabLogInAttempts" xml:space="preserve">
     <value>Anmeldeverlauf</value>
   </data>
+  <data name="tabApiKeys" xml:space="preserve">
+    <value>API-Schlüssel</value>
+  </data>
 </root>

@@ -112,4 +112,7 @@
   <data name="tabLogInAttempts" xml:space="preserve">
     <value>Login history</value>
   </data>
+  <data name="tabApiKeys" xml:space="preserve">
+    <value>API keys</value>
+  </data>
 </root>

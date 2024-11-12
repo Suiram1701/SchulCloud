@@ -1,4 +1,4 @@
-﻿@media (max-width: 650px) {
+﻿@media (max-width: 800px) {
     ::deep.securityNavbar div[role='group'] {
         flex-wrap: wrap;
     }

@@ -172,4 +172,7 @@
   <data name="removeDialog_Error" xml:space="preserve">
     <value>Error removing security key</value>
   </data>
+  <data name="title" xml:space="preserve">
+    <value>security keys</value>
+  </data>
 </root>

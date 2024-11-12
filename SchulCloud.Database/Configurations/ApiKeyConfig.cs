@@ -22,7 +22,7 @@ internal sealed class ApiKeyConfig : IEntityTypeConfiguration<ApiKey>
         builder.Property(key => key.Enabled).HasDefaultValue(true);
         builder.Property(key => key.PermissionLevels).HasConversion<ApiKeyPermissionConverter>(new ApiKeyPermissionComparer());
         builder.Property(key => key.Created).IsRequired();
-        builder.Property(key => key.Expiration).IsRequired();
+        builder.Property(key => key.Expiration);
 
         builder.ToTable("AspNetApiKeys");
     }

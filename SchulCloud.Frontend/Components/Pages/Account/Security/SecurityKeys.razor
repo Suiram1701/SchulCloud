@@ -3,7 +3,11 @@
 @using SchulCloud.Store.Models
 @using SchulCloud.Frontend.Extensions
 
+<AppPageTitle Title="@Localizer["title"]" />
+
 <MudPaper Class="px-3 py-3">
+    <MudText Class="mb-2" Typo="Typo.h6">@Localizer["title"]</MudText>
+
     @if (UserManager.SupportsUserTwoFactorSecurityKeys)
     {
         <MudText Class="mb-1" Align="Align.Center">@Localizer["desc"]</MudText>

@@ -23,7 +23,7 @@ namespace SchulCloud.Database.Migrations
                     Enabled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     PermissionLevels = table.Column<string>(type: "text", nullable: false),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Expiration = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Expiration = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
