@@ -483,7 +483,7 @@ public partial class SchulCloudUserManager<TUser>(
         ArgumentException.ThrowIfNullOrWhiteSpace(permissionName);
 
         IUserPermissionStore<TUser> store = GetPermissionsStore();
-        await store.SetPermissionLevel(user, permissionName, level, CancellationToken);
+        await store.SetPermissionLevelAsync(user, permissionName, level, CancellationToken);
 
         return await UpdateAsync(user);
     }
@@ -500,7 +500,21 @@ public partial class SchulCloudUserManager<TUser>(
         ArgumentException.ThrowIfNullOrWhiteSpace(permissionName);
 
         IUserPermissionStore<TUser> store = GetPermissionsStore();
-        return await store.GetPermissionLevel(user, permissionName, CancellationToken);
+        return await store.GetPermissionLevelAsync(user, permissionName, CancellationToken);
+    }
+
+    /// <summary>
+    /// Gets every permission and its level of a user.
+    /// </summary>
+    /// <param name="user">The user to get the permissions for.</param>
+    /// <returns>A dictionary of permissions.</returns>
+    public virtual async Task<IReadOnlyDictionary<string, PermissionLevel>> GetPermissionLevelsAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserPermissionStore<TUser> store = GetPermissionsStore();
+        return await store.GetPermissionLevelsAsync(user, CancellationToken);
     }
 
     /// <summary>

@@ -11,7 +11,6 @@
         <HeaderContent>
             <MudTh>@Localizer["key_Name"]</MudTh>
             <MudTh>@Localizer["key_Notes"]</MudTh>
-            <MudTh>@Localizer["key_Enabled"]</MudTh>
             <MudTh>@Localizer["key_Created"]</MudTh>
             <MudTh>@Localizer["key_Expires"]</MudTh>
             <MudTh>@Localizer["key_Action"]</MudTh>
@@ -23,20 +22,6 @@
                     <div class="notes-text"><TextTruncate>@apiKey.Notes</TextTruncate></div>
                 </MudTd>
             </MudHidden>
-            <MudTd DataLabel="@Localizer["key_Enabled"]">
-                <div class="d-flex align-center flex-nowrap">
-                    @if (apiKey.Enabled)
-                    {
-                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.CheckCircle" Color="Color.Success" />
-                        <MudText Typo="Typo.inherit" Color="Color.Success">@Localizer["key_Enabled_True"]</MudText>
-                    }
-                    else
-                    {
-                        <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.Error" Color="Color.Error" />
-                        <MudText Typo="Typo.inherit" Color="Color.Error">@Localizer["key_Enabled_False"]</MudText>
-                    }
-                </div>
-            </MudTd>
             <MudTd DataLabel="@Localizer["key_Created"]">@apiKey.Created.ToLocalTime()</MudTd>
             <MudTd DataLabel="@Localizer["key_Expires"]">
                 @if (apiKey.Expiration is not null)

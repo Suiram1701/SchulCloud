@@ -106,20 +106,11 @@
   <data name="key_Notes" xml:space="preserve">
     <value>Anmerkungen</value>
   </data>
-  <data name="key_Enabled" xml:space="preserve">
-    <value>Aktiviert</value>
-  </data>
   <data name="key_Created" xml:space="preserve">
     <value>Erstellt</value>
   </data>
   <data name="key_Expires" xml:space="preserve">
     <value>Läuft ab</value>
-  </data>
-  <data name="key_Enabled_True" xml:space="preserve">
-    <value>Aktiv</value>
-  </data>
-  <data name="key_Enabled_False" xml:space="preserve">
-    <value>Deaktiviert</value>
   </data>
   <data name="key_Action" xml:space="preserve">
     <value>Aktion</value>

@@ -97,28 +97,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="title" xml:space="preserve">
-    <value>API keys</value>
-  </data>
-  <data name="key_Created" xml:space="preserve">
+  <data name="created" xml:space="preserve">
     <value>Created</value>
   </data>
-  <data name="key_Expires" xml:space="preserve">
+  <data name="expires" xml:space="preserve">
     <value>Expires</value>
   </data>
-  <data name="key_Name" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="key_Notes" xml:space="preserve">
+  <data name="notes" xml:space="preserve">
     <value>Notes</value>
   </data>
-  <data name="key_Action" xml:space="preserve">
-    <value>action</value>
+  <data name="name" xml:space="preserve">
+    <value>Name</value>
   </data>
-  <data name="key_DetailsBtn" xml:space="preserve">
-    <value>Show details</value>
+  <data name="permissions" xml:space="preserve">
+    <value>permissions</value>
   </data>
-  <data name="desc" xml:space="preserve">
-    <value>API keys can be used to request data from the various APIs on this website and to authenticate as you. You can assign certain permissions to each API key that are available to you. With such an API key it is possible to perform actions with your account without further verification, so take good care of your API keys.</value>
+  <data name="removeKey_Error" xml:space="preserve">
+    <value>An error occurred while removing the API key.</value>
+  </data>
+  <data name="removeKey_Success" xml:space="preserve">
+    <value>API key successfully removed</value>
+  </data>
+  <data name="backBtn" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="removeKeyBtn" xml:space="preserve">
+    <value>Remove key</value>
+  </data>
+  <data name="removeKey_Desc" xml:space="preserve">
+    <value>Removing this API key will cause requests made using it to no longer be valid. The key is irrecoverable. Do you want to continue anyway?</value>
   </data>
 </root>

@@ -1,1 +1,114 @@
-﻿<AppPageTitle Title="" />
+﻿@using Humanizer
+@using SchulCloud.Authorization;
+@using SchulCloud.Frontend.Components.Pages.Error
+
+<AppPageTitle Title="@_apiKey?.Name" />
+
+@if (_loaded)
+{
+    @if (_apiKey is not null && _authorizedAccess)
+    {
+        <MudPaper Class="py-3 px-3">
+            <MudGrid>
+                <MudItem xs="12" lg="6">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="6">@Localizer["name"]</MudItem>
+                        <MudItem xs="6">@_apiKey.Name</MudItem>
+                        <MudItem xs="12"><MudDivider /></MudItem>
+
+                        <MudItem xs="6">@Localizer["notes"]</MudItem>
+                        <MudItem xs="6">@_apiKey.Notes</MudItem>
+                        <MudItem xs="12"><MudDivider /></MudItem>
+
+                        <MudItem xs="6">@Localizer["created"]</MudItem>
+                        <MudItem xs="6">@_apiKey.Created.ToLocalTime()</MudItem>
+                        <MudItem xs="12"><MudDivider /></MudItem>
+
+                        <MudItem xs="6">@Localizer["expires"]</MudItem>
+                        <MudItem xs="6">
+                            @if (_apiKey.Expiration is not null)
+                            {
+                                @_apiKey.Expiration?.ToLocalTime()
+                            }
+                            else
+                            {
+                                @(((DateTime?)null).Humanize())
+                            }
+                        </MudItem>
+                        <MudItem xs="12"><MudDivider /></MudItem>
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12" lg="6">
+                    <MudText Class="mb-4">@Localizer["permissions"]</MudText>
+
+                    <div class="px-15">
+                        @{
+                            string[] labels = ["None", "Read", "Read/Write", "Read/Write/Special"];
+                        }
+                        @foreach ((string permissionName, PermissionLevel userLevel) in _userPermissions.OrderBy(p => p.Key))
+                        {
+                            if (!_apiKey.PermissionLevels.TryGetValue(permissionName, out PermissionLevel keyLevel))
+                            {
+                                keyLevel = PermissionLevel.None;
+                            }
+
+                            <div class="mt-3 mb-4">
+                                <MudText Typo="Typo.subtitle2">@permissionName</MudText>
+                                <MudSlider Value="@((int)keyLevel)" Min="0" Step="1" Max="(int)userLevel" TickMarkLabels="@labels" TickMarks />
+                            </div>
+
+                            @if (_userPermissions.OrderBy(p => p.Key).Last().Key != permissionName)
+                            {
+                                <MudDivider />
+                            }
+                        }
+                    </div>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudButton Color="Color.Primary" Href="@Routes.ApiKeys()" Variant="Variant.Filled">@Localizer["backBtn"]</MudButton>
+                    <MudButton Color="Color.Error" OnClick="Remove_ClickAsync">@Localizer["removeKeyBtn"]</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+    else if (_apiKey is not null && !_authorizedAccess)
+    {
+        <Forbidden />
+    }
+    else
+    {
+        <NotFound />
+    }
+}
+else
+{
+    @* Not loaded placeholder *@
+    <MudPaper Class="px-3 py-3">
+        <MudGrid>
+            <MudItem xs="12" lg="6">
+                <MudGrid Spacing="2">
+                    <MudItem xs="6">@Localizer["name"]</MudItem>
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="12"><MudDivider /></MudItem>
+
+                    <MudItem xs="6">@Localizer["notes"]</MudItem>
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="12"><MudDivider /></MudItem>
+
+                    <MudItem xs="6">@Localizer["created"]</MudItem>
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="12"><MudDivider /></MudItem>
+
+                    <MudItem xs="6">@Localizer["expires"]</MudItem>
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="12"><MudDivider /></MudItem>
+                </MudGrid>
+            </MudItem>
+            <MudItem xs="12" lg="6"><MudSkeleton Class="mx-15" Height="150px" SkeletonType="SkeletonType.Rectangle" /></MudItem>
+            <MudItem xs="12">
+                <MudButton Color="Color.Primary" Href="@Routes.ApiKeys()" Variant="Variant.Filled">@Localizer["backBtn"]</MudButton>
+                <MudButton Color="Color.Error" Disabled>@Localizer["removeKeyBtn"]</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}
