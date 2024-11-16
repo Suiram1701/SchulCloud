@@ -1,0 +1,66 @@
+﻿@using SchulCloud.Authorization
+
+<AppPageTitle Title="@Localizer["title"]" />
+
+<MudPaper Class="py-3 px-3">
+    <MudText Typo="Typo.h6">@Localizer["title"]</MudText>
+
+    <MudForm @ref="_createForm" @bind-IsValid="_formIsValid">
+        <MudTextField @bind-Value="_createKeyModel.Name" Label="@Localizer["form_Name"]"
+                      Validation="@(async (string value) => await Name_ValidateAsync(value))" RequiredError="@Localizer["form_Required"]" Required />
+        <MudTextField @bind-Value="_createKeyModel.Notes" Label="@Localizer["form_Notes"]" />
+        <MudStack Class="mt-2" Row>
+            <MudDatePicker @bind-Date="_createKeyModel.Expires" Label="@Localizer["form_Expires"]" Placeholder="@Localizer["form_Expires_Infinite"]"
+                           Validation="@((DateTime? date) => Expires_Validate(date))" />
+            <MudTooltip Text="@Localizer["form_Expires_ClearBtn"]">
+                <MudButton Class="mt-3 px-n10" OnClick="ExpiresClear_Click">
+                    <MudIcon Icon="@MaterialSymbols.Outlined.Backspace" />
+                </MudButton>
+            </MudTooltip>
+        </MudStack>
+
+        <MudText Class="mt-2 mb-4">@Localizer["permissions"]</MudText>
+        <div class="px-15">
+            @{
+                string[] labels = ["None", "Read", "Read/Write", "Read/Write/Special"];
+            }
+            @foreach ((string permissionName, PermissionLevel userLevel) in _userPermissions.OrderBy(p => p.Key))
+            {
+                EventCallback<int> permissionChanged = CreatePermissionChangedCallback(permissionName);
+                if (!_createKeyModel.PermissionLevels.TryGetValue(permissionName, out PermissionLevel keyLevel))
+                {
+                    keyLevel = PermissionLevel.None;
+                }
+
+                <div class="mt-3 mb-4">
+                    <MudText Typo="Typo.subtitle2">@permissionName</MudText>
+                    <MudSlider Value="@((int)keyLevel)" ValueChanged="permissionChanged" Min="0" Step="1" Max="(int)userLevel" TickMarkLabels="@labels" TickMarks />
+                </div>
+
+                @if (_userPermissions.OrderBy(p => p.Key).Last().Key != permissionName)
+                {
+                    <MudDivider />
+                }
+            }
+        </div>
+
+        <MudStack Class="mt-2" Row>
+            <MudButton Color="Color.Primary" OnClick="Create_ClickAsync" Variant="Variant.Filled" Disabled="@(!_formIsValid)">
+                @Localizer["createBtn"]
+            </MudButton>
+            <MudButton Color="Color.Secondary" Href="@Routes.ApiKeys()">@Localizer["cancelBtn"]</MudButton>
+        </MudStack>
+    </MudForm>
+</MudPaper>
+
+<MudDialog @ref="_showKeyDialog">
+    <TitleContent>@Localizer["showKeyDialog"]</TitleContent>
+    <DialogContent>
+        @Localizer["showKeyDialog_Message"]
+        <MudText Class="mt-4"><b>@_apiKey</b></MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="ShowKeyDialog_DownloadKey_ClickAsync">@Localizer["showKeyDialog_DownloadBtn"]</MudButton>
+        <MudButton Color="Color.Primary" OnClick="@(async () => await _showKeyDialog.CloseAsync())" Variant="Variant.Filled">@Localizer["showKeyDialog_DoneBtn"]</MudButton>
+    </DialogActions>
+</MudDialog>

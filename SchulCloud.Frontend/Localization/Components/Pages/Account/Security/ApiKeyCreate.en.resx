@@ -98,33 +98,69 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="title" xml:space="preserve">
-    <value>API-Schlüssel</value>
+    <value>Create API key</value>
   </data>
-  <data name="key_Name" xml:space="preserve">
+  <data name="cancelBtn" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="createBtn" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="form_Expires" xml:space="preserve">
+    <value>Expires</value>
+  </data>
+  <data name="form_Name" xml:space="preserve">
     <value>Name</value>
   </data>
-  <data name="key_Notes" xml:space="preserve">
-    <value>Anmerkungen</value>
+  <data name="form_Name_MustUnique" xml:space="preserve">
+    <value>There is already an API key with this name</value>
   </data>
-  <data name="key_Created" xml:space="preserve">
-    <value>Erstellt</value>
+  <data name="form_Notes" xml:space="preserve">
+    <value>Notes</value>
   </data>
-  <data name="key_Expires" xml:space="preserve">
-    <value>Läuft ab</value>
+  <data name="form_Required" xml:space="preserve">
+    <value>The field must not be empty</value>
   </data>
-  <data name="key_Action" xml:space="preserve">
-    <value>Aktion</value>
+  <data name="permissions" xml:space="preserve">
+    <value>Permissions</value>
   </data>
-  <data name="key_DetailsBtn" xml:space="preserve">
-    <value>Details anzeigen</value>
+  <data name="form_Expires_ClearBtn" xml:space="preserve">
+    <value>Clear input</value>
   </data>
-  <data name="desc" xml:space="preserve">
-    <value>API-Schlüssel können verwendet werden um von den verschiedenen API's dieser Website daten abzufragen und sich als Sie zu authentifizieren. Sie können jedem API-Schlüssel bestimmte Berechtigungen, die ihnen zur Verfügung stehen, zuweisen. Mit einem solchen API-Schlüssel ist es möglich ohne weitere Überprüfungen Aktionen mit ihrem Konto durchzuführen, achten Sie deshalb gut auf Ihre API-Schlüssel.</value>
+  <data name="form_Expires_MustInFuture" xml:space="preserve">
+    <value>The timestamp must not be in the past</value>
   </data>
-  <data name="createKeyBtn" xml:space="preserve">
-    <value>Neuen API-Schlüssel erstellen</value>
+  <data name="form_Expires_Infinite" xml:space="preserve">
+    <value>Never expires</value>
   </data>
-  <data name="createKeyBtn_Disabled" xml:space="preserve">
-    <value>Sie haben die maximal Anzahl an API-Schlüsseln erreicht. Jeder Benutzer darf maximal {0} API-Schlüssel haben.</value>
+  <data name="createKey_Error" xml:space="preserve">
+    <value>An unknown error occurred while API key creation.</value>
+  </data>
+  <data name="confirmNeverExpire" xml:space="preserve">
+    <value>API key without expiration date</value>
+  </data>
+  <data name="confirmNeverExpire_Message" xml:space="preserve">
+    <value>The API key that you create has no expiration date, which makes it valid until manually removed. It is recommended to set an expiration date. Do you still want to proceed?</value>
+  </data>
+  <data name="showKeyDialog" xml:space="preserve">
+    <value>API key</value>
+  </data>
+  <data name="showKeyDialog_DoneBtn" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="showKeyDialog_DownloadBtn" xml:space="preserve">
+    <value>Download key</value>
+  </data>
+  <data name="showKeyDialog_Message" xml:space="preserve">
+    <value>This is the API key you have created. Keep it safe! Once you click 'Done', it cannot be displayed again.</value>
+  </data>
+  <data name="noPermissions" xml:space="preserve">
+    <value>No permissions selected</value>
+  </data>
+  <data name="noPermissions_YesBtn" xml:space="preserve">
+    <value>Understood</value>
+  </data>
+  <data name="noPermissions_Message" xml:space="preserve">
+    <value>To create an API key, at least one permission must be selected at level Read or higher.</value>
   </data>
 </root>

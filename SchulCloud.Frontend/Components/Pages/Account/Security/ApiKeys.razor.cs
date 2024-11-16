@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using MudBlazor;
 using SchulCloud.Store.Models;
 
@@ -17,7 +18,7 @@ public sealed partial class ApiKeys : ComponentBase
     private AppUserManager UserManager { get; set; } = default!;
 
     [Inject]
-    private NavigationManager NavigationManager { get; set; } = default!;
+    private NavigationManager NavigationManager { get; set; } = default!; 
     #endregion
 
     private IEnumerable<UserApiKey> _apiKeys = [];

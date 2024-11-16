@@ -593,13 +593,44 @@ public partial class SchulCloudUserManager<TUser>(
     public virtual async Task<string?> AddApiKeyToUserAsync(TUser user, UserApiKey apiKey)
     {
         ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(apiKey);
+
+        IUserApiKeyStore<TUser> keyStore = GetApiKeyStore();
+        int keysCount = (await keyStore.GetApiKeysByUserAsync(user, CancellationToken)).Length;
+        if (ApiKeyOptions.MaxKeysPerUser != -1 && keysCount >= ApiKeyOptions.MaxKeysPerUser)
+        {
+            string? userId = await GetUserIdAsync(user);
+            Logger.LogInformation("User '{userId}' tried to create more api keys than the maximum count per user. The maximum count is {maxCount}.", userId, ApiKeyOptions.MaxKeysPerUser);
+
+            return null;
+        }
+
+        IUserPermissionStore<TUser> permissionStore = GetPermissionsStore();
+        IReadOnlyDictionary<string, PermissionLevel> userPermissions = await permissionStore.GetPermissionLevelsAsync(user, CancellationToken);
+        bool validPermissions = apiKey.PermissionLevels.All(p =>
+        {
+            if (!userPermissions.TryGetValue(p.Key, out PermissionLevel level))
+            {
+                level = PermissionLevel.None;
+            }
+
+            return p.Value <= level;
+        });
+        
+        if (!validPermissions)
+        {
+            string? userId = await GetUserIdAsync(user);
+            Logger.LogInformation("User '{userId}' tried to create an api key with higher privileges than the user it self.", userId);
+
+            return null;
+        }
 
         string key = GenerateApiKey();
         apiKey.KeyHash = HashApiKey(key);
+        apiKey.Created = DateTime.UtcNow;
 
-        IUserApiKeyStore<TUser> store = GetApiKeyStore();
-        await store.AddApiKeyAsync(user, apiKey, CancellationToken);
+        await keyStore.AddApiKeyAsync(user, apiKey, CancellationToken);
 
         IdentityResult result = await UpdateSecurityStampAsync(user);
         return result.Succeeded ? key : null;

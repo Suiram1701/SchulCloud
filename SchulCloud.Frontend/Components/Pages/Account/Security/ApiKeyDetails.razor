@@ -54,7 +54,7 @@
 
                             <div class="mt-3 mb-4">
                                 <MudText Typo="Typo.subtitle2">@permissionName</MudText>
-                                <MudSlider Value="@((int)keyLevel)" Min="0" Step="1" Max="(int)userLevel" TickMarkLabels="@labels" TickMarks />
+                                <MudSlider Value="@((int)keyLevel)" Min="0" Step="1" Max="(int)userLevel" TickMarkLabels="@labels" TickMarks Disabled />
                             </div>
 
                             @if (_userPermissions.OrderBy(p => p.Key).Last().Key != permissionName)

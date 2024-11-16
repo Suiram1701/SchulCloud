@@ -513,7 +513,10 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ArgumentNullException.ThrowIfNull(apiKey);
         ct.ThrowIfCancellationRequested();
 
-        await ApiKeys.AddAsync(apiKey.Adapt<ApiKey>(_apiKeyAdaptConfig), ct).AsTask();
+        ApiKey dbDto = apiKey.Adapt<ApiKey>(_apiKeyAdaptConfig);
+        dbDto.UserId = await GetUserIdAsync(user, ct);
+
+        await ApiKeys.AddAsync(dbDto, ct).AsTask();
     }
 
     public async Task UpdateApiKeyAsync(UserApiKey apiKey, CancellationToken ct)

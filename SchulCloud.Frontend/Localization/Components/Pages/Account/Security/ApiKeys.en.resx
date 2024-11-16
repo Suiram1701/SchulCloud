@@ -121,4 +121,10 @@
   <data name="desc" xml:space="preserve">
     <value>API keys can be used to request data from the various APIs on this website and to authenticate as you. You can assign certain permissions to each API key that are available to you. With such an API key it is possible to perform actions with your account without further verification, so take good care of your API keys.</value>
   </data>
+  <data name="createKeyBtn" xml:space="preserve">
+    <value>Create new API key</value>
+  </data>
+  <data name="createKeyBtn_Disabled" xml:space="preserve">
+    <value>You have reached the maximum number of API keys. Each user can have a maximum of {0} API keys.</value>
+  </data>
 </root>

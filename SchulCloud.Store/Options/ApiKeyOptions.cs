@@ -19,7 +19,7 @@ public class ApiKeyOptions
     /// <summary>
     /// The length of the generated key.
     /// </summary>
-    public int KeyLength { get; set; } = 64;
+    public int KeyLength { get; set; } = 48;
 
     /// <summary>
     /// Chars that will be used to generate an api key.

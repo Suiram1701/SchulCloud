@@ -7,6 +7,19 @@
     <MudText Typo="Typo.h6">@Localizer["title"]</MudText>
     <MudText Class="my-2" Typo="Typo.body1">@Localizer["desc"]</MudText>
 
+    @{
+        int maxKeysCount = UserManager.ApiKeyOptions.MaxKeysPerUser;
+        bool newKeysAllowed = maxKeysCount != -1
+            ? maxKeysCount > _apiKeys.Count()
+            : true;
+    }
+    <MudTooltip Text="@Localizer["createKeyBtn_Disabled", maxKeysCount]" Disabled="newKeysAllowed">
+        <MudButton Class="my-2" Color="Color.Primary" Href="@Routes.ApiKeyCreate()"
+                   StartIcon="@MaterialSymbols.Outlined.Add" Disabled="@(!newKeysAllowed)">
+            @Localizer["createKeyBtn"]
+        </MudButton>
+    </MudTooltip>
+
     <MudTable Class="py-3 px-3" Items="_apiKeys.OrderByDescending(key => key.Created)" Elevation="0">
         <HeaderContent>
             <MudTh>@Localizer["key_Name"]</MudTh>
