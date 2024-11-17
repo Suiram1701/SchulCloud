@@ -14,10 +14,10 @@ public static class Permissions
     /// <summary>
     /// The permission to add, edit or remove users.
     /// </summary>
-    public const string Users = "users";
+    public const string Users = "Users";
 
     /// <summary>
     /// The permission to add, edit or remove roles.
     /// </summary>
-    public const string Roles = "roles";
+    public const string Roles = "Roles";
 }

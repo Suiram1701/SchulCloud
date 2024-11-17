@@ -33,7 +33,7 @@ public sealed partial class ApiKeyDetails
     private bool _loaded;
 
     private ApplicationUser _user = default!;
-    private IReadOnlyDictionary<string, PermissionLevel> _userPermissions = default!;
+    private IReadOnlyCollection<Permission> _userPermissions = [];
 
     private bool _authorizedAccess;
     private UserApiKey? _apiKey;
@@ -58,6 +58,19 @@ public sealed partial class ApiKeyDetails
 
         _loaded = true;
         StateHasChanged();
+    }
+
+    private PermissionLevel GetDisplayedPermissionLevel(Permission userPermission)
+    {
+        if (_apiKey!.AllPermissions)
+        {
+            return userPermission.Level;
+        }
+        else
+        {
+            Permission? keyPermission = _apiKey!.PermissionLevels.FirstOrDefault(p => p.Name == userPermission.Name);
+            return keyPermission?.Level ?? PermissionLevel.None;
+        }
     }
 
     private async Task Remove_ClickAsync()

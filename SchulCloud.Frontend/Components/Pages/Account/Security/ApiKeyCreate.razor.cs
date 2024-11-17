@@ -36,7 +36,7 @@ public sealed partial class ApiKeyCreate : ComponentBase
     #endregion
 
     private ApplicationUser _user = default!;
-    private IReadOnlyDictionary<string, PermissionLevel> _userPermissions = new Dictionary<string, PermissionLevel>();
+    private IReadOnlyCollection<Permission> _userPermissions = [];
 
     private MudForm _createForm = default!;
     private bool _formIsValid;
@@ -73,20 +73,33 @@ public sealed partial class ApiKeyCreate : ComponentBase
         return true;
     }
 
-    private EventCallback<int> CreatePermissionChangedCallback(string permissionName)
+    private (PermissionLevel level, EventCallback<int> changedCallback) GetPermissionLevel(Permission userPermission)
     {
-        return EventCallback.Factory.Create<int>(this, value =>
+        if (_createKeyModel.AllPermissions)
         {
-            PermissionLevel level = (PermissionLevel)value;
-            if (level != PermissionLevel.None)
+            return (userPermission.Level, EventCallback<int>.Empty);
+        }
+        else
+        {
+            if (!_createKeyModel.PermissionLevels.TryGetValue(userPermission.Name, out PermissionLevel keyLevel))
             {
-                _createKeyModel.PermissionLevels[permissionName] = level;
+                keyLevel = PermissionLevel.None;
             }
-            else
+            EventCallback<int> changedCallback = EventCallback.Factory.Create<int>(this, value =>
             {
-                _createKeyModel.PermissionLevels.Remove(permissionName);
-            }
-        });
+                PermissionLevel level = (PermissionLevel)value;
+                if (level != PermissionLevel.None)
+                {
+                    _createKeyModel.PermissionLevels[userPermission.Name] = level;
+                }
+                else
+                {
+                    _createKeyModel.PermissionLevels.Remove(userPermission.Name);
+                }
+            });
+
+            return (keyLevel, changedCallback);
+        }
     }
 
     private async Task<string?> Name_ValidateAsync(string value)
@@ -138,7 +151,7 @@ public sealed partial class ApiKeyCreate : ComponentBase
                 Notes = _createKeyModel.Notes,
                 Expiration = _createKeyModel.Expires?.ToUniversalTime(),
                 AllPermissions = _createKeyModel.AllPermissions,
-                PermissionLevels = _createKeyModel.PermissionLevels,
+                PermissionLevels = _createKeyModel.PermissionLevels.Select(kv => new Permission(kv.Key, kv.Value)).ToHashSet(),
             };
 
             _apiKey = await UserManager.AddApiKeyToUserAsync(_user, key);

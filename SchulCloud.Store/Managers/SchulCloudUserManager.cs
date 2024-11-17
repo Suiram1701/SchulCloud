@@ -473,17 +473,16 @@ public partial class SchulCloudUserManager<TUser>(
     /// Sets the permission level of a user for a permission type.
     /// </summary>
     /// <param name="user">The user to the set the permission for.</param>
-    /// <param name="permissionName">The name of the permission type,</param>
-    /// <param name="level">The permission level to set.</param>
+    /// <param name="permission">The permission to set. If a permission of the same type already exists it will be overridden.</param>
     /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> SetPermissionLevelAsync(TUser user, string permissionName, PermissionLevel level)
+    public virtual async Task<IdentityResult> SetPermissionLevelAsync(TUser user, Permission permission)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
-        ArgumentException.ThrowIfNullOrWhiteSpace(permissionName);
+        ArgumentNullException.ThrowIfNull(permission);
 
         IUserPermissionStore<TUser> store = GetPermissionsStore();
-        await store.SetPermissionLevelAsync(user, permissionName, level, CancellationToken);
+        await store.SetPermissionLevelAsync(user, permission, CancellationToken);
 
         return await UpdateAsync(user);
     }
@@ -508,7 +507,7 @@ public partial class SchulCloudUserManager<TUser>(
     /// </summary>
     /// <param name="user">The user to get the permissions for.</param>
     /// <returns>A dictionary of permissions.</returns>
-    public virtual async Task<IReadOnlyDictionary<string, PermissionLevel>> GetPermissionLevelsAsync(TUser user)
+    public virtual async Task<IReadOnlyCollection<Permission>> GetPermissionLevelsAsync(TUser user)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
@@ -604,17 +603,12 @@ public partial class SchulCloudUserManager<TUser>(
         }
 
         IUserPermissionStore<TUser> permissionStore = GetPermissionsStore();
-        IReadOnlyDictionary<string, PermissionLevel> userPermissions = await permissionStore.GetPermissionLevelsAsync(user, CancellationToken);
-        bool validPermissions = apiKey.PermissionLevels.All(p =>
+        IReadOnlyCollection<Permission> userPermissions = await permissionStore.GetPermissionLevelsAsync(user, CancellationToken);
+        bool validPermissions = apiKey.PermissionLevels.All(keyPermission =>
         {
-            if (!userPermissions.TryGetValue(p.Key, out PermissionLevel level))
-            {
-                level = PermissionLevel.None;
-            }
-
-            return p.Value <= level;
+            Permission? userPermission = userPermissions.FirstOrDefault(permission => permission.Name == keyPermission.Name);
+            return userPermission?.Level >= keyPermission.Level;
         });
-        
         if (!validPermissions)
         {
             string? userId = await GetUserIdAsync(user);

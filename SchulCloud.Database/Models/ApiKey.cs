@@ -1,6 +1,7 @@
 ﻿using SchulCloud.Authorization;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -45,7 +46,7 @@ internal class ApiKey
     /// <summary>
     /// The permissions of the api key.
     /// </summary>
-    public Dictionary<string, PermissionLevel> PermissionLevels { get; set; } = [];
+    public HashSet<Permission> PermissionLevels { get; set; } = [];
 
     /// <summary>
     /// The date time where the key was created.

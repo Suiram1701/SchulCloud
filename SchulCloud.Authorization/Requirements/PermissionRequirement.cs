@@ -23,4 +23,10 @@ public class PermissionRequirement(string name, PermissionLevel level) : IAuthor
     /// The required level of the permission.
     /// </summary>
     public PermissionLevel PermissionLevel { get; set; } = level;
+
+    /// <summary>
+    /// Converts the specified data to a permission instance.
+    /// </summary>
+    /// <returns>The permission</returns>
+    public Permission ToPermission() => new(Name, PermissionLevel);
 }

@@ -372,17 +372,17 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     #endregion
 
     #region IUserPermissionStore
-    public async Task SetPermissionLevelAsync(TUser user, string permissionName, PermissionLevel level, CancellationToken ct)
+    public async Task SetPermissionLevelAsync(TUser user, Permission permission, CancellationToken ct)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
-        ArgumentException.ThrowIfNullOrWhiteSpace(permissionName);
+        ArgumentNullException.ThrowIfNull(permission);
         ct.ThrowIfCancellationRequested();
 
-        Claim? existingClaim = await GetClaimOfPermissionTypeAsync(user, permissionName, ct);     // Check whether the same permission type is already stored.
-        if (level != PermissionLevel.None)
+        Claim? existingClaim = await GetPermissionTypeAsync(user, permission.Name, ct);     // Check whether the same permission type is already stored.
+        if (permission.Level != PermissionLevel.None)
         {
-            Claim claim = new(Authorization.ClaimTypes.Permission, $"{permissionName}:{level}");
+            Claim claim = new(Authorization.ClaimTypes.Permission, permission.ToString());
             if (existingClaim is null)
             {
                 await AddClaimsAsync(user, [claim], ct);
@@ -405,19 +405,13 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         ArgumentException.ThrowIfNullOrWhiteSpace(permissionName);
         ct.ThrowIfCancellationRequested();
 
-        Claim? claim = await GetClaimOfPermissionTypeAsync(user, permissionName, ct);
-        if (claim is not null)
-        {
-            string[] values = claim.Value.Split(':', 2);
-            return Enum.Parse<PermissionLevel>(values[1]);
-        }
-        else
-        {
-            return PermissionLevel.None;
-        }
+        Claim? claim = await GetPermissionTypeAsync(user, permissionName, ct);
+        return claim is not null
+            ? Permission.Parse(claim.Value).Level
+            : PermissionLevel.None;
     }
 
-    public async Task<IReadOnlyDictionary<string, PermissionLevel>> GetPermissionLevelsAsync(TUser user, CancellationToken ct)
+    public async Task<IReadOnlyCollection<Permission>> GetPermissionLevelsAsync(TUser user, CancellationToken ct)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
@@ -426,18 +420,16 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         IEnumerable<Claim> userClaims = await GetClaimsAsync(user, ct);
         return userClaims
             .Where(claim => claim.Type == Authorization.ClaimTypes.Permission)
-            .Select(claim =>
-            {
-                string[] parts = claim.Value.Split(':', 2);
-                return KeyValuePair.Create(parts[0], Enum.Parse<PermissionLevel>(parts[1]));
-            })
-            .ToDictionary();
+            .Select(claim => Permission.Parse(claim.Value))
+            .ToArray();
     }
 
-    private async Task<Claim?> GetClaimOfPermissionTypeAsync(TUser user, string permissionName, CancellationToken ct)
+    private async Task<Claim?> GetPermissionTypeAsync(TUser user, string permissionName, CancellationToken ct)
     {
         IEnumerable<Claim> userClaims = await GetClaimsAsync(user, ct);
-        return userClaims.FirstOrDefault(claim => claim.Type == Authorization.ClaimTypes.Permission && claim.Value.Split(':')[0] == permissionName);
+        return userClaims
+            .Where(claim => claim.Type == Authorization.ClaimTypes.Permission)
+            .FirstOrDefault(claim => Permission.Parse(claim.Value).Name == permissionName);
     }
     #endregion
 

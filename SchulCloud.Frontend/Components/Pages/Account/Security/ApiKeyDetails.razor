@@ -52,20 +52,16 @@
                         @{
                             string[] labels = ["None", "Read", "Read/Write", "Read/Write/Special"];
                         }
-                        @foreach ((string permissionName, PermissionLevel userLevel) in _userPermissions.OrderBy(p => p.Key))
+                        @foreach (Permission userPermission in _userPermissions.OrderBy(p => p.Name))
                         {
-                            PermissionLevel permissionLevel = userLevel;
-                            if (!_apiKey.AllPermissions && !_apiKey.PermissionLevels.TryGetValue(permissionName, out PermissionLevel keyLevel))
-                            {
-                                keyLevel = PermissionLevel.None;
-                            }
+                            PermissionLevel displayedLevel = GetDisplayedPermissionLevel(userPermission);
 
                             <div class="mt-3 mb-4">
-                                <MudText Typo="Typo.subtitle2">@permissionName</MudText>
-                                <MudSlider Value="@((int)permissionLevel)" Min="0" Step="1" Max="(int)userLevel" TickMarkLabels="@labels" TickMarks Disabled />
+                                <MudText Typo="Typo.subtitle2">@userPermission.Name</MudText>
+                                <MudSlider Value="@((int)displayedLevel)" Min="0" Step="1" Max="@((int)userPermission.Level)" TickMarkLabels="@labels" TickMarks Disabled />
                             </div>
 
-                            @if (_userPermissions.OrderBy(p => p.Key).Last().Key != permissionName)
+                            @if (_userPermissions.OrderBy(p => p.Name).Last() != userPermission)
                             {
                                 <MudDivider />
                             }

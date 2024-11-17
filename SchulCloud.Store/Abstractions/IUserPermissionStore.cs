@@ -18,10 +18,9 @@ public interface IUserPermissionStore<TUser>
     /// Sets the level of a permission to a specific level for a user.
     /// </summary>
     /// <param name="user">The user to set the permission for.</param>
-    /// <param name="permissionName">The name of the permission.</param>
-    /// <param name="level">The level to set.</param>
+    /// <param name="permission">The permission to set. If a permission of the same type already exists it will be overridden.</param>
     /// <param name="ct">Cancellation token</param>
-    public Task SetPermissionLevelAsync(TUser user, string permissionName, PermissionLevel level, CancellationToken ct);
+    public Task SetPermissionLevelAsync(TUser user, Permission permission, CancellationToken ct);
 
     /// <summary>
     /// Gets the permission level of a permission of a user.
@@ -37,6 +36,6 @@ public interface IUserPermissionStore<TUser>
     /// </summary>
     /// <param name="user">The user to get the permissions for.</param>
     /// <param name="ct">Cancellation token</param>
-    /// <returns>A dictionary containing the name of the permission and its level.</returns>
-    public Task<IReadOnlyDictionary<string, PermissionLevel>> GetPermissionLevelsAsync(TUser user, CancellationToken ct);
+    /// <returns>A collection containing the permissions of the user.</returns>
+    public Task<IReadOnlyCollection<Permission>> GetPermissionLevelsAsync(TUser user, CancellationToken ct);
 }
