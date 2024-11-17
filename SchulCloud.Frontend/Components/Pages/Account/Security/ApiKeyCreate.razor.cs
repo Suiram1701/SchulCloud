@@ -55,6 +55,24 @@ public sealed partial class ApiKeyCreate : ComponentBase
         _userPermissions = await UserManager.GetPermissionLevelsAsync(_user);
     }
 
+    private async Task<bool> CheckMinimumPermissionsAsync()
+    {
+        if (!_createKeyModel.AllPermissions
+            && (_createKeyModel.PermissionLevels.Count == 0
+            || _createKeyModel.PermissionLevels.All(p => p.Value == PermissionLevel.None)))
+        {
+            await DialogService.ShowMessageBox(new()
+            {
+                Title = Localizer["noPermissions"],
+                Message = Localizer["noPermissions_Message"],
+                YesText = Localizer["noPermissions_YesBtn"],
+            });
+            return false;
+        }
+
+        return true;
+    }
+
     private EventCallback<int> CreatePermissionChangedCallback(string permissionName)
     {
         return EventCallback.Factory.Create<int>(this, value =>
@@ -73,7 +91,7 @@ public sealed partial class ApiKeyCreate : ComponentBase
 
     private async Task<string?> Name_ValidateAsync(string value)
     {
-        UserApiKey[] keys = await UserManager.GetApiKeysByUserAsync(_user, onlyEnabled: false);
+        UserApiKey[] keys = await UserManager.GetApiKeysByUserAsync(_user);
         return keys.Any(key => key.Name == value)
             ? Localizer["form_Name_MustUnique"].ToString()
             : null;
@@ -94,14 +112,8 @@ public sealed partial class ApiKeyCreate : ComponentBase
 
     private async Task Create_ClickAsync()
     {
-        if (_createKeyModel.PermissionLevels.Count == 0 || _createKeyModel.PermissionLevels.All(p => p.Value == PermissionLevel.None))
+        if (!await CheckMinimumPermissionsAsync())
         {
-            await DialogService.ShowMessageBox(new()
-            {
-                Title = Localizer["noPermissions"],
-                Message = Localizer["noPermissions_Message"],
-                YesText = Localizer["noPermissions_YesBtn"],
-            });
             return;
         }
 
@@ -125,12 +137,14 @@ public sealed partial class ApiKeyCreate : ComponentBase
                 Name = _createKeyModel.Name,
                 Notes = _createKeyModel.Notes,
                 Expiration = _createKeyModel.Expires?.ToUniversalTime(),
+                AllPermissions = _createKeyModel.AllPermissions,
                 PermissionLevels = _createKeyModel.PermissionLevels,
             };
+
             _apiKey = await UserManager.AddApiKeyToUserAsync(_user, key);
             if (!string.IsNullOrWhiteSpace(_apiKey))
             {
-                UserApiKey createdKey = (await UserManager.GetApiKeysByUserAsync(_user, false)).First(key => key.Name == _createKeyModel.Name);
+                UserApiKey createdKey = (await UserManager.GetApiKeysByUserAsync(_user)).First(key => key.Name == _createKeyModel.Name);
 
                 IDialogReference dialogRef = await _showKeyDialog.ShowAsync();
                 await dialogRef.Result;

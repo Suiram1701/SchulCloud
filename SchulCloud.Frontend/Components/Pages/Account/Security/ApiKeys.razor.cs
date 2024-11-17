@@ -16,9 +16,6 @@ public sealed partial class ApiKeys : ComponentBase
 
     [Inject]
     private AppUserManager UserManager { get; set; } = default!;
-
-    [Inject]
-    private NavigationManager NavigationManager { get; set; } = default!; 
     #endregion
 
     private IEnumerable<UserApiKey> _apiKeys = [];
@@ -31,6 +28,6 @@ public sealed partial class ApiKeys : ComponentBase
         AuthenticationState authenticationState = await AuthenticationState;
         ApplicationUser user = (await UserManager.GetUserAsync(authenticationState.User))!;
 
-        _apiKeys = await UserManager.GetApiKeysByUserAsync(user, onlyEnabled: false);
+        _apiKeys = await UserManager.GetApiKeysByUserAsync(user);
     }
 }

@@ -492,20 +492,6 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             .ToArrayAsync(ct);
     }
 
-    public async Task<UserApiKey[]> GetEnabledApiKeysByUserAsync(TUser user, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(user);
-        ct.ThrowIfCancellationRequested();
-
-        string userId = await GetUserIdAsync(user, ct);
-        return await ApiKeys
-            .Where(key => key.UserId.Equals(userId) && key.Enabled)
-            .Where(key => key.Expiration == null || key.Expiration > DateTime.UtcNow)
-            .ProjectToType<UserApiKey>(_apiKeyAdaptConfig)
-            .ToArrayAsync(ct);
-    }
-
     public async Task AddApiKeyAsync(TUser user, UserApiKey apiKey, CancellationToken ct)
     {
         ThrowIfDisposed();
@@ -517,25 +503,6 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         dbDto.UserId = await GetUserIdAsync(user, ct);
 
         await ApiKeys.AddAsync(dbDto, ct).AsTask();
-    }
-
-    public async Task UpdateApiKeyAsync(UserApiKey apiKey, CancellationToken ct)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(apiKey);
-        ct.ThrowIfCancellationRequested();
-
-        ApiKey? key = await ApiKeys.FindAsync([apiKey.Id], ct).AsTask();
-        if (key is not null)
-        {
-            apiKey.BuildAdapter()
-                .EntityFromContext(Context)
-                .AdaptTo(key);
-        }
-        else
-        {
-            throw new InvalidOperationException($"Unable to find api key with id '{apiKey.Id}'.");
-        }
     }
 
     public async Task RemoveApiKeyAsync(UserApiKey apiKey, CancellationToken ct)

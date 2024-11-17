@@ -10,5 +10,7 @@ public class CreateApiKeyModel
 
     public DateTime? Expires { get; set; }
 
+    public bool AllPermissions { get; set; }
+
     public Dictionary<string, PermissionLevel> PermissionLevels { get; set; } = [];
 }

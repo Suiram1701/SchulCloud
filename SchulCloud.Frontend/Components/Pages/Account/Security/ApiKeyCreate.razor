@@ -11,7 +11,7 @@
         <MudTextField @bind-Value="_createKeyModel.Notes" Label="@Localizer["form_Notes"]" />
         <MudStack Class="mt-2" Row>
             <MudDatePicker @bind-Date="_createKeyModel.Expires" Label="@Localizer["form_Expires"]" Placeholder="@Localizer["form_Expires_Infinite"]"
-                           Validation="@((DateTime? date) => Expires_Validate(date))" />
+            Validation="@((DateTime? date) => Expires_Validate(date))" />
             <MudTooltip Text="@Localizer["form_Expires_ClearBtn"]">
                 <MudButton Class="mt-3 px-n10" OnClick="ExpiresClear_Click">
                     <MudIcon Icon="@MaterialSymbols.Outlined.Backspace" />
@@ -19,22 +19,39 @@
             </MudTooltip>
         </MudStack>
 
-        <MudText Class="mt-2 mb-4">@Localizer["permissions"]</MudText>
+        <MudText Class="mt-5">@Localizer["permissions"]</MudText>
+        <MudStack AlignItems="AlignItems.Center" Row>
+            <MudSwitch @bind-Value="_createKeyModel.AllPermissions" Color="Color.Primary" Label="@Localizer["permissions_All"]" />
+            <MudTooltip RootClass="ml-n5 mt-1" Text="@Localizer["permissions_All_Desc"]">
+                <MudIcon Icon="@MaterialSymbols.Outlined.Info" Size="Size.Small" />
+            </MudTooltip>
+        </MudStack>
         <div class="px-15">
             @{
                 string[] labels = ["None", "Read", "Read/Write", "Read/Write/Special"];
             }
             @foreach ((string permissionName, PermissionLevel userLevel) in _userPermissions.OrderBy(p => p.Key))
             {
-                EventCallback<int> permissionChanged = CreatePermissionChangedCallback(permissionName);
-                if (!_createKeyModel.PermissionLevels.TryGetValue(permissionName, out PermissionLevel keyLevel))
+                PermissionLevel permissionLevel;
+                EventCallback<int> permissionChanged;
+                if (!_createKeyModel.AllPermissions)
                 {
-                    keyLevel = PermissionLevel.None;
+                    if (!_createKeyModel.PermissionLevels.TryGetValue(permissionName, out permissionLevel))
+                    {
+                        permissionLevel = PermissionLevel.None;
+                    }
+                    permissionChanged = CreatePermissionChangedCallback(permissionName);
+                }
+                else
+                {
+                    permissionLevel = userLevel;
+                    permissionChanged = EventCallback<int>.Empty;
                 }
 
                 <div class="mt-3 mb-4">
                     <MudText Typo="Typo.subtitle2">@permissionName</MudText>
-                    <MudSlider Value="@((int)keyLevel)" ValueChanged="permissionChanged" Min="0" Step="1" Max="(int)userLevel" TickMarkLabels="@labels" TickMarks />
+                    <MudSlider Value="@((int)permissionLevel)" ValueChanged="permissionChanged" Disabled="_createKeyModel.AllPermissions"
+                               Min="0" Step="1" Max="(int)userLevel" TickMarkLabels="@labels" TickMarks />
                 </div>
 
                 @if (_userPermissions.OrderBy(p => p.Key).Last().Key != permissionName)

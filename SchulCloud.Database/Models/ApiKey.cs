@@ -38,9 +38,9 @@ internal class ApiKey
     public string KeyHash { get; set; } = default!;
 
     /// <summary>
-    /// Indicates whether the key is enabled or disabled.
+    /// Indicates whether the key always have the same permissions than the user.
     /// </summary>
-    public bool Enabled { get; set; } = default!;
+    public bool AllPermissions { get; set; }
 
     /// <summary>
     /// The permissions of the api key.

@@ -163,4 +163,10 @@
   <data name="noPermissions_Message" xml:space="preserve">
     <value>To create an API key, at least one permission must be selected at level Read or higher.</value>
   </data>
+  <data name="permissions_All" xml:space="preserve">
+    <value>All user permissions</value>
+  </data>
+  <data name="permissions_All_Desc" xml:space="preserve">
+    <value>This provides the API key with the same permissions as you. If you grant additional permissions while the key already exists, it will also receive them.</value>
+  </data>
 </root>

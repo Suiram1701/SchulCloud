@@ -39,7 +39,14 @@
                     </MudGrid>
                 </MudItem>
                 <MudItem xs="12" lg="6">
-                    <MudText Class="mb-4">@Localizer["permissions"]</MudText>
+                    <MudText>@Localizer["permissions"]</MudText>
+                    
+                    <MudStack AlignItems="AlignItems.Center" Row>
+                        <MudSwitch Value="_apiKey.AllPermissions" Color="Color.Primary" Label="@Localizer["permissions_All"]" Disabled />
+                        <MudTooltip RootClass="ml-n5 mt-1" Text="@Localizer["permissions_All_Desc"]">
+                            <MudIcon Icon="@MaterialSymbols.Outlined.Info" Size="Size.Small" />
+                        </MudTooltip>
+                    </MudStack>
 
                     <div class="px-15">
                         @{
@@ -47,14 +54,15 @@
                         }
                         @foreach ((string permissionName, PermissionLevel userLevel) in _userPermissions.OrderBy(p => p.Key))
                         {
-                            if (!_apiKey.PermissionLevels.TryGetValue(permissionName, out PermissionLevel keyLevel))
+                            PermissionLevel permissionLevel = userLevel;
+                            if (!_apiKey.AllPermissions && !_apiKey.PermissionLevels.TryGetValue(permissionName, out PermissionLevel keyLevel))
                             {
                                 keyLevel = PermissionLevel.None;
                             }
 
                             <div class="mt-3 mb-4">
                                 <MudText Typo="Typo.subtitle2">@permissionName</MudText>
-                                <MudSlider Value="@((int)keyLevel)" Min="0" Step="1" Max="(int)userLevel" TickMarkLabels="@labels" TickMarks Disabled />
+                                <MudSlider Value="@((int)permissionLevel)" Min="0" Step="1" Max="(int)userLevel" TickMarkLabels="@labels" TickMarks Disabled />
                             </div>
 
                             @if (_userPermissions.OrderBy(p => p.Key).Last().Key != permissionName)

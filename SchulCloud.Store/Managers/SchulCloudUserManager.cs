@@ -571,17 +571,14 @@ public partial class SchulCloudUserManager<TUser>(
     /// Gets the api keys of a user.
     /// </summary>
     /// <param name="user">The user to get the key from.</param>
-    /// <param name="onlyEnabled">Indicates whether only useable key should be returned. If <c>true</c> disabled or expired keys will be excluded.</param>
     /// <returns>The keys found for the user.</returns>
-    public virtual async Task<UserApiKey[]> GetApiKeysByUserAsync(TUser user, bool onlyEnabled)
+    public virtual async Task<UserApiKey[]> GetApiKeysByUserAsync(TUser user)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
 
         IUserApiKeyStore<TUser> store = GetApiKeyStore();
-        return onlyEnabled
-            ? await store.GetEnabledApiKeysByUserAsync(user, CancellationToken)
-            : await store.GetApiKeysByUserAsync(user, CancellationToken);
+        return await store.GetApiKeysByUserAsync(user, CancellationToken);
     }
 
     /// <summary>
@@ -652,24 +649,6 @@ public partial class SchulCloudUserManager<TUser>(
         byte[] saltBytes = Encoding.UTF8.GetBytes(ApiKeyOptions.GlobalSalt);
         byte[] keyBytes = Encoding.UTF8.GetBytes(key);
         return Convert.ToBase64String(HMACSHA256.HashData(saltBytes, keyBytes));
-    }
-
-    /// <summary>
-    /// Updates an api key.
-    /// </summary>
-    /// <param name="user">The user that owns the key to update.</param>
-    /// <param name="apiKey">The key with the updated values.</param>
-    /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> UpdateApiKeyAsync(TUser user, UserApiKey apiKey)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(user);
-        ArgumentNullException.ThrowIfNull(apiKey);
-
-        IUserApiKeyStore<TUser> store = GetApiKeyStore();
-        await store.UpdateApiKeyAsync(apiKey, CancellationToken);
-
-        return await UpdateSecurityStampAsync(user);
     }
 
     /// <summary>

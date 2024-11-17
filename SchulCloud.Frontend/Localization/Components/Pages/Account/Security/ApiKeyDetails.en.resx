@@ -127,4 +127,10 @@
   <data name="removeKey_Desc" xml:space="preserve">
     <value>Removing this API key will cause requests made using it to no longer be valid. The key is irrecoverable. Do you want to continue anyway?</value>
   </data>
+  <data name="permissions_All" xml:space="preserve">
+    <value>All user permissions</value>
+  </data>
+  <data name="permissions_All_Desc" xml:space="preserve">
+    <value>This provides the API key with the same permissions as you. If you grant additional permissions while the key already exists, it will also receive them.</value>
+  </data>
 </root>

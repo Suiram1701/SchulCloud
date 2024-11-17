@@ -47,27 +47,12 @@ public interface IUserApiKeyStore<TUser>
     public Task<UserApiKey[]> GetApiKeysByUserAsync(TUser user, CancellationToken ct);
 
     /// <summary>
-    /// Gets all api key owned by a user that are enabled and not yet expired.
-    /// </summary>
-    /// <param name="user">The user to get the keys from.</param>
-    /// <param name="ct">Cancellation token</param>
-    /// <returns>The enabled api keys of the user.</returns>
-    public Task<UserApiKey[]> GetEnabledApiKeysByUserAsync(TUser user, CancellationToken ct);
-
-    /// <summary>
     /// Adds an api key for a user
     /// </summary>
     /// <param name="user">The owner of the key.</param>
     /// <param name="apiKey">The key to store.</param>
     /// <param name="ct">Cancellation token</param>
     public Task AddApiKeyAsync(TUser user, UserApiKey apiKey, CancellationToken ct);
-
-    /// <summary>
-    /// Updates an api key.
-    /// </summary>
-    /// <param name="apiKey">The api key to update.</param>
-    /// <param name="ct">Cancellation token</param>
-    public Task UpdateApiKeyAsync(UserApiKey apiKey, CancellationToken ct);
 
     /// <summary>
     /// Removes an api key.

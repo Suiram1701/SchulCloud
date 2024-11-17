@@ -163,4 +163,10 @@
   <data name="noPermissions_YesBtn" xml:space="preserve">
     <value>Verstanden</value>
   </data>
+  <data name="permissions_All" xml:space="preserve">
+    <value>Alle Benutzer Berechtigungen</value>
+  </data>
+  <data name="permissions_All_Desc" xml:space="preserve">
+    <value>Dies stellt dem API-Schlüssel dieselben Berechtigungen wie ihnen zur Verfügung. Sollten Sie weitere Berechtigungen erhalten während der Schlüssel bereits existiert, erhält dieser diese auch.</value>
+  </data>
 </root>

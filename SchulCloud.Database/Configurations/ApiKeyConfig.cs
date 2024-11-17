@@ -19,7 +19,7 @@ internal sealed class ApiKeyConfig : IEntityTypeConfiguration<ApiKey>
         builder.Property(key => key.Name).HasMaxLength(256);
         builder.Property(key => key.Notes).HasMaxLength(512);
         builder.Property(key => key.KeyHash).HasMaxLength(256).IsRequired();
-        builder.Property(key => key.Enabled).HasDefaultValue(true);
+        builder.Property(key => key.AllPermissions).HasDefaultValue(false);
         builder.Property(key => key.PermissionLevels).HasConversion<ApiKeyPermissionConverter>(new ApiKeyPermissionComparer());
         builder.Property(key => key.Created).IsRequired();
         builder.Property(key => key.Expiration);
