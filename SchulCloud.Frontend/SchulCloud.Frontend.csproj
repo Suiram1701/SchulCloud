@@ -18,6 +18,7 @@
     <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.10" />
     <PackageReference Include="MudBlazor" Version="7.15.0" />
     <PackageReference Include="MudBlazor.FontIcons.MaterialSymbols" Version="1.2.0" />
+    <PackageReference Include="MudBlazor.Translations" Version="1.5.1" />
     <PackageReference Include="MyCSharp.HttpUserAgentParser" Version="3.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="QRCoder" Version="1.6.0" />

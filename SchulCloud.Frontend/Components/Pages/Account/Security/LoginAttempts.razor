@@ -25,11 +25,11 @@
         <MudTh>@Localizer["attempt_IpAddress"]</MudTh>
         <MudTh>@Localizer["attempt_Action"]</MudTh>
     </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="@Localizer["attempt_DateTime"]">@context.DateTime.ToLocalTime()</MudTd>
+    <RowTemplate Context="attempt">
+        <MudTd DataLabel="@Localizer["attempt_DateTime"]">@attempt.DateTime.ToLocalTime()</MudTd>
         <MudTd DataLabel="@Localizer["attempt_Result"]">
             <div class="d-flex align-center flex-nowrap">
-                @switch (context.Result)
+                @switch (attempt.Result)
                 {
                     case LoginAttemptResult.Succeeded:
                         <MudIcon Class="mr-2" Icon="@MaterialSymbols.Outlined.CheckCircle" Color="Color.Success" />
@@ -46,9 +46,9 @@
                 }
             </div>
         </MudTd>
-        <MudTd DataLabel="@Localizer["attempt_Method"]">@Localizer[$"loginMethod_{context.Method}"]</MudTd>
+        <MudTd DataLabel="@Localizer["attempt_Method"]">@Localizer[$"loginMethod_{attempt.Method}"]</MudTd>
         <MudTd DataLabel="@Localizer["attempt_Device"]">
-            @if (_userAgents.TryGetValue(context.Id, out HttpUserAgentInformation userAgent))
+            @if (_userAgents.TryGetValue(attempt.Id, out HttpUserAgentInformation userAgent))
             {
                 if (userAgent.Platform is not null)
                 {
@@ -64,9 +64,9 @@
                 @Localizer["deviceUnknown"]
             }
         </MudTd>
-        <MudTd DataLabel="@Localizer["attempt_IpAddress"]">@context.IpAddress.ToString()</MudTd>
+        <MudTd DataLabel="@Localizer["attempt_IpAddress"]">@attempt.IpAddress.ToString()</MudTd>
         <MudTd DataLabel="@Localizer["attempt_Action"]">
-            <MudButton Color="Color.Primary" Href="@Routes.LoginAttemptDetails(context.Id, originPage: _attemptTable.CurrentPage)" Variant="Variant.Filled">
+            <MudButton Color="Color.Primary" Href="@Routes.LoginAttemptDetails(attempt.Id, originPage: _attemptTable.CurrentPage)" Variant="Variant.Filled">
                 @Localizer["attempt_DetailsBtn"]
             </MudButton>
         </MudTd>

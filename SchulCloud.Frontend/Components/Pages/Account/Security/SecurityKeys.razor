@@ -107,7 +107,7 @@
     <TitleContent>@Localizer["registerDialog"]</TitleContent>
     <DialogContent>
         <MudForm @ref="_registerForm" Model="_registerModel">
-            <MudTextField @bind-Value="_registerModel.SecurityKeyName" Label="@Localizer["registerDialog_KeyName"]"
+            <MudTextField @bind-Value="_registerModel.SecurityKeyName" Label="@Localizer["registerDialog_KeyName"]" MaxLength="256"
                           Validation="@((string value) => RegisterForm_ValidateSecurityKeyName(value))" RequiredError="@Localizer["form_NotEmpty"]" Required />
 
             @if (UserManager.SupportsUserPasskeys && UserManager.SupportsUserTwoFactorSecurityKeys)

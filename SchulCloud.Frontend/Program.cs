@@ -17,6 +17,7 @@ using SchulCloud.Frontend.Services;
 using SchulCloud.Frontend.Services.Interfaces;
 using GoogleMapsComponents;
 using SchulCloud.Authorization.Extensions;
+using MudBlazor.Translations;
 
 namespace SchulCloud.Frontend;
 
@@ -85,6 +86,7 @@ public class Program
 
         builder.Services
             .AddMudServices()
+            .AddMudTranslations()
             .AddBlazoredLocalStorage()
             .AddScoped<CookieService>()
             .AddScoped<CookieConsentService>()

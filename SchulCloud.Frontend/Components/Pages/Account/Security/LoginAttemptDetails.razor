@@ -110,27 +110,28 @@
 }
 else
 {
+    @* Not loaded placeholder *@
     <MudPaper Class="py-3 px-3">
         <MudGrid>
             <MudItem xs="12" lg="6">
                 <MudGrid Spacing="2">
-                    <MudItem xs="6"><MudSkeleton /></MudItem>
-                    <MudItem xs="6"><MudSkeleton /></MudItem>
-                    <MudItem xs="12"><MudDivider /></MudItem>
-
-                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="6">@Localizer["dateTime"]</MudItem>
                     <MudItem xs="6"><MudSkeleton /></MudItem>
                     <MudItem xs="12"><MudDivider /></MudItem>
 
-                    <MudItem xs="6"><MudSkeleton /></MudItem>
-                    <MudItem xs="6"><MudSkeleton /></MudItem>
-                    <MudItem xs="12"><MudDivider /></MudItem>
-
-                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="6">@Localizer["result"]</MudItem>
                     <MudItem xs="6"><MudSkeleton /></MudItem>
                     <MudItem xs="12"><MudDivider /></MudItem>
 
+                    <MudItem xs="6">@Localizer["method"]</MudItem>
                     <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="12"><MudDivider /></MudItem>
+
+                    <MudItem xs="6">@Localizer["device"]</MudItem>
+                    <MudItem xs="6"><MudSkeleton /></MudItem>
+                    <MudItem xs="12"><MudDivider /></MudItem>
+
+                    <MudItem xs="6">@Localizer["ipAddress"]</MudItem>
                     <MudItem xs="6"><MudSkeleton /></MudItem>
                 </MudGrid>
             </MudItem>
@@ -139,6 +140,13 @@ else
                 <div class="embeddedMap">
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="100%" Width="100%" />
                 </div>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudButton Class="mr-2" Color="Color.Primary" Href="@Routes.LoginAttempts(page: OriginPage)" Variant="Variant.Filled">
+                    @Localizer["backBtn"]
+                </MudButton>
+                <MudButton Color="Color.Error" StartIcon="@MaterialSymbols.Outlined.Delete" Disabled>@Localizer["removeBtn"]</MudButton>
             </MudItem>
         </MudGrid>
     </MudPaper>

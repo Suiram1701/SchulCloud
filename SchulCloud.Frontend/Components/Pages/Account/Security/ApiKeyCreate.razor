@@ -6,12 +6,13 @@
     <MudText Typo="Typo.h6">@Localizer["title"]</MudText>
 
     <MudForm @ref="_createForm" @bind-IsValid="_formIsValid">
-        <MudTextField @bind-Value="_createKeyModel.Name" Label="@Localizer["form_Name"]"
-        Validation="@(async (string value) => await Name_ValidateAsync(value))" RequiredError="@Localizer["form_Required"]" Required />
-        <MudTextField @bind-Value="_createKeyModel.Notes" Label="@Localizer["form_Notes"]" />
+        <MudTextField @bind-Value="_createKeyModel.Name" Label="@Localizer["form_Name"]" Validation="@(async (string value) => await Name_ValidateAsync(value))"
+                      MaxLength="256" RequiredError="@Localizer["form_Required"]" Required />
+        <MudTextField @bind-Value="_createKeyModel.Notes" Label="@Localizer["form_Notes"]" MaxLength="512" />
+
         <MudStack Class="mt-2" Row>
             <MudDatePicker @bind-Date="_createKeyModel.Expires" Label="@Localizer["form_Expires"]" Placeholder="@Localizer["form_Expires_Infinite"]"
-            Validation="@((DateTime? date) => Expires_Validate(date))" />
+                           Validation="@((DateTime? date) => Expires_Validate(date))" />
             <MudTooltip Text="@Localizer["form_Expires_ClearBtn"]">
                 <MudButton Class="mt-3 px-n10" OnClick="ExpiresClear_Click">
                     <MudIcon Icon="@MaterialSymbols.Outlined.Backspace" />
