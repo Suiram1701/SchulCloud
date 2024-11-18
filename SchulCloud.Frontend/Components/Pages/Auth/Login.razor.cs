@@ -13,9 +13,9 @@ using SchulCloud.Store.Managers;
 using SchulCloud.Frontend.Extensions;
 using SchulCloud.Frontend.Identity.Managers;
 using SchulCloud.Frontend.Models;
-using SchulCloud.Frontend.Services;
 using SchulCloud.Frontend.Services.Exceptions;
 using System.Security.Cryptography;
+using SchulCloud.Frontend.JsInterop;
 
 namespace SchulCloud.Frontend.Components.Pages.Auth;
 
@@ -48,7 +48,7 @@ public sealed partial class Login : ComponentBase, IDisposable
     private NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject]
-    private WebAuthnService WebAuthnService { get; set; } = default!;
+    private WebAuthnInterop WebAuthnService { get; set; } = default!;
 
     [Inject]
     private PersistentComponentState ComponentState { get; set; } = default!;

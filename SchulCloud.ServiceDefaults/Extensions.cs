@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
@@ -108,5 +110,48 @@ public static class Extensions
         }
 
         return app;
+    }
+
+    /// <summary>
+    /// Adds a postgres database from a aspire environment to the services.
+    /// </summary>
+    /// <typeparam name="TContext">The type of the database context.</typeparam>
+    /// <param name="builder">The builder of the app.</param>
+    /// <param name="resourceName">The name of the resource.</param>
+    /// <param name="pooledService">Indicates whether the context have to be added as a pooled service. By default <c>true</c>.</param>
+    public static void AddAspirePostgresDb<TContext>(this IHostApplicationBuilder builder, string resourceName, bool pooledService = true)
+        where TContext : DbContext
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(resourceName);
+
+        if (pooledService)
+        {
+            builder.AddNpgsqlDbContext<TContext>(resourceName, configureDbContextOptions: options =>
+            {
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.EnableDetailedErrors();
+                    options.EnableSensitiveDataLogging();
+                }
+            });
+        }
+        else
+        {
+            builder.Services.AddDbContext<TContext>(options =>
+            {
+                string connectionString = builder.Configuration.GetConnectionString(resourceName)
+                    ?? throw new InvalidOperationException($"A connection string for the resource '{resourceName} was expected.'");
+
+                options.UseNpgsql(connectionString);
+
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.EnableDetailedErrors();
+                    options.EnableSensitiveDataLogging();
+                }
+            });
+            builder.EnrichNpgsqlDbContext<TContext>();
+        }
     }
 }

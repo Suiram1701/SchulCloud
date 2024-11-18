@@ -13,10 +13,10 @@ using SchulCloud.Frontend.Enums;
 using SchulCloud.Frontend.Extensions;
 using SchulCloud.Frontend.Identity.Managers;
 using SchulCloud.Frontend.Models;
-using SchulCloud.Frontend.Services;
 using SchulCloud.Frontend.Services.Exceptions;
 using SchulCloud.Frontend.Services.Interfaces;
 using System.Security.Cryptography;
+using SchulCloud.Frontend.JsInterop;
 
 namespace SchulCloud.Frontend.Components.Pages.Auth;
 
@@ -55,7 +55,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
     private NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject]
-    private WebAuthnService WebAuthnService { get; set; } = default!;
+    private WebAuthnInterop WebAuthnService { get; set; } = default!;
 
     [Inject]
     private PersistentComponentState ComponentState { get; set; } = default!;

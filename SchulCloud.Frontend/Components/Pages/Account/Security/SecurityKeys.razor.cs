@@ -11,11 +11,11 @@ using SchulCloud.Store.Models;
 using SchulCloud.Frontend.Components.Dialogs;
 using SchulCloud.Frontend.Extensions;
 using SchulCloud.Frontend.Models;
-using SchulCloud.Frontend.Services;
 using SchulCloud.Frontend.Services.Exceptions;
 using System.Globalization;
 using System.Net;
 using MaterialSymbols = MudBlazor.FontIcons.MaterialSymbols;
+using SchulCloud.Frontend.JsInterop;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
 
@@ -39,7 +39,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
     private NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject]
-    private WebAuthnService WebAuthnService { get; set; } = default!;
+    private WebAuthnInterop WebAuthnService { get; set; } = default!;
     #endregion
 
     private ApplicationUser _user = default!;

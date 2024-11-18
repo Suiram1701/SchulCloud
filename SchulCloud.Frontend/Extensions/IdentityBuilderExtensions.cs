@@ -9,6 +9,30 @@ namespace SchulCloud.Frontend.Extensions;
 public static class IdentityBuilderExtensions
 {
     /// <summary>
+    /// Configures the default identity cookies.
+    /// </summary>
+    /// <param name="builder">The identity builder.</param>
+    /// <returns>The identity builder pipeline.</returns>
+    public static IdentityBuilder ConfigureDefaultIdentityCookies(this IdentityBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            options.LoginPath = Routes.Login();
+            options.LogoutPath = Routes.Logout();
+            options.AccessDeniedPath = Routes.Forbidden();
+
+            options.ReturnUrlParameter = "returnUrl";
+
+            options.ExpireTimeSpan = TimeSpan.FromDays(31);     // this time is used for persistent sessions.
+            options.SlidingExpiration = true;
+        });
+
+        return builder;
+    }
+
+    /// <summary>
     /// Adds an email sender to the identity infrastructure.
     /// </summary>
     /// <remarks>

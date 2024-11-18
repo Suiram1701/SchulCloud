@@ -4,9 +4,9 @@ using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Frontend.Services.Models;
 using System.Threading.Channels;
 
-namespace SchulCloud.Frontend.Services;
+namespace SchulCloud.Frontend.HostedServices;
 
-public class LoginLogBackgroundService(ILogger<LoginLogBackgroundService> logger, IServiceScopeFactory scopeFactory, IIPGeolocator geolocator) : BackgroundService
+public class LoginAttemptLoggingService(ILogger<LoginAttemptLoggingService> logger, IServiceScopeFactory scopeFactory, IIPGeolocator geolocator) : BackgroundService
 {
     private readonly Channel<(ApplicationUser, UserLoginAttempt)> _channel = Channel.CreateUnbounded<(ApplicationUser, UserLoginAttempt)>(new() { SingleReader = true });
 
@@ -35,7 +35,7 @@ public class LoginLogBackgroundService(ILogger<LoginLogBackgroundService> logger
                     }
                 }
 
-                IdentityResult logResult =  await userManager.AddLoginAttemptAsync(user, attempt);
+                IdentityResult logResult = await userManager.AddLoginAttemptAsync(user, attempt);
                 if (logResult.Succeeded)
                 {
                     logger.LogTrace("Logged login attempt for user '{userId}'.", userId);

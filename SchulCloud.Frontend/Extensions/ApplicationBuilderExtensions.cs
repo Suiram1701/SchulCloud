@@ -5,7 +5,8 @@ using MudBlazor;
 using MudBlazor.Services;
 using SchulCloud.Store;
 using SchulCloud.Frontend.Options;
-using SchulCloud.Frontend.Services;
+using SchulCloud.Frontend.JsInterop;
+using GoogleMapsComponents;
 
 namespace SchulCloud.Frontend.Extensions;
 
@@ -16,7 +17,7 @@ public static class ApplicationBuilderExtensions
     /// </summary>
     /// <param name="builder">The application builder.</param>
     /// <returns>The application builder.</returns>
-    public static IHostApplicationBuilder ConfigureOptions(this IHostApplicationBuilder builder)
+    public static void ConfigureOptions(this IHostApplicationBuilder builder)
     {
         // Identity
         builder.Services
@@ -53,6 +54,15 @@ public static class ApplicationBuilderExtensions
             .Configure<RequestLimiterOptions>(builder.Configuration.GetSection("RequestLimiter"))
             .Configure<Fido2Configuration>(builder.Configuration.GetSection("Fido2"));
         builder.ConfigureManagers();
+    }
+
+    public static IHostApplicationBuilder AddConfiguredGoogleMapsServices(this IHostApplicationBuilder builder)
+    {
+        string? mapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
+        if (!string.IsNullOrWhiteSpace(mapsApiKey))
+        {
+            builder.Services.AddBlazorGoogleMaps(mapsApiKey);
+        }
 
         return builder;
     }
@@ -60,7 +70,7 @@ public static class ApplicationBuilderExtensions
     public static IServiceCollection AddFido2Services(this IServiceCollection services)
     {
         services
-            .AddScoped<WebAuthnService>()
+            .AddScoped<WebAuthnInterop>()
             .AddMemoryCache()
             .AddDistributedMemoryCache()
             .AddFido2(options =>
@@ -72,7 +82,7 @@ public static class ApplicationBuilderExtensions
                     return;
                 }
 
-                HashSet<string> origins = new(options.Origins);
+                HashSet<string> origins = [.. options.Origins];
                 foreach (string url in envVar.Split(';'))
                 {
                     if (Uri.TryCreate(url, UriKind.Absolute, out _))
@@ -89,25 +99,5 @@ public static class ApplicationBuilderExtensions
             });
 
         return services;
-    }
-
-    /// <summary>
-    /// Adds the static files under /_static to the request pipeline
-    /// </summary>
-    /// <param name="app">The application builder.</param>
-    /// <returns>The application builder pipeline.</returns>
-    public static IApplicationBuilder UseStaticFileServer(this IApplicationBuilder app)
-    {
-        return app.MapWhen(context => context.Request.Path.StartsWithSegments("/_static"), subApp =>
-            {
-                subApp
-                    .UseStaticFiles("/_static")
-                    .Use((HttpContext context, RequestDelegate next) =>
-                    {
-                        // The request is aborted here because /_static contains only static files and at this point it couldn't be a static file.
-                        context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        return Task.CompletedTask;
-                    });
-            });
     }
 }

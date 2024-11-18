@@ -4,12 +4,12 @@ using Microsoft.JSInterop.Implementation;
 using SchulCloud.Frontend.Services.Exceptions;
 using static SchulCloud.Frontend.Constants.JSNames;
 
-namespace SchulCloud.Frontend.Services;
+namespace SchulCloud.Frontend.JsInterop;
 
 /// <summary>
 /// A service that provides an interface to the client-side webauthn api.
 /// </summary>
-public class WebAuthnService(IJSRuntime runtime)
+public class WebAuthnInterop(IJSRuntime runtime)
 {
     /// <summary>
     /// Indicates whether the client supports webauthn.
