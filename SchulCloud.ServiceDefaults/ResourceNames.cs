@@ -13,5 +13,5 @@ public static class ResourceNames
 {
     public const string IdentityDatabase = "identity-db";
 
-    public const string MailServer = "mail-dev";
+    public const string MailServer = "maildev";
 }

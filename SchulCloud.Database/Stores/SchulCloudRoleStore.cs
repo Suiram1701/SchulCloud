@@ -28,7 +28,6 @@ public class SchulCloudRoleStore<TRole, TContext>(TContext context, IdentityErro
         ThrowIfDisposed();
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(role);
-        ArgumentNullException.ThrowIfNull(isDefault);
 
         role.DefaultRole = isDefault;
         return Task.CompletedTask;

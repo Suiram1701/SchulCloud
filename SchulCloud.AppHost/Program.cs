@@ -14,12 +14,14 @@ public class Program
 
         IResourceBuilder<MailDevResource> mailDev = builder.AddMailDev(ResourceNames.MailServer);
 
-        builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
-            .WithReference(identityDb);
+        builder.AddProject<Projects.SchulCloud_DbManager>("db-Manager")
+            .WithReference(identityDb)
+            .WithDefaultHealthChecks();
 
         builder.AddProject<Projects.SchulCloud_Frontend>("frontend")
             .WithReference(identityDb)
-            .WithReference(mailDev);
+            .WithReference(mailDev)
+            .WithDefaultHealthChecks();
 
         builder.Build().Run();
     }

@@ -25,8 +25,6 @@ public class CookieUserPreferencesStore(CookieConsentService cookieConsentServic
 
     public async Task SetPreferredColorThemeAsync(ColorTheme theme, CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(theme);
-
         if (await IsFunctionalCookiesAllowedAsync(ct))
         {
             await cookieService.SetCookieAsync(_themeCookieName, theme.ToString(), _cookieOptions, ct);

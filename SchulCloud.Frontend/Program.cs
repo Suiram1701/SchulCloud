@@ -17,6 +17,7 @@ using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Authorization.Extensions;
 using MudBlazor.Translations;
 using SchulCloud.Frontend.HostedServices;
+using SchulCloud.Frontend.HealthChecks;
 
 namespace SchulCloud.Frontend;
 
@@ -30,7 +31,7 @@ public class Program
 
         builder.Services.AddMemoryCache();
 
-        builder.AddAspirePostgresDb<SchulCloudDbContext>(ResourceNames.IdentityDatabase);
+        builder.AddAspirePostgresDb<SchulCloudDbContext>(ResourceNames.IdentityDatabase, pooledService: false);
         builder.AddMailKitClient(ResourceNames.MailServer);
 
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
@@ -71,6 +72,8 @@ public class Program
             .AddHostedService(sp => sp.GetRequiredService<LoginAttemptLoggingService>());
         builder.AddConfiguredGoogleMapsServices();
 
+        builder.Services.AddHealthChecks().AddCheck<HostedServicesCheck>("hosted-services");
+
         WebApplication app = builder.Build();
         app.MapDefaultEndpoints();
 
@@ -84,7 +87,7 @@ public class Program
             app.UseHsts();
         }
 
-        app.UseStaticFiles();
+        app.MapStaticAssets();
 
         app.UseHttpsRedirection();
         app.UseStatusCodePagesWithReExecute("/error/{0}");

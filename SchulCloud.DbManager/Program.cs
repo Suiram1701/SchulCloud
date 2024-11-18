@@ -23,7 +23,7 @@ internal class Program
         builder.Services.AddOpenTelemetry()
             .WithTracing(traceBuilder => traceBuilder.AddSource(DbInitializer.ActivitySourceName));
 
-        builder.AddNpgsqlDbContext<SchulCloudDbContext>(ResourceNames.IdentityDatabase);
+        builder.AddAspirePostgresDb<SchulCloudDbContext>(ResourceNames.IdentityDatabase);
         builder.Services.AddIdentityCore<ApplicationUser>()
             .AddRoles<ApplicationRole>()
             .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()

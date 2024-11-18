@@ -170,7 +170,6 @@ public partial class SchulCloudUserManager<TUser>(
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
-        ArgumentNullException.ThrowIfNull(enabled);
 
         IUserTwoFactorStore<TUser> twoFactorStore = GetTwoFactorStore();
         await twoFactorStore.SetTwoFactorEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);

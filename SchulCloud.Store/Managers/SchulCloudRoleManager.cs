@@ -56,7 +56,6 @@ public class SchulCloudRoleManager<TRole>(
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(role);
-        ArgumentNullException.ThrowIfNull(isDefault);
         IRoleDefaultRoleStore<TRole> store = GetDefaultRoleStore();
 
         await store.SetIsDefaultRoleAsync(role, isDefault, CancellationToken).ConfigureAwait(false);

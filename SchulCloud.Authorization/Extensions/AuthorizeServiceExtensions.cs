@@ -23,7 +23,6 @@ public static class AuthorizeServiceExtensions
         ArgumentNullException.ThrowIfNull(authorizationService);
         ArgumentNullException.ThrowIfNull(user);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        ArgumentNullException.ThrowIfNull(level);
 
         return await authorizationService.AuthorizeAsync(user, $"{name}-{level}");
     }

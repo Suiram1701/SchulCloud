@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Fido2" Version="4.0.0-beta.13" />
-    <PackageReference Include="MyCSharp.HttpUserAgentParser" Version="3.0.8" />
+    <PackageReference Include="MyCSharp.HttpUserAgentParser" Version="3.0.9" />
   </ItemGroup>
 
   <ItemGroup>
