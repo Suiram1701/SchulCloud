@@ -21,6 +21,7 @@
     <ProjectReference Include="..\SchulCloud.DbManager\SchulCloud.DbManager.csproj" />
     <ProjectReference Include="..\SchulCloud.Frontend\SchulCloud.Frontend.csproj" />
     <ProjectReference Include="..\Aspire.Hosting.MailDev\Aspire.Hosting.MailDev.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\SchulCloud.RestApi\SchulCloud.RestApi.csproj" />
     <ProjectReference Include="..\SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj" IsAspireProjectResource="false" />
   </ItemGroup>
 

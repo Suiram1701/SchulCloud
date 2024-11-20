@@ -17,20 +17,22 @@ public class Program
         IResourceBuilder<ProjectResource> webFrontend = builder.AddProject<Projects.SchulCloud_Frontend>("web-frontend")
             .WithReference(identityDb)
             .WithReference(mailDev)
-            .WithDefaultHealthChecks()
-            .WaitFor(mailDev);     // The MailKit health check fails if mail dev isn't available on start.
+            .WaitFor(mailDev)     // The MailKit health check fails if mail dev isn't available on start.
+            .WithDefaultHealthChecks();
+
+        IResourceBuilder<ProjectResource> restApi = builder.AddProject<Projects.SchulCloud_RestApi>("rest-api")
+            .WithDefaultHealthChecks();
 
         builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
             .WithReference(identityDb)
             .WithDefaultHealthChecks();
 
-        bool isHttps = builder.Configuration["DOTNET_LAUNCH_PROFILE"] == "https";
-        int? gatewayPort = int.TryParse(builder.Configuration["GatewayPort"], out int port) ? port : null;
-
         builder.AddYarp("gateway")
-            .WithEndpoint(scheme: isHttps ? "https" : "http", port: gatewayPort)
-            .LoadFromConfiguration("ReverseProxy")
-            .WithReference(webFrontend);
+            .WithEndpoint(scheme: "http")
+            .WithEndpoint(scheme: "https")
+            .WithReference(webFrontend)
+            .WithReference(restApi)
+            .LoadFromConfiguration("ReverseProxy");
 
         builder.Build().Run();
     }
