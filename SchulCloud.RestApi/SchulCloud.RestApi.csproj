@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <UserSecretsId>72d06356-0f74-40ae-9991-63e5fd749d09</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,7 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SchulCloud.Authentication\SchulCloud.Authentication.csproj" />
+    <ProjectReference Include="..\SchulCloud.Database\SchulCloud.Database.csproj" />
     <ProjectReference Include="..\SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\SchulCloud.Store\SchulCloud.Store.csproj" />
   </ItemGroup>
 
   <ItemGroup>

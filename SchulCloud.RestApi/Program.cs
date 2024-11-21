@@ -1,8 +1,14 @@
 using Asp.Versioning.ApiExplorer;
 using Microsoft.Extensions.Options;
+using SchulCloud.Authentication;
+using SchulCloud.Authorization.Extensions;
+using SchulCloud.Database;
+using SchulCloud.Database.Extensions;
+using SchulCloud.Database.Models;
 using SchulCloud.RestApi.Options;
 using SchulCloud.RestApi.Swagger;
 using SchulCloud.ServiceDefaults;
+using SchulCloud.Store;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace SchulCloud.RestApi;
@@ -13,6 +19,20 @@ internal class Program
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.AddServiceDefaults();
+
+        builder.Services.AddMemoryCache();
+
+        builder.AddAspirePostgresDb<SchulCloudDbContext>(ResourceNames.IdentityDatabase);
+
+        builder.Services.AddIdentityCore<SchulCloudUser>()
+            .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()
+            .AddSchulCloudManagers();
+        builder.ConfigureManagers();
+
+        builder.Services.AddAuthentication(SchemeNames.ApiKeyScheme)
+            .AddApiKey<SchulCloudUser>();
+        builder.Services.AddAuthorizationBuilder()
+            .AddPermissionsPolicies();
 
         builder.Services.AddControllers();
 
@@ -34,7 +54,13 @@ internal class Program
         builder.Services.Configure<OpenApiOptions>(builder.Configuration.GetSection("OpenApi"));
 
         WebApplication app = builder.Build();
-        app.MapControllers();
+        app.MapDefaultEndpoints();
+        app.UseForwardedHeaders();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapControllers().RequireAuthorization();
 
         app.UseSwagger();
         app.UseSwaggerUI(options =>
@@ -48,8 +74,6 @@ internal class Program
                     name: apiVersion.GroupName.ToUpperInvariant());
             }
         });
-
-        app.MapDefaultEndpoints();
 
         app.Run();
     }

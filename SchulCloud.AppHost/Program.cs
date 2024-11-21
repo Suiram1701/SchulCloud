@@ -21,6 +21,7 @@ public class Program
             .WithDefaultHealthChecks();
 
         IResourceBuilder<ProjectResource> restApi = builder.AddProject<Projects.SchulCloud_RestApi>("rest-api")
+            .WithReference(identityDb)
             .WithDefaultHealthChecks();
 
         builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
@@ -29,7 +30,7 @@ public class Program
 
         builder.AddYarp("gateway")
             .WithEndpoint(scheme: "http")
-            .WithEndpoint(scheme: "https")
+            .WithEndpoint(scheme: "https", port: 8001)
             .WithReference(webFrontend)
             .WithReference(restApi)
             .LoadFromConfiguration("ReverseProxy");

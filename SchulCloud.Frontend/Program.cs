@@ -76,6 +76,7 @@ public class Program
 
         WebApplication app = builder.Build();
         app.MapDefaultEndpoints();
+        app.UseForwardedHeaders();
 
         if (app.Environment.IsDevelopment())
         {
