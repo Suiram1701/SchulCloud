@@ -8,6 +8,9 @@ internal class BasePathOperationFilter(IConfiguration configuration) : IOperatio
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         string basePath = configuration["BasePath"] ?? string.Empty;
-        context.ApiDescription.RelativePath = $"{basePath.TrimEnd('/')}/{context.ApiDescription.RelativePath?.TrimStart('/')}";
+        if (!(context.ApiDescription.RelativePath?.StartsWith(basePath) ?? false))
+        {
+            context.ApiDescription.RelativePath = $"{basePath.TrimEnd('/')}/{context.ApiDescription.RelativePath?.TrimStart('/')}";
+        }
     }
 }

@@ -5,6 +5,7 @@ using SchulCloud.Authorization.Extensions;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
 using SchulCloud.Database.Models;
+using SchulCloud.RestApi.Extensions;
 using SchulCloud.RestApi.Options;
 using SchulCloud.RestApi.Swagger;
 using SchulCloud.ServiceDefaults;
@@ -19,8 +20,6 @@ internal class Program
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.AddServiceDefaults();
-
-        builder.Services.AddMemoryCache();
 
         builder.AddAspirePostgresDb<SchulCloudDbContext>(ResourceNames.IdentityDatabase);
 
@@ -48,6 +47,7 @@ internal class Program
         builder.Services.AddSwaggerGen(options =>
         {
             options.OperationFilter<BasePathOperationFilter>();
+            options.OperationFilter<SecurityResponsesOperationFilter>();
         });
         builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwagger>();
 
@@ -59,6 +59,11 @@ internal class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseProductionExceptionHandler();
+        }
 
         app.MapControllers().RequireAuthorization();
 

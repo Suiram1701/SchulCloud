@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -8,18 +9,14 @@ using Microsoft.Extensions.Primitives;
 using SchulCloud.Authorization;
 using SchulCloud.Store.Managers;
 using SchulCloud.Store.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 
 namespace SchulCloud.Authentication.AuthenticationSchemes;
 
 internal class ApiKeyScheme<TUser>(
     IMemoryCache cache,
+    IProblemDetailsService problemDetailsService,
     IOptionsMonitor<ApiKeySchemeOptions> options,
     ILoggerFactory logger,
     SchulCloudUserManager<TUser> userManager,
@@ -59,6 +56,36 @@ internal class ApiKeyScheme<TUser>(
         }
     }
 
+    protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+    {
+        Context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await problemDetailsService.WriteAsync(new()
+        {
+            HttpContext = Context,
+            ProblemDetails = new()
+            {
+                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status401Unauthorized),
+                Status = StatusCodes.Status401Unauthorized,
+                Detail = "An API key is required to call this endpoint.",
+            }
+        }).ConfigureAwait(false);
+    }
+
+    protected override async Task HandleForbiddenAsync(AuthenticationProperties properties)
+    {
+        Context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        await problemDetailsService.WriteAsync(new()
+        {
+            HttpContext = Context,
+            ProblemDetails = new()
+            {
+                Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status403Forbidden),
+                Status = StatusCodes.Status403Forbidden,
+                Detail = "The used API key does not have the privileges to call this endpoint.",
+            }
+        }).ConfigureAwait(false);
+    }
+
     private async Task<ClaimsIdentity> GenerateClaimsAsync(TUser user, UserApiKey apiKey)
     {
         ClaimsIdentityOptions claimsOptions = userManager.Options.ClaimsIdentity;
@@ -81,5 +108,5 @@ internal class ApiKeyScheme<TUser>(
         return identity;
     }
 
-    private string GetCacheKey(string apiKey) => $"api-key-auth-{apiKey}";
+    private static string GetCacheKey(string apiKey) => $"api-key-auth-{apiKey}";
 }

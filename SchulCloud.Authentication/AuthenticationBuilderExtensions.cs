@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.DependencyInjection;
 using SchulCloud.Authentication.AuthenticationSchemes;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,9 @@ public static class AuthenticationBuilderExtensions
         where TUser : class
     {
         ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Services.AddMemoryCache();
+        builder.Services.AddProblemDetails();
         return builder.AddScheme<ApiKeySchemeOptions, ApiKeyScheme<TUser>>(SchemeNames.ApiKeyScheme, null);
     }
 }
