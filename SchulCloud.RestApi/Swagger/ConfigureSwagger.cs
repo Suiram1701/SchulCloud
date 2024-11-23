@@ -27,5 +27,9 @@ internal class ConfigureSwagger(IApiVersionDescriptionProvider provider, IOption
             Name = "x-api-key",
             In = ParameterLocation.Header
         });
+
+        options.OperationFilter<BasePathOperationFilter>();
+        options.OperationFilter<SecurityResponsesOperationFilter>();
+        options.OperationFilter<PaginationOperationFilter>();
     }
 }

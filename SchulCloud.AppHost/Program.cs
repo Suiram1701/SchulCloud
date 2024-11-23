@@ -29,7 +29,7 @@ public class Program
             .WithDefaultHealthChecks();
 
         builder.AddYarp("gateway")
-            .WithEndpoint(scheme: "http")
+            .WithEndpoint(scheme: "http", port: 8000)
             .WithEndpoint(scheme: "https", port: 8001)
             .WithReference(webFrontend)
             .WithReference(restApi)

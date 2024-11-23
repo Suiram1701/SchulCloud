@@ -26,6 +26,7 @@ internal class Program
         builder.AddAspirePostgresDb<SchulCloudDbContext>(ResourceNames.IdentityDatabase);
 
         builder.Services.AddIdentityCore<SchulCloudUser>()
+            .AddRoles<SchulCloudRole>()
             .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()
             .AddSchulCloudManagers();
         builder.ConfigureManagers();
@@ -50,12 +51,7 @@ internal class Program
             options.SubstituteApiVersionInUrl = true;
         });
 
-        builder.Services.AddSwaggerGen(options =>
-        {
-            options.OperationFilter<BasePathOperationFilter>();
-            options.OperationFilter<SecurityResponsesOperationFilter>();
-            options.OperationFilter<PaginationOperationFilter>();
-        });
+        builder.Services.AddSwaggerGen();
         builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwagger>();
 
         builder.Services.Configure<OpenApiOptions>(builder.Configuration.GetSection("OpenApi"));

@@ -3,3 +3,4 @@ global using ApplicationRole = SchulCloud.Database.Models.SchulCloudRole;
 global using ApplicationUser = SchulCloud.Database.Models.SchulCloudUser;
 
 global using AppUserManager = SchulCloud.Store.Managers.SchulCloudUserManager<SchulCloud.Database.Models.SchulCloudUser>;
+global using AppRoleManager = SchulCloud.Store.Managers.SchulCloudRoleManager<SchulCloud.Database.Models.SchulCloudRole>;

@@ -22,7 +22,7 @@ namespace SchulCloud.RestApi.ApiControllers.V1;
 [ApiController]
 [ApiVersion(1)]
 [Route($"{VersionPrefix}/users")]
-public sealed class UserController(ILogger<UserController> logger, IAuthorizationService authorizationService, AppUserManager userManager) : ControllerBase
+public sealed class UserController(ILogger<UserController> logger, IAuthorizationService authorizationService, AppUserManager userManager, AppRoleManager roleManager) : ControllerBase
 {
     /// <summary>
     /// Gets every user that is registered on the site.
@@ -84,5 +84,41 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
         logger.LogTrace("User '{userId}' requested user '{requestUserId}'", userId, id);
 
         return Ok(userDto);
+    }
+
+    /// <summary>
+    /// Gets the roles a user has.
+    /// </summary>
+    /// <remarks>
+    /// Requires the permission **Users** with level **Read** or greater.
+    /// </remarks>
+    /// <param name="id">The id of the user to get the roles from.</param>
+    /// <returns>A list of roles.</returns>
+    /// <response code="200">Returns a list of roles the user has.</response>
+    /// <response code="404">No user with the requested id was found.</response>
+    [HttpGet("{id}/roles")]
+    [ProducesResponseType<Role[]>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, MediaTypeNames.Application.ProblemJson)]
+    [RequirePermission(Permissions.Users, PermissionLevel.Read)]
+    public async Task<IActionResult> GetRolesAsync([FromRoute] string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return Problem(statusCode: 404, detail: "No user with the specified id was found.");
+        }
+
+        ApplicationUser? user = await userManager.FindByIdAsync(id).ConfigureAwait(false);
+        if (user is null)
+        {
+            return Problem(statusCode: 404, detail: "No user with the specified id was found.");
+        }
+
+        IList<string> roleNames = await userManager.GetRolesAsync(user).ConfigureAwait(false);
+        ApplicationRole[] roles = await Task.WhenAll(roleNames.Select(async name =>
+        {
+            return (await roleManager.FindByNameAsync(name).ConfigureAwait(false))!;
+        })).ConfigureAwait(false);
+
+        return Ok(roles.Adapt<Role[]>(Role.AdapterConfig));
     }
 }
