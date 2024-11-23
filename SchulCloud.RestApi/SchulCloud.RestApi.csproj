@@ -11,6 +11,8 @@
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="7.0.0" />
   </ItemGroup>
@@ -26,6 +28,10 @@
     <Using Include="SchulCloud.RestApi.RouteConstants">
       <Static>True</Static>
     </Using>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ModelValidators\" />
   </ItemGroup>
 
 </Project>

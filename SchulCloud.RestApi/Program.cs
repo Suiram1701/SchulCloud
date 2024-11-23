@@ -1,4 +1,6 @@
 using Asp.Versioning.ApiExplorer;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.Extensions.Options;
 using SchulCloud.Authentication;
 using SchulCloud.Authorization.Extensions;
@@ -33,6 +35,10 @@ internal class Program
         builder.Services.AddAuthorizationBuilder()
             .AddPermissionsPolicies();
 
+        builder.Services
+            .AddFluentValidationAutoValidation()
+            .AddValidatorsFromAssemblyContaining<IRestApi>();
+
         builder.Services.AddControllers();
 
         builder.Services.AddApiVersioning(options =>
@@ -48,6 +54,7 @@ internal class Program
         {
             options.OperationFilter<BasePathOperationFilter>();
             options.OperationFilter<SecurityResponsesOperationFilter>();
+            options.OperationFilter<PaginationOperationFilter>();
         });
         builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwagger>();
 
@@ -56,6 +63,7 @@ internal class Program
         WebApplication app = builder.Build();
         app.MapDefaultEndpoints();
         app.UseForwardedHeaders();
+        app.UseTraceHeader();
 
         app.UseAuthentication();
         app.UseAuthorization();
