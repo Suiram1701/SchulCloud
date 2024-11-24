@@ -13,6 +13,7 @@ using SchulCloud.RestApi.Swagger;
 using SchulCloud.ServiceDefaults;
 using SchulCloud.Store;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace SchulCloud.RestApi;
 
@@ -51,10 +52,17 @@ internal class Program
             options.SubstituteApiVersionInUrl = true;
         });
 
-        builder.Services.AddSwaggerGen();
-        builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwagger>();
+        if (builder.Configuration.GetValue<bool?>("Swagger:Enabled") ?? false)
+        {
+            builder.Services.AddSwaggerGen();
 
-        builder.Services.Configure<OpenApiOptions>(builder.Configuration.GetSection("OpenApi"));
+            builder.Services.Configure<OpenApiOptions>(builder.Configuration.GetSection("OpenApi"));
+            builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwagger>();
+        }
+        if (builder.Configuration.GetValue<bool?>("Swagger:UiEnabled") ?? false)
+        {
+            builder.Services.AddTransient<IConfigureOptions<SwaggerUIOptions>, ConfigureSwaggerUI>();
+        }
 
         WebApplication app = builder.Build();
         app.MapDefaultEndpoints();
@@ -71,18 +79,14 @@ internal class Program
 
         app.MapControllers().RequireAuthorization();
 
-        app.UseSwagger();
-        app.UseSwaggerUI(options =>
+        if (app.Configuration.GetValue<bool?>("Swagger:Enabled") ?? false)
         {
-            string basePath = app.Configuration["BasePath"] ?? string.Empty;
-
-            foreach (ApiVersionDescription apiVersion in app.DescribeApiVersions())
-            {
-                options.SwaggerEndpoint(
-                    url: $"{basePath.TrimEnd('/')}/swagger/{apiVersion.GroupName}/swagger.json",
-                    name: apiVersion.GroupName.ToUpperInvariant());
-            }
-        });
+            app.UseSwagger();
+        }
+        if (app.Configuration.GetValue<bool?>("Swagger:UiEnabled") ?? false)
+        {
+            app.UseSwaggerUI();
+        }
 
         app.Run();
     }

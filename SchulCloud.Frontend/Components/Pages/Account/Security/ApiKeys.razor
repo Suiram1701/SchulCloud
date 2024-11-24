@@ -7,6 +7,24 @@
     <MudText Typo="Typo.h6">@Localizer["title"]</MudText>
     <MudText Class="my-2" Typo="Typo.body1">@Localizer["desc"]</MudText>
 
+    @if (ApiOptionsSnapshoot.Value.DocumentationLinks.Any())
+    {
+        <MudStack Row>
+            <MudText>@Localizer["availableApis"]:</MudText>
+            @foreach ((string name, Uri? url) in ApiOptionsSnapshoot.Value.DocumentationLinks)
+            {
+                if (url is not null)
+                {
+                    <MudLink Href="@url.ToString()" Target="_blank">@name</MudLink>
+                }
+                else
+                {
+                    <MudText>@name</MudText>
+                }
+            }
+        </MudStack>
+    }
+
     @{
         int maxKeysCount = UserManager.ApiKeyOptions.MaxKeysPerUser;
         bool newKeysAllowed = maxKeysCount != -1

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using MudBlazor;
+using SchulCloud.Frontend.Options;
 using SchulCloud.Store.Models;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
@@ -13,6 +14,9 @@ public sealed partial class ApiKeys : ComponentBase
     #region Injections
     [Inject]
     private IStringLocalizer<ApiKeys> Localizer { get; set; } = default!;
+
+    [Inject]
+    private IOptionsSnapshot<ApiOptions> ApiOptionsSnapshoot { get; set; } = default!;
 
     [Inject]
     private AppUserManager UserManager { get; set; } = default!;

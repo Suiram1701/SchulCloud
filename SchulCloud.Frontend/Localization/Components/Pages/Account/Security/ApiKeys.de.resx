@@ -127,4 +127,7 @@
   <data name="createKeyBtn_Disabled" xml:space="preserve">
     <value>Sie haben die maximal Anzahl an API-Schlüsseln erreicht. Jeder Benutzer darf maximal {0} API-Schlüssel haben.</value>
   </data>
+  <data name="availableApis" xml:space="preserve">
+    <value>Verfügbare APIs</value>
+  </data>
 </root>

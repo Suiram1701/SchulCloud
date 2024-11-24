@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using SchulCloud.ServiceDefaults.Options;
 
 namespace SchulCloud.ServiceDefaults;
 
@@ -38,6 +39,11 @@ public static class Extensions
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
+        });
+
+        builder.Services.Configure<ServiceOptions>(options =>
+        {
+            options.BasePath = builder.Configuration["BasePath"] ?? "/";
         });
 
         return builder;

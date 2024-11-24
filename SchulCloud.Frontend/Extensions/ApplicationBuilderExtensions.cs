@@ -52,7 +52,8 @@ public static class ApplicationBuilderExtensions
         // Other
         builder.Services
             .Configure<RequestLimiterOptions>(builder.Configuration.GetSection("RequestLimiter"))
-            .Configure<Fido2Configuration>(builder.Configuration.GetSection("Fido2"));
+            .Configure<Fido2Configuration>(builder.Configuration.GetSection("Fido2"))
+            .Configure<ApiOptions>(builder.Configuration.GetSection("Api"));
         builder.ConfigureManagers();
     }
 
