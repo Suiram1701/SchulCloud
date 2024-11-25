@@ -72,7 +72,7 @@ public class Program
             .AddHostedService(sp => sp.GetRequiredService<LoginAttemptLoggingService>());
         builder.AddConfiguredGoogleMapsServices();
 
-        builder.Services.AddHealthChecks().AddCheck<HostedServicesCheck>("hosted-services");
+        builder.Services.AddHealthChecks().AddCheck<LoginAttemptServicesCheck>("LoginAttemptLoggingService");
 
         WebApplication app = builder.Build();
         app.MapDefaultEndpoints();

@@ -1,7 +1,9 @@
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -10,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using SchulCloud.ServiceDefaults.Metrics;
 using SchulCloud.ServiceDefaults.Options;
 
 namespace SchulCloud.ServiceDefaults;
@@ -46,6 +49,8 @@ public static class Extensions
             options.BasePath = builder.Configuration["BasePath"] ?? "/";
         });
 
+        builder.ConfigureMemoryCacheMetrics();
+
         return builder;
     }
 
@@ -62,7 +67,8 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    .AddMeter(MemoryCacheMetrics.Name);
             })
             .WithTracing(tracing =>
             {
@@ -105,6 +111,16 @@ public static class Extensions
         return builder;
     }
 
+    public static IHostApplicationBuilder ConfigureMemoryCacheMetrics(this IHostApplicationBuilder builder)
+    {
+        builder.Services.Configure<MemoryCacheOptions>(options => options.TrackStatistics = true);
+
+        builder.Services.AddSingleton<MemoryCacheMetrics>();
+        builder.Services.AddHostedService(provider => provider.GetRequiredService<MemoryCacheMetrics>());
+
+        return builder;
+    }
+
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         // Adding health checks endpoints to applications in non-development environments has security implications.
@@ -112,11 +128,15 @@ public static class Extensions
         if (app.Environment.IsDevelopment())
         {
             // All health checks must pass for app to be considered ready to accept traffic after starting
-            app.MapHealthChecks("/health").DisableHttpMetrics();
+            app.MapHealthChecks("/health", new()
+            {
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            }).DisableHttpMetrics();
 
             // Only health checks tagged with the "live" tag must pass for app to be considered alive
             app.MapHealthChecks("/alive", new HealthCheckOptions
             {
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
                 Predicate = r => r.Tags.Contains("live")
             }).DisableHttpMetrics();
         }

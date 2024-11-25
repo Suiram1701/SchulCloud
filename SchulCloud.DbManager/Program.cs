@@ -36,8 +36,8 @@ internal class Program
             .AddHostedService(provider => provider.GetRequiredService<DbCleaner>());
 
         builder.Services.AddHealthChecks()
-            .AddCheck<DbInitializerCheck>($"{nameof(DbInitializer)} health check")
-            .AddCheck<DbCleanerCheck>($"{nameof(DbCleaner)} health check", tags: ["live"]);
+            .AddCheck<DbInitializerCheck>("DbInitializer")
+            .AddCheck<DbCleanerCheck>($"DbCleaner");
 
         builder.Services.AddOptions<DefaultUserOptions>()
             .Bind(builder.Configuration.GetSection("DbInitializer:DefaultUser"))
