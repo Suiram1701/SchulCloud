@@ -5,6 +5,7 @@ using SchulCloud.Database.Extensions;
 using SchulCloud.DbManager.Extensions;
 using SchulCloud.DbManager.HealthChecks;
 using SchulCloud.DbManager.Options;
+using SchulCloud.DbManager.Services;
 using SchulCloud.ServiceDefaults;
 using SchulCloud.Store;
 
@@ -46,6 +47,7 @@ internal class Program
 
         await builder.Build()
             .MapDefaultEndpoints()
+            .MapCommands()
             .RunAsync();
     }
 }

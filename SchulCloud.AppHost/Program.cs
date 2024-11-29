@@ -1,4 +1,5 @@
 using Aspire.Hosting.MailDev;
+using SchulCloud.AppHost.Extensions;
 using SchulCloud.ServiceDefaults;
 
 namespace SchulCloud.AppHost;
@@ -18,15 +19,19 @@ public class Program
             .WithReference(identityDb)
             .WithReference(mailDev)
             .WaitFor(mailDev)     // The MailKit health check fails if mail dev isn't available on start.
-            .WithDefaultHealthChecks();
+            .WithDefaultHealthChecks()
+            .WithDefaultCommands();
 
         IResourceBuilder<ProjectResource> restApi = builder.AddProject<Projects.SchulCloud_RestApi>("rest-api")
             .WithReference(identityDb)
-            .WithDefaultHealthChecks();
+            .WithDefaultHealthChecks()
+            .WithDefaultCommands();
 
         builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
             .WithReference(identityDb)
-            .WithDefaultHealthChecks();
+            .WithDefaultHealthChecks()
+            .WithDefaultCommands()
+            .WithDbManagerCommands();
 
         builder.AddYarp("gateway")
             .WithEndpoint(scheme: "http", port: 8000)

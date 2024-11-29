@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+using SchulCloud.DbManager.Services;
 
 namespace SchulCloud.DbManager.HealthChecks;
 

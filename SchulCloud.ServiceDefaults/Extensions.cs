@@ -1,6 +1,7 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -139,7 +140,44 @@ public static class Extensions
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
                 Predicate = r => r.Tags.Contains("live")
             }).DisableHttpMetrics();
+
+            app.MapDefaultCommands();
         }
+
+        return app;
+    }
+
+    /// <summary>
+    /// Adds default commands for the aspire ui.
+    /// </summary>
+    /// <param name="app">The application builder to use.</param>
+    /// <returns></returns>
+    public static WebApplication MapDefaultCommands(this WebApplication app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        app.MapGet("/commands/clear-cache", async context =>
+        {
+            if (context.RequestServices.GetService<IMemoryCache>() is MemoryCache cache)
+            {
+                cache.Clear();
+                context.Response.StatusCode = StatusCodes.Status204NoContent;
+            }
+            else
+            {
+                IProblemDetailsService problemService = context.RequestServices.GetRequiredService<IProblemDetailsService>();
+                await problemService.WriteAsync(new()
+                {
+                    HttpContext = context,
+                    ProblemDetails = new()
+                    {
+                        Title = "Unable to clear cache",
+                        Status = StatusCodes.Status501NotImplemented,
+                        Detail = "The server does not implement a clearable cache."
+                    }
+                }).ConfigureAwait(false);
+            }
+        });
 
         return app;
     }

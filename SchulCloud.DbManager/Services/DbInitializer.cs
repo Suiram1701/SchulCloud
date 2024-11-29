@@ -8,7 +8,7 @@ using SchulCloud.Store.Managers;
 using System.Diagnostics;
 using System.Drawing;
 
-namespace SchulCloud.DbManager;
+namespace SchulCloud.DbManager.Services;
 
 internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> logger) : BackgroundService
 {

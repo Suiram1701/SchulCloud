@@ -1,5 +1,4 @@
-﻿
-namespace SchulCloud.DbManager;
+﻿namespace SchulCloud.DbManager.Services;
 
 internal class DbCleaner(IServiceProvider services, ILogger<DbCleaner> logger) : BackgroundService
 {
