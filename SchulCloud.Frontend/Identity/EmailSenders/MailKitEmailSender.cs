@@ -3,7 +3,7 @@ using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using SchulCloud.Frontend.Options;
+using SchulCloud.Identity.Options;
 using System.Net.Mail;
 
 namespace SchulCloud.Frontend.Identity.EmailSenders;

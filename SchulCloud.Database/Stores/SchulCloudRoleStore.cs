@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SchulCloud.Database.Models;
-using SchulCloud.Store.Abstractions;
+using SchulCloud.Identity.Abstractions;
 using System.Drawing;
 
 namespace SchulCloud.Database.Stores;
@@ -11,7 +11,7 @@ public class SchulCloudRoleStore<TRole, TContext>(TContext context, IdentityErro
     : RoleStore<TRole, DbContext>(context, describer),
     IRoleDefaultRoleStore<TRole>,
     IRoleColorStore<TRole>
-    where TRole : SchulCloudRole
+    where TRole : AppRole
     where TContext : DbContext
 {
     public Task<bool> GetIsDefaultRoleAsync(TRole role, CancellationToken ct = default)

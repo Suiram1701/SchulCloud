@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SchulCloud.Store.Models;
 using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Frontend.Services.Models;
 using System.Threading.Channels;
+using SchulCloud.Identity.Models;
 
 namespace SchulCloud.Frontend.HostedServices;
 
@@ -17,7 +17,7 @@ public class LoginAttemptLoggingService(ILogger<LoginAttemptLoggingService> logg
             try
             {
                 using IServiceScope serviceScope = scopeFactory.CreateScope();
-                AppUserManager userManager = serviceScope.ServiceProvider.GetRequiredService<AppUserManager>();
+                ApplicationUserManager userManager = serviceScope.ServiceProvider.GetRequiredService<ApplicationUserManager>();
 
                 string userId = (await userManager.GetUserIdAsync(user))!;
 

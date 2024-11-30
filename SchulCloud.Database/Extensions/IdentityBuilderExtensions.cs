@@ -8,7 +8,7 @@ namespace SchulCloud.Database.Extensions;
 public static class IdentityBuilderExtensions
 {
     /// <summary>
-    /// Adds the stores of the <see cref="SchulCloudDbContext"/> to the identity builder.
+    /// Adds the stores of the <see cref="AppDbContext"/> to the identity builder.
     /// </summary>
     /// <typeparam name="TContext">The type of the db context to use.</typeparam>
     /// <param name="builder">The identity bulder.</param>

@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using SchulCloud.Authorization;
+using SchulCloud.Identity.Models;
 using SchulCloud.Store.Managers;
-using SchulCloud.Store.Models;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 
@@ -19,7 +19,7 @@ internal class ApiKeyScheme<TUser>(
     IProblemDetailsService problemDetailsService,
     IOptionsMonitor<ApiKeySchemeOptions> options,
     ILoggerFactory logger,
-    SchulCloudUserManager<TUser> userManager,
+    AppUserManager<TUser> userManager,
     UrlEncoder encoder)
     : AuthenticationHandler<ApiKeySchemeOptions>(options, logger, encoder)
     where TUser : class

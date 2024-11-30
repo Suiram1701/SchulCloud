@@ -39,7 +39,7 @@ public sealed partial class Login : ComponentBase, IDisposable
     private AntiforgeryStateProvider AntiforgeryStateProvider { get; set; } = default!;
 
     [Inject]
-    private AppUserManager UserManager { get; set; } = default!;
+    private ApplicationUserManager UserManager { get; set; } = default!;
 
     [Inject]
     private SchulCloudSignInManager SignInManager { get; set; } = default!;

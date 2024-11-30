@@ -7,7 +7,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SchulCloud.Store.Models;
 using SchulCloud.Frontend.Components.Dialogs;
 using SchulCloud.Frontend.Extensions;
 using SchulCloud.Frontend.Models;
@@ -16,6 +15,7 @@ using System.Globalization;
 using System.Net;
 using MaterialSymbols = MudBlazor.FontIcons.MaterialSymbols;
 using SchulCloud.Frontend.JsInterop;
+using SchulCloud.Identity.Models;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
 
@@ -33,7 +33,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
     private IDialogService DialogService { get; set; } = default!;
 
     [Inject]
-    private AppUserManager UserManager { get; set; } = default!;
+    private ApplicationUserManager UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;

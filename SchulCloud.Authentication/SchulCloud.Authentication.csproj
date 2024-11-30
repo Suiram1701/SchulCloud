@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SchulCloud.Store\SchulCloud.Store.csproj" />
+    <ProjectReference Include="..\SchulCloud.Identity\SchulCloud.Identity.csproj" />
   </ItemGroup>
 
 

@@ -6,8 +6,8 @@ using SchulCloud.DbManager.Extensions;
 using SchulCloud.DbManager.HealthChecks;
 using SchulCloud.DbManager.Options;
 using SchulCloud.DbManager.Services;
+using SchulCloud.Identity;
 using SchulCloud.ServiceDefaults;
-using SchulCloud.Store;
 
 namespace SchulCloud.DbManager;
 
@@ -16,18 +16,18 @@ internal class Program
     static async Task Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddValidatorsFromAssemblyContaining<IDbManager>(includeInternalTypes: true);
         builder
             .AddServiceDefaults()
-            .ConfigureOptions();
+            .ConfigureIdentity();
+        builder.Services.AddValidatorsFromAssemblyContaining<IDbManager>(includeInternalTypes: true);
 
         builder.Services.AddOpenTelemetry()
             .WithTracing(traceBuilder => traceBuilder.AddSource(DbInitializer.ActivitySourceName));
 
-        builder.AddAspirePostgresDb<SchulCloudDbContext>(ResourceNames.IdentityDatabase);
+        builder.AddAspirePostgresDb<AppDbContext>(ResourceNames.IdentityDatabase);
         builder.Services.AddIdentityCore<ApplicationUser>()
             .AddRoles<ApplicationRole>()
-            .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()
+            .AddSchulCloudEntityFrameworkStores<AppDbContext>()
             .AddSchulCloudManagers();
 
         builder.Services

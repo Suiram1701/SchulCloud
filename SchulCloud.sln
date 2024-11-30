@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aspire.Hosting.MailDev", "A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailKit.Client", "MailKit.Client\MailKit.Client.csproj", "{CFB8D5D4-4F1F-4AAB-B420-38923D371464}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SchulCloud.Store", "SchulCloud.Store\SchulCloud.Store.csproj", "{EA060A21-FE70-4477-8B87-2780E9735DEB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SchulCloud.Identity", "SchulCloud.Identity\SchulCloud.Identity.csproj", "{EA060A21-FE70-4477-8B87-2780E9735DEB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SchulCloud.Authorization", "SchulCloud.Authorization\SchulCloud.Authorization.csproj", "{3DA5C997-E3BB-4725-8C45-56699C5B023D}"
 EndProject

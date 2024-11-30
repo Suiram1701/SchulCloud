@@ -6,7 +6,7 @@ using MudBlazor;
 using SchulCloud.Authorization;
 using SchulCloud.Frontend.Components.Dialogs;
 using SchulCloud.Frontend.Extensions;
-using SchulCloud.Store.Models;
+using SchulCloud.Identity.Models;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
 
@@ -24,7 +24,7 @@ public sealed partial class ApiKeyDetails
     private IDialogService DialogService { get; set; } = default!;
 
     [Inject]
-    private AppUserManager UserManager { get; set; } = default!;
+    private ApplicationUserManager UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;

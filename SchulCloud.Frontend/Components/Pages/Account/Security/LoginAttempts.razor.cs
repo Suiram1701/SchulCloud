@@ -5,10 +5,10 @@ using Microsoft.Extensions.Localization;
 using MudBlazor;
 using MyCSharp.HttpUserAgentParser;
 using MyCSharp.HttpUserAgentParser.Providers;
-using SchulCloud.Store.Models;
 using SchulCloud.Frontend.Components.Dialogs;
 using SchulCloud.Frontend.Extensions;
 using System.Net;
+using SchulCloud.Identity.Models;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
 
@@ -29,7 +29,7 @@ public sealed partial class LoginAttempts : ComponentBase
     private IHttpUserAgentParserProvider UserAgentParserProvider { get; set; } = default!;
 
     [Inject]
-    private AppUserManager UserManager { get; set; } = default!;
+    private ApplicationUserManager UserManager { get; set; } = default!;
     #endregion
 
     private ApplicationUser _user = default!;

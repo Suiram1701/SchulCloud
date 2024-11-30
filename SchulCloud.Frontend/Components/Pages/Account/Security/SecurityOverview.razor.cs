@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using MudBlazor;
-using SchulCloud.Store.Enums;
 using SchulCloud.Store.Managers;
 using SchulCloud.Frontend.Components.Dialogs;
 using SchulCloud.Frontend.Extensions;
 using SchulCloud.Frontend.Services;
+using SchulCloud.Identity.Enums;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
 
@@ -29,7 +29,7 @@ public sealed partial class SecurityOverview : ComponentBase, IDisposable
     private IOptions<PasswordOptions> PasswordOptionsAccessor { get; set; } = default!;
 
     [Inject]
-    private AppUserManager UserManager { get; set; } = default!;
+    private ApplicationUserManager UserManager { get; set; } = default!;
 
     [Inject]
     private SignInManager<ApplicationUser> SignInManager { get; set; } = default!;

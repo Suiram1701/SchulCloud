@@ -7,7 +7,7 @@ using SchulCloud.Authorization;
 using SchulCloud.Frontend.Components.Dialogs;
 using SchulCloud.Frontend.Extensions;
 using SchulCloud.Frontend.Models;
-using SchulCloud.Store.Models;
+using SchulCloud.Identity.Models;
 using System.Text;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
@@ -29,7 +29,7 @@ public sealed partial class ApiKeyCreate : ComponentBase
     private IJSRuntime JSRuntime { get; set; } = default!;
 
     [Inject]
-    private AppUserManager UserManager { get; set; } = default!;
+    private ApplicationUserManager UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;

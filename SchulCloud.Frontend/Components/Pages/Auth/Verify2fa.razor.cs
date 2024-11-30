@@ -49,7 +49,7 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
     private SchulCloudSignInManager SignInManager { get; set; } = default!;
 
     [Inject]
-    private AppUserManager UserManager { get; set; } = default!;
+    private ApplicationUserManager UserManager { get; set; } = default!;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;

@@ -4,13 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using SchulCloud.Database;
 
 #nullable disable
 
 namespace SchulCloud.Database.Migrations
 {
-    [DbContext(typeof(SchulCloudDbContext))]
+    [DbContext(typeof(AppDbContext))]
     partial class SchulCloudDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

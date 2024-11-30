@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using MudBlazor;
 using MudBlazor.Services;
-using SchulCloud.Store;
 using SchulCloud.Frontend.Options;
 using SchulCloud.Frontend.JsInterop;
 using GoogleMapsComponents;
+using SchulCloud.Identity;
 
 namespace SchulCloud.Frontend.Extensions;
 
@@ -19,13 +19,6 @@ public static class ApplicationBuilderExtensions
     /// <returns>The application builder.</returns>
     public static void ConfigureOptions(this IHostApplicationBuilder builder)
     {
-        // Identity
-        builder.Services
-            .Configure<IdentityOptions>(builder.Configuration.GetSection("Identity"))
-            .Configure<EmailSenderOptions>(builder.Configuration.GetSection("Identity:EmailSender"))
-            .Configure<DataProtectionTokenProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:DataProtectionTokenProvider"))
-            .Configure<AuthenticationCodeProviderOptions>(builder.Configuration.GetSection("Identity:TokenProviders:AuthenticationCodeTokenProvider"));
-
         // Visual presentation
         builder.Services
             .Configure<PresentationOptions>(builder.Configuration.GetSection("Presentation"))
@@ -44,17 +37,17 @@ public static class ApplicationBuilderExtensions
 
         // MudBlazor
         builder.Services
-            .Configure<SnackbarConfiguration>(builder.Configuration.GetSection("Mud:Snackbar"))
-            .Configure<ResizeOptions>(builder.Configuration.GetSection("Mud:Resize"))
-            .Configure<ResizeObserverOptions>(builder.Configuration.GetSection("Mud:ResizeObserver"))
-            .Configure<PopoverOptions>(builder.Configuration.GetSection("Mud:Popover"));
+            .Configure<SnackbarConfiguration>(builder.Configuration.GetSection("MudBlazor:Snackbar"))
+            .Configure<ResizeOptions>(builder.Configuration.GetSection("MudBlazor:Resize"))
+            .Configure<ResizeObserverOptions>(builder.Configuration.GetSection("MudBlazor:ResizeObserver"))
+            .Configure<PopoverOptions>(builder.Configuration.GetSection("MudBlazor:Popover"));
 
         // Other
         builder.Services
             .Configure<RequestLimiterOptions>(builder.Configuration.GetSection("RequestLimiter"))
             .Configure<Fido2Configuration>(builder.Configuration.GetSection("Fido2"))
             .Configure<ApiOptions>(builder.Configuration.GetSection("Api"));
-        builder.ConfigureManagers();
+        builder.ConfigureIdentity();
     }
 
     public static IHostApplicationBuilder AddConfiguredGoogleMapsServices(this IHostApplicationBuilder builder)

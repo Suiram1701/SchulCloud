@@ -2,13 +2,13 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SchulCloud.Store.Enums;
-using SchulCloud.Store.Models;
 using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Frontend.Services.Models;
 using System.Net;
 using System.Security.Claims;
 using SchulCloud.Frontend.HostedServices;
+using SchulCloud.Identity.Enums;
+using SchulCloud.Identity.Models;
 
 namespace SchulCloud.Frontend.Identity.Managers;
 
@@ -16,7 +16,7 @@ namespace SchulCloud.Frontend.Identity.Managers;
 /// A sign in manager that provides extended sign in logic.
 /// </summary>
 public class SchulCloudSignInManager(
-    AppUserManager userManager,
+    ApplicationUserManager userManager,
     LoginAttemptLoggingService loginLogService,
     IHttpContextAccessor contextAccessor,
     IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory,
@@ -26,7 +26,7 @@ public class SchulCloudSignInManager(
     IUserConfirmation<ApplicationUser> confirmation)
     : SignInManager<ApplicationUser>(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
 {
-    private readonly AppUserManager _userManager = userManager;
+    private readonly ApplicationUserManager _userManager = userManager;
 
     public override async Task<SignInResult> PasswordSignInAsync(ApplicationUser user, string password, bool isPersistent, bool lockoutOnFailure)
     {

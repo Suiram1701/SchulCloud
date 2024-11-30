@@ -10,7 +10,7 @@ public sealed partial class AccountSecurityLayout : LayoutComponentBase
     private IStringLocalizer<AccountSecurityLayout> Localizer { get; set; } = default!;
 
     [Inject]
-    private AppUserManager UserManager { get; set; } = default!;
+    private ApplicationUserManager UserManager { get; set; } = default!;
     #endregion
 
 }

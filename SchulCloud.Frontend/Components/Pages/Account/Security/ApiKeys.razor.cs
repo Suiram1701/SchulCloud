@@ -4,7 +4,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using MudBlazor;
 using SchulCloud.Frontend.Options;
-using SchulCloud.Store.Models;
+using SchulCloud.Identity.Models;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
 
@@ -19,7 +19,7 @@ public sealed partial class ApiKeys : ComponentBase
     private IOptionsSnapshot<ApiOptions> ApiOptionsSnapshoot { get; set; } = default!;
 
     [Inject]
-    private AppUserManager UserManager { get; set; } = default!;
+    private ApplicationUserManager UserManager { get; set; } = default!;
     #endregion
 
     private IEnumerable<UserApiKey> _apiKeys = [];

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using SchulCloud.Database;
 using SchulCloud.DbManager.Options;
-using SchulCloud.Store.Managers;
+using SchulCloud.Identity.Managers;
 using System.Diagnostics;
 using System.Drawing;
 
@@ -32,7 +32,7 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
 
     private async Task MigrateDbAsync(IServiceProvider serviceProvider, Activity? activity, CancellationToken ct)
     {
-        DbContext context = serviceProvider.GetRequiredService<SchulCloudDbContext>();
+        DbContext context = serviceProvider.GetRequiredService<AppDbContext>();
         IExecutionStrategy strategy = context.Database.CreateExecutionStrategy();
 
         IEnumerable<string> pendingMigrations = await strategy.ExecuteAsync(context.Database.GetPendingMigrationsAsync, ct);
@@ -63,7 +63,7 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
 
     private async Task AddDefaultRolesAsync(IServiceProvider serviceProvider, Activity? activity, CancellationToken ct)
     {
-        SchulCloudRoleManager<ApplicationRole> roleManager = serviceProvider.GetRequiredService<SchulCloudRoleManager<ApplicationRole>>();
+        AppRoleManager<ApplicationRole> roleManager = serviceProvider.GetRequiredService<AppRoleManager<ApplicationRole>>();
         IEnumerable<string?> defaultRoles = await roleManager.Roles
             .Where(role => role.DefaultRole)
             .Select(role => role.Name)
@@ -74,7 +74,7 @@ internal class DbInitializer(IServiceProvider services, ILogger<DbInitializer> l
         await TryAddDefaultRoleAsync(roleManager, RoleNames.StudentRoleName, Color.Green, defaultRoles, activity);
     }
 
-    private async Task TryAddDefaultRoleAsync(SchulCloudRoleManager<ApplicationRole> manager, string roleName, Color? roleColor, IEnumerable<string?> roles, Activity? activity)
+    private async Task TryAddDefaultRoleAsync(AppRoleManager<ApplicationRole> manager, string roleName, Color? roleColor, IEnumerable<string?> roles, Activity? activity)
     {
         if (!roles.Contains(roleName))
         {

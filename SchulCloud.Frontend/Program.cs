@@ -3,10 +3,8 @@ using MailKit.Client;
 using Microsoft.AspNetCore.Identity;
 using MudBlazor.Services;
 using MyCSharp.HttpUserAgentParser.DependencyInjection;
-using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
 using SchulCloud.ServiceDefaults;
-using SchulCloud.Store;
 using SchulCloud.Frontend.Components;
 using SchulCloud.Frontend.Extensions;
 using SchulCloud.Frontend.Identity;
@@ -18,6 +16,8 @@ using SchulCloud.Authorization.Extensions;
 using MudBlazor.Translations;
 using SchulCloud.Frontend.HostedServices;
 using SchulCloud.Frontend.HealthChecks;
+using SchulCloud.Identity;
+using SchulCloud.Database;
 
 namespace SchulCloud.Frontend;
 
@@ -26,16 +26,18 @@ public class Program
     public static void Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-        builder.AddServiceDefaults();
-        builder.ConfigureOptions();
+        builder
+            .AddServiceDefaults()
+            .ConfigureIdentity()
+            .ConfigureOptions();
 
         builder.Services.AddMemoryCache();
 
-        builder.AddAspirePostgresDb<SchulCloudDbContext>(ResourceNames.IdentityDatabase, pooledService: false);
+        builder.AddAspirePostgresDb<AppDbContext>(ResourceNames.IdentityDatabase, pooledService: false);
         builder.AddMailKitClient(ResourceNames.MailServer);
 
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
-            .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()
+            .AddSchulCloudEntityFrameworkStores<AppDbContext>()
             .ConfigureDefaultIdentityCookies()
             .AddSchulCloudManagers()
             .AddSignInManager<SchulCloudSignInManager>()

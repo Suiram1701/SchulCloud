@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using SchulCloud.Authorization;
 using SchulCloud.Database.Enums;
 using SchulCloud.Database.Models;
-using SchulCloud.Store.Abstractions;
-using SchulCloud.Store.Models;
+using SchulCloud.Identity.Abstractions;
+using SchulCloud.Identity.Models;
 using System.Net;
 using System.Security.Claims;
 
@@ -21,7 +21,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     IUserLoginAttemptStore<TUser>,
     IUserPermissionStore<TUser>,
     IUserApiKeyStore<TUser>
-    where TUser : SchulCloudUser
+    where TUser : AppUser
     where TRole : IdentityRole
     where TContext : DbContext
 {
@@ -350,7 +350,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         await LoginAttempts.Where(attempt => attempt.UserId.Equals(userId)).ExecuteDeleteAsync(ct);
     }
 
-    public async Task<IReadOnlyDictionary<Store.Enums.LoginAttemptMethod, DateTime>> GetLatestLoginMethodUseTimeAsync(TUser user, CancellationToken ct = default)
+    public async Task<IReadOnlyDictionary<Identity.Enums.LoginAttemptMethod, DateTime>> GetLatestLoginMethodUseTimeAsync(TUser user, CancellationToken ct = default)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
@@ -365,8 +365,8 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
             .GroupBy(attempt => attempt.Method).Select(group => group.OrderByDescending(attempt => attempt.DateTime).First())     // DistinctBy isn't currently supported by ef core. The expression in this line does the same.
             .ToListAsync(ct);
 
-        return attempts.ToDictionary<dynamic, Store.Enums.LoginAttemptMethod, DateTime>(
-            keySelector: attempt => (Store.Enums.LoginAttemptMethod)attempt.Method,
+        return attempts.ToDictionary<dynamic, Identity.Enums.LoginAttemptMethod, DateTime>(
+            keySelector: attempt => (Identity.Enums.LoginAttemptMethod)attempt.Method,
             elementSelector: attempt => attempt.DateTime);
     }
     #endregion

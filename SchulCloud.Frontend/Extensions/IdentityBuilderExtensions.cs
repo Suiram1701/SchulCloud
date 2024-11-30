@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SchulCloud.Store.Options;
 using SchulCloud.Frontend.Identity.TokenProviders;
 using SchulCloud.Frontend.Options;
 using SchulCloud.Frontend.Services.Interfaces;
+using SchulCloud.Identity.Options;
 
 namespace SchulCloud.Frontend.Extensions;
 

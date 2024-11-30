@@ -7,11 +7,11 @@ using SchulCloud.Authorization.Extensions;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
 using SchulCloud.Database.Models;
+using SchulCloud.Identity;
 using SchulCloud.RestApi.Extensions;
 using SchulCloud.RestApi.Options;
 using SchulCloud.RestApi.Swagger;
 using SchulCloud.ServiceDefaults;
-using SchulCloud.Store;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
@@ -22,18 +22,20 @@ internal class Program
     public static void Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-        builder.AddServiceDefaults();
+        builder
+            .AddServiceDefaults()
+            .ConfigureIdentity();
 
-        builder.AddAspirePostgresDb<SchulCloudDbContext>(ResourceNames.IdentityDatabase);
+        builder.AddAspirePostgresDb<AppDbContext>(ResourceNames.IdentityDatabase);
 
-        builder.Services.AddIdentityCore<SchulCloudUser>()
-            .AddRoles<SchulCloudRole>()
-            .AddSchulCloudEntityFrameworkStores<SchulCloudDbContext>()
+        builder.Services.AddIdentityCore<AppUser>()
+            .AddRoles<AppRole>()
+            .AddSchulCloudEntityFrameworkStores<AppDbContext>()
             .AddSchulCloudManagers();
-        builder.ConfigureManagers();
+        builder.ConfigureIdentity();
 
         builder.Services.AddAuthentication(SchemeNames.ApiKeyScheme)
-            .AddApiKey<SchulCloudUser>();
+            .AddApiKey<AppUser>();
         builder.Services.AddAuthorizationBuilder()
             .AddPermissionsPolicies();
 

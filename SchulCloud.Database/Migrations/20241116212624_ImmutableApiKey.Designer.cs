@@ -5,13 +5,12 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using SchulCloud.Database;
 
 #nullable disable
 
 namespace SchulCloud.Database.Migrations
 {
-    [DbContext(typeof(SchulCloudDbContext))]
+    [DbContext(typeof(AppDbContext))]
     [Migration("20241116212624_ImmutableApiKey")]
     partial class ImmutableApiKey
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SchulCloud.Frontend.Options;
+using SchulCloud.Identity.Options;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
