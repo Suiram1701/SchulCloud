@@ -8,6 +8,7 @@ using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
 using SchulCloud.Database.Models;
 using SchulCloud.Identity;
+using SchulCloud.Identity.Services;
 using SchulCloud.RestApi.Extensions;
 using SchulCloud.RestApi.Options;
 using SchulCloud.RestApi.Swagger;
@@ -31,7 +32,8 @@ internal class Program
         builder.Services.AddIdentityCore<AppUser>()
             .AddRoles<AppRole>()
             .AddSchulCloudEntityFrameworkStores<AppDbContext>()
-            .AddSchulCloudManagers();
+            .AddManagers()
+            .AddApiKeysService<ApiKeyService>();
         builder.ConfigureIdentity();
 
         builder.Services.AddAuthentication(SchemeNames.ApiKeyScheme)

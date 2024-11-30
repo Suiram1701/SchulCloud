@@ -21,7 +21,7 @@ partial class AppUserManager<TUser>
         get
         {
             ThrowIfDisposed();
-            return Store is IUserCredentialStore<TUser>;
+            return Store is IUserCredentialStore<TUser> && _services.GetService<IFido2>() is not null;
         }
     }
 

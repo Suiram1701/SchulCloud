@@ -18,6 +18,7 @@ using SchulCloud.Frontend.HostedServices;
 using SchulCloud.Frontend.HealthChecks;
 using SchulCloud.Identity;
 using SchulCloud.Database;
+using SchulCloud.Identity.Services;
 
 namespace SchulCloud.Frontend;
 
@@ -39,7 +40,8 @@ public class Program
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddSchulCloudEntityFrameworkStores<AppDbContext>()
             .ConfigureDefaultIdentityCookies()
-            .AddSchulCloudManagers()
+            .AddManagers()
+            .AddApiKeysService<ApiKeyService>()
             .AddSignInManager<SchulCloudSignInManager>()
             .AddErrorDescriber<LocalizedErrorDescriber>()
             .AddEmailSender<MailKitEmailSender<ApplicationUser>>()

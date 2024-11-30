@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using MudBlazor;
 using SchulCloud.Frontend.Options;
 using SchulCloud.Identity.Models;
+using SchulCloud.Identity.Options;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
 
@@ -14,6 +15,9 @@ public sealed partial class ApiKeys : ComponentBase
     #region Injections
     [Inject]
     private IStringLocalizer<ApiKeys> Localizer { get; set; } = default!;
+
+    [Inject]
+    private IOptions<ApiKeyOptions> ApiKeyOptions { get; set; } = default!;
 
     [Inject]
     private IOptionsSnapshot<ApiOptions> ApiOptionsSnapshoot { get; set; } = default!;

@@ -28,7 +28,7 @@ internal class Program
         builder.Services.AddIdentityCore<ApplicationUser>()
             .AddRoles<ApplicationRole>()
             .AddSchulCloudEntityFrameworkStores<AppDbContext>()
-            .AddSchulCloudManagers();
+            .AddManagers();
 
         builder.Services
             .AddSingleton<DbInitializer>()

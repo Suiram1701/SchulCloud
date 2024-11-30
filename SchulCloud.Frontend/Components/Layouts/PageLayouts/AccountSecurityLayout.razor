@@ -26,7 +26,7 @@
                 </MudNavLink>
             }
 
-            @if (UserManager.SupportsUserApiKeys && UserManager.ApiKeyOptions.MaxKeysPerUser != 0)
+            @if (UserManager.SupportsUserApiKeys && ApiKeyOptionsAccessor.Value.MaxKeysPerUser != 0)
             {
                 <MudNavLink Href="@Routes.ApiKeys()" ActiveClass="border-solid border-b-2 mud-border-primary mud-primary-text">
                     <MudText Align="Align.Center">@Localizer["tabApiKeys"]</MudText>

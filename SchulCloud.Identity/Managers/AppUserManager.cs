@@ -11,6 +11,7 @@ using SchulCloud.Identity.Abstractions;
 using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
 using SchulCloud.Identity.Options;
+using SchulCloud.Identity.Services.Abstractions;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -24,7 +25,7 @@ public partial class AppUserManager<TUser>(
     IUserStore<TUser> store,
     IOptions<IdentityOptions> optionsAccessor,
     IOptions<ExtendedTokenProviderOptions> tokenProviderOptionsAccessor,
-    IOptions<ApiKeyOptions> apiKeysOptionsAccessor,
+    IOptions<ApiKeyOptions> apiKeyOptionsAccessor,
     IPasswordHasher<TUser> passwordHasher,
     IEnumerable<IUserValidator<TUser>> userValidators,
     IEnumerable<IPasswordValidator<TUser>> passwordValidators,
@@ -41,11 +42,6 @@ public partial class AppUserManager<TUser>(
     /// Extended token provider options
     /// </summary>
     public ExtendedTokenProviderOptions ExtendedTokenProviderOptions { get; } = tokenProviderOptionsAccessor.Value;
-
-    /// <summary>
-    /// Options for api keys.
-    /// </summary>
-    public ApiKeyOptions ApiKeyOptions { get; } = apiKeysOptionsAccessor.Value;
 
     /// <summary>
     /// Indicate whether the internal store supports passkey sign ins.
@@ -103,7 +99,7 @@ public partial class AppUserManager<TUser>(
         get
         {
             ThrowIfDisposed();
-            return Store is IUserApiKeyStore<TUser>;
+            return Store is IUserApiKeyStore<TUser> && _services.GetService<IApiKeyService>() is not null;
         }
     }
 
@@ -322,7 +318,6 @@ public partial class AppUserManager<TUser>(
     {
         byte[] keyBytes = Encoding.UTF8.GetBytes(userId);
         byte[] codeBytes = Encoding.UTF8.GetBytes(code);
-
         return Convert.ToBase64String(HMACSHA256.HashData(keyBytes, codeBytes));
     }
 
@@ -538,9 +533,10 @@ public partial class AppUserManager<TUser>(
     {
         ThrowIfDisposed();
         ArgumentException.ThrowIfNullOrEmpty(apiKey);
+        IApiKeyService apiKeyService = _services.GetRequiredService<IApiKeyService>();
 
         IUserApiKeyStore<TUser> store = GetApiKeyStore();
-        UserApiKey? key = await store.FindApiKeyByKeyHashAsync(HashApiKey(apiKey), CancellationToken);
+        UserApiKey? key = await store.FindApiKeyByKeyHashAsync(apiKeyService.HashApiKey(apiKey), CancellationToken);
         
         if (key is not null)
         {
@@ -591,12 +587,15 @@ public partial class AppUserManager<TUser>(
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(apiKey);
 
+        IApiKeyService apiKeyService = _services.GetRequiredService<IApiKeyService>();
+        ApiKeyOptions options = apiKeyOptionsAccessor.Value;
+
         IUserApiKeyStore<TUser> keyStore = GetApiKeyStore();
         int keysCount = (await keyStore.GetApiKeysByUserAsync(user, CancellationToken)).Length;
-        if (ApiKeyOptions.MaxKeysPerUser != -1 && keysCount >= ApiKeyOptions.MaxKeysPerUser)
+        if (options.MaxKeysPerUser != -1 && keysCount >= options.MaxKeysPerUser)
         {
             string? userId = await GetUserIdAsync(user);
-            Logger.LogInformation("User '{userId}' tried to create more api keys than the maximum count per user. The maximum count is {maxCount}.", userId, ApiKeyOptions.MaxKeysPerUser);
+            Logger.LogInformation("User '{userId}' tried to create more api keys than the maximum count per user. The maximum count is {maxCount}.", userId, options.MaxKeysPerUser);
 
             return null;
         }
@@ -616,32 +615,14 @@ public partial class AppUserManager<TUser>(
             return null;
         }
 
-        string key = GenerateApiKey();
-        apiKey.KeyHash = HashApiKey(key);
+        string key = apiKeyService.GenerateNewApiKey();
+        apiKey.KeyHash = apiKeyService.HashApiKey(key);
         apiKey.Created = DateTime.UtcNow;
 
         await keyStore.AddApiKeyAsync(user, apiKey, CancellationToken);
 
         IdentityResult result = await UpdateSecurityStampAsync(user);
         return result.Succeeded ? key : null;
-    }
-
-    private string GenerateApiKey()
-    {
-        string key = RandomNumberGenerator.GetString(ApiKeyOptions.AllowedChars, ApiKeyOptions.KeyLength);
-
-        if (!string.IsNullOrWhiteSpace(ApiKeyOptions.KeyPrefix))
-        {
-            return $"{ApiKeyOptions.KeyPrefix}-{key}";
-        }
-        return key;
-    }
-
-    private string HashApiKey(string key)
-    {
-        byte[] saltBytes = Encoding.UTF8.GetBytes(ApiKeyOptions.GlobalSalt);
-        byte[] keyBytes = Encoding.UTF8.GetBytes(key);
-        return Convert.ToBase64String(HMACSHA256.HashData(saltBytes, keyBytes));
     }
 
     /// <summary>

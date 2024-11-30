@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SchulCloud.Identity.Managers;
 using SchulCloud.Identity.Options;
+using SchulCloud.Identity.Services.Abstractions;
 using SchulCloud.Store.Managers;
 
 namespace SchulCloud.Identity;
@@ -32,11 +33,26 @@ public static class Extensions
     }
 
     /// <summary>
+    /// Adds a required service needed to interact in any way with api keys.
+    /// </summary>
+    /// <typeparam name="TService">The service implementation to use.</typeparam>
+    /// <param name="builder">The identity builder to use.</param>
+    /// <returns>The builder pipeline</returns>
+    public static IdentityBuilder AddApiKeysService<TService>(this IdentityBuilder builder)
+        where TService : class, IApiKeyService
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Services.AddScoped<IApiKeyService, TService>();
+        return builder;
+    }
+
+    /// <summary>
     /// Adds the <see cref="AppUserManager{TUser}"/> and <see cref="AppRoleManager{TRole}"/> to the identity builder.
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <returns>The builder pipeline.</returns>
-    public static IdentityBuilder AddSchulCloudManagers(this IdentityBuilder builder)
+    public static IdentityBuilder AddManagers(this IdentityBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
