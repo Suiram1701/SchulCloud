@@ -39,7 +39,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
             return Problem(statusCode: 501, detail: "The server does not support this operation.");
         }
 
-        return Ok(roleManager.Roles.ProjectToType<Role>(Role.AdapterConfig));
+        return Ok(roleManager.Roles.ProjectToType<Role>());
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
         string userId = userManager.GetUserId(User)!;
         logger.LogTrace("User '{userId}' requested role '{requestRole}'.", userId, id);
 
-        return Ok(role.Adapt<Role>(Role.AdapterConfig));
+        return Ok(role.Adapt<Role>());
     }
 
     /// <summary>
@@ -86,6 +86,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
     [PaginationFilter<User>]
     [ProducesResponseType<User[]>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, MediaTypeNames.Application.ProblemJson)]
+    [RequirePermission(Permissions.Roles, PermissionLevel.Read)]
     public async Task<IActionResult> GetRoleUsersAsync([FromRoute] string id)
     {
         if (string.IsNullOrWhiteSpace(id))
@@ -214,7 +215,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
     /// 
     /// Sample request:
     /// 
-    ///     PATCH /v1/roles/{id}/users
+    ///     DELETE /v1/roles/{id}/users
     ///     [
     ///         "86d91795-89a7-4eca-8fdb-0180cab6b8b8",
     ///         "b4b7bbd0-4a5a-4481-917b-ac0a6c0c00d9",

@@ -119,6 +119,6 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
             return (await roleManager.FindByNameAsync(name).ConfigureAwait(false))!;
         })).ConfigureAwait(false);
 
-        return Ok(roles.Adapt<Role[]>(Role.AdapterConfig));
+        return Ok(roles.Adapt<Role[]>());
     }
 }

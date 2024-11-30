@@ -19,15 +19,7 @@ public class Role
     public string Name { get; set; } = default!;
     
     /// <summary>
-    /// The color of this role.
+    /// The 32 bit ARGB color of this role.
     /// </summary>
-    public Color? Color { get; set; } = default!;
-
-    internal static readonly TypeAdapterConfig AdapterConfig;
-
-    static Role()
-    {
-        AdapterConfig = new();
-        AdapterConfig.ForType<int?, Color?>().MapWith(color => color == null ? null : System.Drawing.Color.FromArgb(color.Value));
-    }
+    public int? ArgbColor { get; set; } = default!;
 }
