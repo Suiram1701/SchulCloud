@@ -33,6 +33,7 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
     /// <returns>The list of users</returns>
     /// <response code="200">Returns a list of users of the site.</response>
     [HttpGet]
+    [SortingFilter<User>]
     [PaginationFilter<User>]
     [ProducesResponseType<User[]>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [RequirePermission(Permissions.Users, PermissionLevel.Read)]

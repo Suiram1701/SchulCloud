@@ -29,6 +29,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
     /// <returns>A list of roles.</returns>
     /// <response code="200">Returns a list of roles.</response>
     [HttpGet]
+    [SortingFilter<Role>]
     [PaginationFilter<Role>]
     [ProducesResponseType<Role[]>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [RequirePermission(Permissions.Roles, PermissionLevel.Read)]
@@ -83,6 +84,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
     /// <response code="200">Returns a list of the users with the role.</response>
     /// <response code="404">No role with the specified id was found.</response>
     [HttpGet("{id}/users")]
+    [SortingFilter<User>]
     [PaginationFilter<User>]
     [ProducesResponseType<User[]>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, MediaTypeNames.Application.ProblemJson)]

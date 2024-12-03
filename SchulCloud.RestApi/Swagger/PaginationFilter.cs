@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace SchulCloud.RestApi.Swagger;
 
-internal class PaginationOperationFilter : IOperationFilter
+internal class PaginationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {

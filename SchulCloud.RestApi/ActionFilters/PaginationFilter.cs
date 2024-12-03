@@ -33,6 +33,14 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
     /// </remarks>
     public int[]? StatusCodes { get; set; }
 
+    /// <summary>
+    /// Creates a new instance
+    /// </summary>
+    public PaginationFilter()
+    {
+        Order = 10;
+    }
+
     /// <inheritdoc />
     public override void OnActionExecuting(ActionExecutingContext context)
     {
@@ -61,8 +69,6 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
         {
             context.Result = GetProblemResult(context, "The query parameter 'pageSize' have to be an integer greater or same than 1.");
         }
-
-        base.OnActionExecuting(context);
     }
 
     /// <inheritdoc />
@@ -100,12 +106,7 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
             }
             else
             {
-                logger.LogError(
-                    "Unable to cast type '{type}' into the pageable types '{supportedType1}' or '{supportedType2}'.",
-                    objectResult.Value?.GetType(),
-                    typeof(IEnumerable<TItem>),
-                    typeof(IQueryable<TItem>));
-
+                logger.LogError("Unable to cast type '{type}' into the pageable type '{supportedType}'.", objectResult.Value?.GetType(), typeof(IEnumerable<TItem>));
                 await base.OnResultExecutionAsync(context, next).ConfigureAwait(false);
                 return;
             }
@@ -151,8 +152,6 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
 
         ParameterExpression parameter = Expression.Parameter(typeof(TItem), "model");
         MemberExpression propertyAccess = Expression.Property(parameter, "Id");
-
-
 
         return Expression.Lambda<Func<TItem, string>>(propertyAccess, parameter);
     }

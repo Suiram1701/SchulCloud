@@ -29,7 +29,8 @@ internal class ConfigureSwagger(IApiVersionDescriptionProvider provider, IOption
         });
 
         options.OperationFilter<BasePathOperationFilter>();
-        options.OperationFilter<SecurityResponsesOperationFilter>();
-        options.OperationFilter<PaginationOperationFilter>();
+        options.OperationFilter<SecurityResponsesFilter>();
+        options.OperationFilter<PaginationFilter>();
+        options.OperationFilter<SortingFilter>();
     }
 }

@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace SchulCloud.RestApi.Swagger;
 
-internal class SecurityResponsesOperationFilter : IOperationFilter
+internal class SecurityResponsesFilter : IOperationFilter
 {
     private const string _unauthorizedExample = """
         {
