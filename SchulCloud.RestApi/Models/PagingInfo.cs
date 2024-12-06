@@ -1,33 +1,28 @@
 ﻿namespace SchulCloud.RestApi.Models;
 
 /// <summary>
-/// 
+/// A wrapper around a pageable response.
 /// </summary>
-/// <typeparam name="TItem"></typeparam>
+/// <typeparam name="TItem">The type of the item to page.</typeparam>
 public class PagingInfo<TItem>
 {
     /// <summary>
-    /// The items of the current page.
+    /// The currently selected items.
     /// </summary>
     public TItem[] Items { get; set; } = [];
 
     /// <summary>
-    /// The index of the current page.
+    /// The offset applied on this request.
     /// </summary>
-    public int Page { get; set; }
+    public int Offset { get; set; }
 
     /// <summary>
-    /// The size of the current page. If the size of <see cref="Items"/> is smaller than this this is the last page.
+    /// Maximum amount of items to return per request. If the returned amount of items is smaller than this value the end of the collection is reached.
     /// </summary>
-    public int PageSize { get; set; }
+    public int Limit { get; set; }
 
     /// <summary>
-    /// The total count of items.
+    /// The total amount of items available.
     /// </summary>
     public int TotalItems { get; set; }
-
-    /// <summary>
-    /// The total count of pages.
-    /// </summary>
-    public int TotalPages { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using SchulCloud.RestApi.ActionFilters;
 using SchulCloud.RestApi.Models;
@@ -15,23 +16,23 @@ internal class PaginationFilter : IOperationFilter
         Attribute? paginationAttribute = context.MethodInfo.GetCustomAttributes().FirstOrDefault(IsPaginationAttribute);
         if (paginationAttribute is not null)
         {
-            (int defaultPage, int defaultPageSize, int[] statusCodes) = GetAttributeData(paginationAttribute);
+            (int defaultOffset, int defaultLimit, int[] statusCodes) = GetAttributeData(paginationAttribute);
 
             operation.Parameters.Add(new()
             {
-                Name = "page",
-                Description = "The index of the page to return. This value have to be greater or same than 0.",
+                Name = "offset",
+                Description = "The offset to apply on the returned collection. This value have to be greater or same than 0.",
                 In = ParameterLocation.Query,
                 Schema = context.SchemaGenerator.GenerateSchema(typeof(int), context.SchemaRepository),
-                Example = OpenApiAnyFactory.CreateFromJson(defaultPage.ToString()),
+                Example = new OpenApiInteger(defaultOffset),
             });
             operation.Parameters.Add(new()
             {
-                Name = "pageSize",
-                Description = "The count of items that are returned per page. This value have to be greater or same than 1.",
+                Name = "limit",
+                Description = "The maximum amount of items to return per request. This value have to be greater or same than 1.",
                 In = ParameterLocation.Query,
                 Schema = context.SchemaGenerator.GenerateSchema(typeof(int), context.SchemaRepository),
-                Example = OpenApiAnyFactory.CreateFromJson(defaultPageSize.ToString())
+                Example = new OpenApiInteger(defaultLimit)
             });
 
             foreach (OpenApiMediaType type in operation.Responses
@@ -54,17 +55,16 @@ internal class PaginationFilter : IOperationFilter
             Type targetType = typeof(PaginationFilter<>).MakeGenericType(attributeType.GenericTypeArguments[0]);
             return targetType == attributeType;
         }
-
         return false;
     }
 
     private static (int PageIndex, int PageSize, int[] StatusCodes) GetAttributeData(Attribute attribute)
     {
-        PropertyInfo pageProperty = attribute.GetType().GetProperty("PageIndex")!;
-        int page = (int)pageProperty.GetValue(attribute)!;
+        PropertyInfo offsetProperty = attribute.GetType().GetProperty("Offset")!;
+        int page = (int)offsetProperty.GetValue(attribute)!;
 
-        PropertyInfo pageSizeProperty = attribute.GetType().GetProperty("PageSize")!;
-        int pageSize = (int)pageSizeProperty.GetValue(attribute)!;
+        PropertyInfo limitProperty = attribute.GetType().GetProperty("Limit")!;
+        int pageSize = (int)limitProperty.GetValue(attribute)!;
 
         PropertyInfo statusCodesProperty = attribute.GetType().GetProperty("StatusCodes")!;
         int[] statusCodes = (int[]?)statusCodesProperty.GetValue(attribute) ?? Enumerable.Range(200, 100).ToArray();

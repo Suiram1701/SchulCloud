@@ -5,6 +5,7 @@ using SchulCloud.RestApi.Linq;
 using SchulCloud.RestApi.Models;
 using System.Collections;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace SchulCloud.RestApi.ActionFilters;
 
@@ -16,14 +17,14 @@ namespace SchulCloud.RestApi.ActionFilters;
 public class PaginationFilter<TItem> : ActionFilterAttribute
 {
     /// <summary>
-    /// The default page.
+    /// The offset from the collection to use.
     /// </summary>
-    public int PageIndex { get; set; } = 0;
+    public int Offset { get; init; } = 0;
 
     /// <summary>
-    /// The default page size.
+    /// The maximum amount of items to return per request.
     /// </summary>
-    public int PageSize { get; set; } = 100;
+    public int Limit { get; init; } = 100;
 
     /// <summary>
     /// Status codes where the filter should be applied on.
@@ -33,6 +34,11 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
     /// </remarks>
     public int[]? StatusCodes { get; set; }
 
+    private int _offset;
+    private int _limit;
+
+    private readonly static MethodInfo _orderMethod;
+
     /// <summary>
     /// Creates a new instance
     /// </summary>
@@ -41,33 +47,42 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
         Order = 10;
     }
 
+    static PaginationFilter()
+    {
+        _orderMethod = typeof(PaginationFilter<TItem>).GetMethod(
+            name: nameof(OrderBy),
+            genericParameterCount: 1,
+            bindingAttr: BindingFlags.Static | BindingFlags.NonPublic,
+            types: [typeof(IQueryable<TItem>), typeof(string)])!;
+    }
+
     /// <inheritdoc />
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        string? pageHeader = context.HttpContext.Request.Query["page"];
-        if (string.IsNullOrEmpty(pageHeader))
+        string? offsetHeader = context.HttpContext.Request.Query["offset"];
+        if (int.TryParse(offsetHeader, out _offset) && _offset >= 0)
         {
         }
-        else if (int.TryParse(pageHeader, out int page) && page >= 0)
-        { 
-            PageIndex = page;
+        else if (string.IsNullOrEmpty(offsetHeader))
+        {
+            _offset = Offset;
         }
         else
         {
-            context.Result = GetProblemResult(context, "The query parameter 'page' have to be an integer greater or same than 0.");
+            context.Result = GetProblemResult(context, "The query parameter 'offset' have to be an integer greater or same than 0.");
         }
 
-        string? pageSizeHeader = context.HttpContext.Request.Query["pageSize"];
-        if (string.IsNullOrEmpty(pageSizeHeader))
+        string? limitHeader = context.HttpContext.Request.Query["limit"];
+        if (int.TryParse(limitHeader, out _limit) && _limit >= 1)
         {
         }
-        else if (int.TryParse(pageSizeHeader, out int pageSize) && pageSize >= 1)
+        else if (string.IsNullOrEmpty(limitHeader))
         {
-            PageSize = pageSize;
+            _limit = Limit;
         }
         else
         {
-            context.Result = GetProblemResult(context, "The query parameter 'pageSize' have to be an integer greater or same than 1.");
+            context.Result = GetProblemResult(context, "The query parameter 'limit' have to be an integer greater or same than 1.");
         }
     }
 
@@ -82,25 +97,29 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
             int totalItemCount;
             if (objectResult.Value is IQueryable<TItem> queryCollection)
             {
+                // EF Core recommends to sort a query if not already done.
                 OrderedVisitor visitor = new();
                 visitor.Visit(queryCollection.Expression);
                 if (!visitor.IsOrdered)
                 {
-                    Expression<Func<TItem, string>> expression = CreateIdAccessExpression();
-                    queryCollection = queryCollection.OrderBy(expression);
+                    PropertyInfo[] properties = typeof(TItem).GetProperties();
+                    PropertyInfo orderProperty = properties.FirstOrDefault(p => p.Name.Equals("id", StringComparison.OrdinalIgnoreCase))
+                        ?? properties.FirstOrDefault(p => p.Name.Equals("name", StringComparison.OrdinalIgnoreCase))
+                        ?? properties.First();
+                    queryCollection = OrderBy(queryCollection, orderProperty);
                 }
 
                 items = await queryCollection
-                    .Skip(PageIndex * PageSize)
-                    .Take(PageSize)
+                    .Skip(_offset)
+                    .Take(_limit)
                     .ToArrayAsync().ConfigureAwait(false);
                 totalItemCount = await queryCollection.CountAsync().ConfigureAwait(false);
             }
             else if (objectResult.Value is IEnumerable<TItem> collection)
             {
                 items = collection
-                    .Skip(PageIndex * PageSize)
-                    .Take(PageSize)
+                    .Skip(_offset)
+                    .Take(_limit)
                     .ToArray();
                 totalItemCount = collection.Count();
             }
@@ -114,10 +133,9 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
             PagingInfo<TItem> paging = new()
             {
                 Items = items,
-                Page = PageIndex,
-                PageSize = PageSize,
-                TotalItems = totalItemCount,
-                TotalPages = (int)Math.Ceiling((float)totalItemCount / PageSize)
+                Offset = _offset,
+                Limit = _limit,
+                TotalItems = totalItemCount
             };
             objectResult.Value = paging;
         }
@@ -141,18 +159,18 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
         return controller.Problem(statusCode: 400, detail: detail);
     }
 
-    private static Expression<Func<TItem, string>> CreateIdAccessExpression()
+    private static IOrderedQueryable<TItem> OrderBy(IQueryable<TItem> queryable, PropertyInfo property)
     {
-        Type idType = typeof(TItem).GetProperty("Id")?.PropertyType
-            ?? throw new InvalidOperationException("Unable to find a Id member to sort the queryable collection.");
-        if (idType != typeof(string))
-        {
-            throw new InvalidOperationException("The id have to be an string");
-        }
+        MethodInfo orderMethod = _orderMethod.MakeGenericMethod(property.PropertyType);
+        return (IOrderedQueryable<TItem>)orderMethod.Invoke(null, parameters: [queryable, property.Name])!;
+    }
 
-        ParameterExpression parameter = Expression.Parameter(typeof(TItem), "model");
-        MemberExpression propertyAccess = Expression.Property(parameter, "Id");
+    private static IOrderedQueryable<TItem> OrderBy<TProperty>(IQueryable<TItem> queryable, string propertyName)
+    {
+        ParameterExpression parameter = Expression.Parameter(typeof(TItem), "o");
+        MemberExpression propertyAccess = Expression.Property(parameter, propertyName);
+        Expression<Func<TItem, TProperty>> expression = Expression.Lambda<Func<TItem, TProperty>>(propertyAccess, parameter);
 
-        return Expression.Lambda<Func<TItem, string>>(propertyAccess, parameter);
+        return queryable.OrderBy(expression);
     }
 }
