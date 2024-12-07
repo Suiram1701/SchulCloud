@@ -114,22 +114,22 @@ public class SortingFilter<TItem> : ActionFilterAttribute
             if (objectResult.Value is IQueryable<TItem> queryable)
             {
                 SortingCriteria firstCriteria = _sortings[0];     // Only for the first one can OrderBy be used afterward ThenBy have to be used.
-                IOrderedQueryable<TItem> orderedQueryable = QueryOrderBy(queryable, firstCriteria.OrderBy, true, firstCriteria.Direction == SortingDirection.Asc);
+                IOrderedQueryable<TItem> orderedQueryable = QueryOrderBy(queryable, firstCriteria.Property, true, firstCriteria.Direction == SortingDirection.Asc);
 
                 foreach (SortingCriteria criteria in _sortings.Skip(1))
                 {
-                    orderedQueryable = QueryOrderBy(orderedQueryable, criteria.OrderBy, false, criteria.Direction == SortingDirection.Asc);
+                    orderedQueryable = QueryOrderBy(orderedQueryable, criteria.Property, false, criteria.Direction == SortingDirection.Asc);
                 }
                 objectResult.Value = orderedQueryable;
             }
             else if (objectResult.Value is IEnumerable<TItem> collection)
             {
                 SortingCriteria firstCriteria = _sortings[0];
-                IOrderedEnumerable<TItem> orderedCollection = OrderBy(collection, firstCriteria.OrderBy, true, firstCriteria.Direction == SortingDirection.Asc);
+                IOrderedEnumerable<TItem> orderedCollection = OrderBy(collection, firstCriteria.Property, true, firstCriteria.Direction == SortingDirection.Asc);
 
                 foreach (SortingCriteria criteria in _sortings.Skip(1))
                 {
-                    orderedCollection = OrderBy(orderedCollection, criteria.OrderBy, false, criteria.Direction == SortingDirection.Asc);
+                    orderedCollection = OrderBy(orderedCollection, criteria.Property, false, criteria.Direction == SortingDirection.Asc);
                 }
                 objectResult.Value = orderedCollection;
             }
@@ -217,13 +217,13 @@ public class SortingFilter<TItem> : ActionFilterAttribute
 
     private static LambdaExpression CreatePropertyExpression(PropertyInfo property)
     {
-        ParameterExpression parameter = Expression.Parameter(typeof(TItem), "model");
+        ParameterExpression parameter = Expression.Parameter(typeof(TItem), "o");
         MemberExpression propertyAccess = Expression.Property(parameter, property.Name);
 
         return Expression.Lambda(typeof(Func<,>).MakeGenericType(typeof(TItem), property.PropertyType), propertyAccess, parameter);
     }
 
-    private record SortingCriteria(PropertyInfo OrderBy, SortingDirection Direction);
+    private record SortingCriteria(PropertyInfo Property, SortingDirection Direction);
 
     private enum SortingDirection
     {

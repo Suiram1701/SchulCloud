@@ -13,6 +13,7 @@ using SchulCloud.RestApi.Models;
 using SchulCloud.RestApi.ActionFilters;
 using System.Linq;
 using System.Net.Mime;
+using SchulCloud.RestApi.Filtering;
 
 namespace SchulCloud.RestApi.ApiControllers.V1;
 
@@ -33,6 +34,7 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
     /// <returns>The list of users</returns>
     /// <response code="200">Returns a list of users of the site.</response>
     [HttpGet]
+    [FilteringFilter<Role>]
     [SortingFilter<User>]
     [PaginationFilter<User>]
     [ProducesResponseType<User[]>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]

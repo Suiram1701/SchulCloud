@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning.ApiExplorer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using SchulCloud.RestApi.Filtering;
 using SchulCloud.RestApi.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -18,8 +19,6 @@ internal class ConfigureSwagger(IApiVersionDescriptionProvider provider, IOption
             options.SwaggerDoc(apiVersion.GroupName, versionInfo);
         }
 
-        options.IncludeXmlComments(typeof(IRestApi).Assembly, includeControllerXmlComments: true);
-
         options.AddSecurityDefinition("API key", new()
         {
             Type = SecuritySchemeType.ApiKey,
@@ -28,9 +27,12 @@ internal class ConfigureSwagger(IApiVersionDescriptionProvider provider, IOption
             In = ParameterLocation.Header
         });
 
-        options.OperationFilter<BasePathOperationFilter>();
-        options.OperationFilter<SecurityResponsesFilter>();
-        options.OperationFilter<PaginationFilter>();
+        options.IncludeXmlComments(typeof(IRestApi).Assembly, includeControllerXmlComments: true);
+
+        options.OperationFilter<FilteringOperationFilter>();
         options.OperationFilter<SortingFilter>();
+        options.OperationFilter<PaginationFilter>();
+        options.OperationFilter<SecurityResponsesFilter>();
+        options.OperationFilter<BasePathOperationFilter>();
     }
 }

@@ -71,7 +71,7 @@ internal class Program
         WebApplication app = builder.Build();
         app.MapDefaultEndpoints();
         app.UseForwardedHeaders();
-        app.UseTraceHeader();
+        app.UseRequestIdHeader();
 
         app.UseAuthentication();
         app.UseAuthorization();

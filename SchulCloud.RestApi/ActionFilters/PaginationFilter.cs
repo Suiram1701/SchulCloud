@@ -109,11 +109,18 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
                     queryCollection = OrderBy(queryCollection, orderProperty);
                 }
 
-                items = await queryCollection
+                totalItemCount = await queryCollection.CountAsync().ConfigureAwait(false);
+                if (totalItemCount > 0)     // If its clear that there isn't any item to get the 'real' query is unnecessary.
+                {
+                    items = await queryCollection
                     .Skip(_offset)
                     .Take(_limit)
                     .ToArrayAsync().ConfigureAwait(false);
-                totalItemCount = await queryCollection.CountAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    items = [];
+                }
             }
             else if (objectResult.Value is IEnumerable<TItem> collection)
             {

@@ -20,7 +20,7 @@ internal class SortingFilter : IOperationFilter
                               "Use the name of the field to specify the field to sort by leading with **+** or nothing for ascending (default) and **-** for descending. " +
                               "Its allowed to define this parameter multiple times.",
                 In = ParameterLocation.Query,
-                Schema = context.SchemaGenerator.GenerateSchemaStringWithPattern(context.SchemaRepository, "([+-]?[a-zA-Z]+)(?:,([+-]?[a-zA-Z]+))*"),
+                Schema = context.SchemaGenerator.GenerateSchemaStringWithPattern(context.SchemaRepository, "^([+-]?[a-zA-Z]+)(?:,([+-]?[a-zA-Z]+))*$"),
                 Example = new OpenApiString("-Name,+Id")
             });
         }

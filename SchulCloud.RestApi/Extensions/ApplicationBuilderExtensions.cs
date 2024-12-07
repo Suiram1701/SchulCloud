@@ -41,17 +41,17 @@ public static class ApplicationBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a the header 'X-Trace-Id' to every response which contains the trace id of the request.
+    /// Adds a the header 'X-RequestId' to every response which contains the request id of the request.
     /// </summary>
     /// <param name="application">The application pipeline.</param>
     /// <returns>The pipeline</returns>
-    public static IApplicationBuilder UseTraceHeader(this IApplicationBuilder application)
+    public static IApplicationBuilder UseRequestIdHeader(this IApplicationBuilder application)
     {
         ArgumentNullException.ThrowIfNull(application);
 
         return application.Use((context, next) =>
         {
-            context.Response.Headers.TryAdd("X-Trace-Id", context.TraceIdentifier);
+            context.Response.Headers.TryAdd("X-RequestId", context.TraceIdentifier);
             return next(context);
         });
     }

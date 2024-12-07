@@ -7,6 +7,7 @@ using SchulCloud.Authorization;
 using SchulCloud.Authorization.Attributes;
 using SchulCloud.Authorization.Extensions;
 using SchulCloud.RestApi.ActionFilters;
+using SchulCloud.RestApi.Filtering;
 using SchulCloud.RestApi.Models;
 using System.Net.Mime;
 
@@ -29,6 +30,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
     /// <returns>A list of roles.</returns>
     /// <response code="200">Returns a list of roles.</response>
     [HttpGet]
+    [FilteringFilter<Role>]
     [SortingFilter<Role>]
     [PaginationFilter<Role>]
     [ProducesResponseType<Role[]>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
