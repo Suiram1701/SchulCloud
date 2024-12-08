@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using SchulCloud.RestApi.ActionFilters;
 using SchulCloud.RestApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Reflection;
 
-namespace SchulCloud.RestApi.Swagger;
+namespace SchulCloud.RestApi.Pagination;
 
 internal class PaginationFilter : IOperationFilter
 {
@@ -52,7 +51,7 @@ internal class PaginationFilter : IOperationFilter
         Type attributeType = attribute.GetType();
         if (attributeType.GenericTypeArguments.Length == 1)
         {
-            Type targetType = typeof(PaginationFilter<>).MakeGenericType(attributeType.GenericTypeArguments[0]);
+            Type targetType = typeof(PaginationFilterAttribute<>).MakeGenericType(attributeType.GenericTypeArguments[0]);
             return targetType == attributeType;
         }
         return false;

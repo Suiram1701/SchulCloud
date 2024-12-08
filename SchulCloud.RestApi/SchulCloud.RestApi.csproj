@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -28,6 +28,9 @@
     <Using Include="SchulCloud.RestApi.RouteConstants">
       <Static>True</Static>
     </Using>
+	<Using Include="SchulCloud.RestApi.Filtering" />
+	<Using Include="SchulCloud.RestApi.Sorting" />
+	<Using Include="SchulCloud.RestApi.Pagination" />
   </ItemGroup>
 
   <ItemGroup>

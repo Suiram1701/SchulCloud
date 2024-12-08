@@ -7,14 +7,14 @@ using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace SchulCloud.RestApi.ActionFilters;
+namespace SchulCloud.RestApi.Pagination;
 
 /// <summary>
 /// A filter that applies pagination to collection results. The default page size is 100.
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class PaginationFilter<TItem> : ActionFilterAttribute
+public class PaginationFilterAttribute<TItem> : ActionFilterAttribute
 {
     /// <summary>
     /// The offset from the collection to use.
@@ -42,14 +42,14 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
     /// <summary>
     /// Creates a new instance
     /// </summary>
-    public PaginationFilter()
+    public PaginationFilterAttribute()
     {
         Order = 10;
     }
 
-    static PaginationFilter()
+    static PaginationFilterAttribute()
     {
-        _orderMethod = typeof(PaginationFilter<TItem>).GetMethod(
+        _orderMethod = typeof(PaginationFilterAttribute<TItem>).GetMethod(
             name: nameof(OrderBy),
             genericParameterCount: 1,
             bindingAttr: BindingFlags.Static | BindingFlags.NonPublic,
@@ -59,6 +59,9 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
     /// <inheritdoc />
     public override void OnActionExecuting(ActionExecutingContext context)
     {
+        Dictionary<string, string> errors = [];
+        ILogger logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PaginationFilterAttribute<TItem>>>();
+
         string? offsetHeader = context.HttpContext.Request.Query["offset"];
         if (int.TryParse(offsetHeader, out _offset) && _offset >= 0)
         {
@@ -69,7 +72,8 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
         }
         else
         {
-            context.Result = GetProblemResult(context, "The query parameter 'offset' have to be an integer greater or same than 0.");
+            errors.Add("offset", "An integer value greater or same than 0 was expected.");
+            logger.LogTrace("Request failed by providing an invalid 'offset' parameter for pagination.");
         }
 
         string? limitHeader = context.HttpContext.Request.Query["limit"];
@@ -82,14 +86,17 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
         }
         else
         {
-            context.Result = GetProblemResult(context, "The query parameter 'limit' have to be an integer greater or same than 1.");
+            errors.Add("limit", "An integer value greater or same than 1 was expected.");
+            logger.LogTrace("Request failed by providing an invalid 'limit' parameter for pagination.");
         }
+
+        SetParameterProblemResponse(context, errors);
     }
 
     /// <inheritdoc />
     public override async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
-        ILogger logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PaginationFilter<TItem>>>();
+        ILogger logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PaginationFilterAttribute<TItem>>>();
 
         if (context.Result is ObjectResult objectResult && AllowedStatusCode(objectResult.StatusCode ?? 200))
         {
@@ -107,20 +114,24 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
                         ?? properties.FirstOrDefault(p => p.Name.Equals("name", StringComparison.OrdinalIgnoreCase))
                         ?? properties.First();
                     queryCollection = OrderBy(queryCollection, orderProperty);
+
+                    logger.LogInformation("Applied sort by '{property}' automatically.", orderProperty.Name);
                 }
 
                 totalItemCount = await queryCollection.CountAsync().ConfigureAwait(false);
                 if (totalItemCount > 0)     // If its clear that there isn't any item to get the 'real' query is unnecessary.
                 {
                     items = await queryCollection
-                    .Skip(_offset)
-                    .Take(_limit)
-                    .ToArrayAsync().ConfigureAwait(false);
+                        .Skip(_offset)
+                        .Take(_limit)
+                        .ToArrayAsync().ConfigureAwait(false);
                 }
                 else
                 {
                     items = [];
                 }
+
+                logger.LogInformation("Pagination proceeded using IQueryable.");
             }
             else if (objectResult.Value is IEnumerable<TItem> collection)
             {
@@ -129,6 +140,8 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
                     .Take(_limit)
                     .ToArray();
                 totalItemCount = collection.Count();
+
+                logger.LogInformation("Pagination proceeded on server.");
             }
             else
             {
@@ -150,6 +163,21 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
         await base.OnResultExecutionAsync(context, next).ConfigureAwait(false);
     }
 
+    private static void SetParameterProblemResponse(ActionExecutingContext context, IDictionary<string, string> errors)
+    {
+        if (errors.Count > 0)
+        {
+            Dictionary<string, object?> extensions = new() { { "errors", errors } };
+
+            ControllerBase controller = (ControllerBase)context.Controller;
+            context.Result = controller.Problem(
+                title: "Invalid parameters",
+                statusCode: 400,
+                detail: "One or more query parameters corresponding for pagination were invalid.",
+                extensions: extensions);
+        }
+    }
+
     private bool AllowedStatusCode(int statusCode)
     {
         if (StatusCodes is not null)
@@ -159,13 +187,7 @@ public class PaginationFilter<TItem> : ActionFilterAttribute
 
         return statusCode >= 200 && statusCode < 300;
     }
-
-    private static ObjectResult GetProblemResult(ActionExecutingContext context, string detail)
-    {
-        ControllerBase controller = (ControllerBase)context.Controller;
-        return controller.Problem(statusCode: 400, detail: detail);
-    }
-
+  
     private static IOrderedQueryable<TItem> OrderBy(IQueryable<TItem> queryable, PropertyInfo property)
     {
         MethodInfo orderMethod = _orderMethod.MakeGenericMethod(property.PropertyType);

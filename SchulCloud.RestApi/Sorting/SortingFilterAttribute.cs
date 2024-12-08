@@ -1,22 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using SchulCloud.RestApi.Linq;
-using SchulCloud.RestApi.Models;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace SchulCloud.RestApi.ActionFilters;
+namespace SchulCloud.RestApi.Sorting;
 
 /// <summary>
 /// A filter that applies sorting to a returned collection.
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class SortingFilter<TItem> : ActionFilterAttribute
+public class SortingFilterAttribute<TItem> : ActionFilterAttribute
 {
     /// <summary>
     /// The maximum amount of sorting criterias.
@@ -24,7 +19,7 @@ public class SortingFilter<TItem> : ActionFilterAttribute
     /// <remarks>
     /// By default set to 10. -1 means that its unlimited (not recommended).
     /// </remarks>
-    public int MaxSortCriterias { get; set; } = 10;
+    public int MaxSortCriterias { get; set; } = 5;
 
     /// <summary>
     /// Status codes where the filter should be applied on.
@@ -42,14 +37,14 @@ public class SortingFilter<TItem> : ActionFilterAttribute
     /// <summary>
     /// Creates a new instance
     /// </summary>
-    public SortingFilter()
+    public SortingFilterAttribute()
     {
         Order = 9;
     }
 
-    static SortingFilter()
+    static SortingFilterAttribute()
     {
-        Type classType = typeof(SortingFilter<TItem>);
+        Type classType = typeof(SortingFilterAttribute<TItem>);
         Type[] parameters = [typeof(string), typeof(bool), typeof(bool)];
 
         _queryOrderMethod = classType.GetMethod(
@@ -68,6 +63,9 @@ public class SortingFilter<TItem> : ActionFilterAttribute
     public override void OnActionExecuting(ActionExecutingContext context)
     {
         _sortings.Clear();
+        ILogger logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PaginationFilterAttribute<TItem>>>();
+
+        List<string> errors = [];
 
         IEnumerable<string> sortings = context.HttpContext.Request.Query
             .Where(param => param.Key == "sort")
@@ -80,34 +78,43 @@ public class SortingFilter<TItem> : ActionFilterAttribute
                 : SortingDirection.Asc;
 
             string propertyName = value.TrimStart('+', '-', ' ');     // If this runs without ' ' it leaves a white-space instead.
-
             PropertyInfo? property = typeof(TItem).GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .SingleOrDefault(property => property.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase) && !property.IsSpecialName);
             if (property is null)
             {
-                context.Result = GetProblemResult(context, $"Unable to find the field to sort by '{propertyName}'.");
-                return;
+                errors.Add($"Unable to find the field to sort by '{propertyName}'.");
+                continue;
             }
 
             if (property.PropertyType != typeof(string) && !property.PropertyType.IsEnum && !property.PropertyType.IsValueType)
             {
-                context.Result = GetProblemResult(context, $"Field '{propertyName}' is not sortable!");
-                return;
+                errors.Add($"Unable to sort by field '{propertyName}'.");
+                continue;
             }
 
             _sortings.Add(new(property, sortingDirection));
         }
 
-        if (MaxSortCriterias != -1 && _sortings.Count > MaxSortCriterias)
+        if (errors.Count > 0)
         {
-            context.Result = GetProblemResult(context, $"This endpoint has a maximum of {MaxSortCriterias} sort criterias which has been exceeded.");
+            SetParameterProblemResponse(context, [.. errors]);
+            logger.LogTrace("Request failed by providing invalid data for sorting parameter.");
+        }
+        else if (MaxSortCriterias != -1 && _sortings.Count > MaxSortCriterias)
+        {
+            SetProblemResponse(
+                context: context,
+                title: "Too many sort criterias",
+                detail: $"The maximum amount of sort criterias for this endpoint has been exceeded.",
+                extensions: new() { { "MaxSortCriterias", MaxSortCriterias } });
+            logger.LogTrace("Request failed by providing too many sorting criterias for sorting.");
         }
     }
 
     /// <inheritdoc />
     public override async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
-        ILogger logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<SortingFilter<TItem>>>();
+        ILogger logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<SortingFilterAttribute<TItem>>>();
 
         if (context.Result is ObjectResult objectResult && AllowedStatusCode(objectResult.StatusCode ?? 200) && _sortings.Count > 0)
         {
@@ -121,6 +128,8 @@ public class SortingFilter<TItem> : ActionFilterAttribute
                     orderedQueryable = QueryOrderBy(orderedQueryable, criteria.Property, false, criteria.Direction == SortingDirection.Asc);
                 }
                 objectResult.Value = orderedQueryable;
+
+                logger.LogInformation("Sorting proceeded using IQueryable.");
             }
             else if (objectResult.Value is IEnumerable<TItem> collection)
             {
@@ -132,13 +141,15 @@ public class SortingFilter<TItem> : ActionFilterAttribute
                     orderedCollection = OrderBy(orderedCollection, criteria.Property, false, criteria.Direction == SortingDirection.Asc);
                 }
                 objectResult.Value = orderedCollection;
+
+                logger.LogInformation("Sorting proceeded on server.");
             }
             else
             {
                 logger.LogError("Unable to cast type '{type}' into the sortable type '{supportedType}'.", objectResult.Value?.GetType(), typeof(IEnumerable<TItem>));
                 await base.OnResultExecutionAsync(context, next).ConfigureAwait(false);
                 return;
-            }            
+            }
         }
 
         await base.OnResultExecutionAsync(context, next).ConfigureAwait(false);
@@ -154,10 +165,27 @@ public class SortingFilter<TItem> : ActionFilterAttribute
         return statusCode >= 200 && statusCode < 300;
     }
 
-    private static ObjectResult GetProblemResult(ActionExecutingContext context, string detail)
+    private static void SetParameterProblemResponse(ActionExecutingContext context, string[] errors)
+    {
+        Dictionary<string, object?> extensions = new()
+        {
+            { "errors", new Dictionary<string, string[]> { { "sort", errors } } }
+        };
+        SetProblemResponse(
+            context: context,
+            title: "Invalid parameter",
+            detail: "The query parameter 'sort' corresponding for sorting is invalid.",
+            extensions: extensions);
+    }
+
+    private static void SetProblemResponse(ActionExecutingContext context, string title, string detail, Dictionary<string, object?>? extensions = null)
     {
         ControllerBase controller = (ControllerBase)context.Controller;
-        return controller.Problem(statusCode: 400, detail: detail);
+        context.Result = controller.Problem(
+            title: title,
+            statusCode: 400,
+            detail: detail,
+            extensions: extensions);
     }
 
     private static IOrderedQueryable<TItem> QueryOrderBy(IQueryable<TItem> queryable, PropertyInfo property, bool first, bool ascending)
@@ -221,20 +249,5 @@ public class SortingFilter<TItem> : ActionFilterAttribute
         MemberExpression propertyAccess = Expression.Property(parameter, property.Name);
 
         return Expression.Lambda(typeof(Func<,>).MakeGenericType(typeof(TItem), property.PropertyType), propertyAccess, parameter);
-    }
-
-    private record SortingCriteria(PropertyInfo Property, SortingDirection Direction);
-
-    private enum SortingDirection
-    {
-        /// <summary>
-        /// Ascending
-        /// </summary>
-        Asc,
-
-        /// <summary>
-        /// Descending
-        /// </summary>
-        Desc
     }
 }

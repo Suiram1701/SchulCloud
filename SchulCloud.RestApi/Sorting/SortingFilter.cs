@@ -1,10 +1,11 @@
 ﻿using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using SchulCloud.RestApi.ActionFilters;
+using SchulCloud.RestApi.Pagination;
+using SchulCloud.RestApi.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 
-namespace SchulCloud.RestApi.Swagger;
+namespace SchulCloud.RestApi.Sorting;
 
 internal class SortingFilter : IOperationFilter
 {
@@ -31,7 +32,7 @@ internal class SortingFilter : IOperationFilter
         Type attributeType = attribute.GetType();
         if (attributeType.GenericTypeArguments.Length == 1)
         {
-            Type targetType = typeof(PaginationFilter<>).MakeGenericType(attributeType.GenericTypeArguments[0]);
+            Type targetType = typeof(PaginationFilterAttribute<>).MakeGenericType(attributeType.GenericTypeArguments[0]);
             return targetType == attributeType;
         }
 

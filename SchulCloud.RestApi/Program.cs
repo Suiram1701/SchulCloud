@@ -1,6 +1,6 @@
-using Asp.Versioning.ApiExplorer;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 using SchulCloud.Authentication;
 using SchulCloud.Authorization.Extensions;
@@ -46,6 +46,7 @@ internal class Program
             .AddValidatorsFromAssemblyContaining<IRestApi>();
 
         builder.Services.AddControllers();
+        builder.Services.AddCustomizedProblemDetails();
 
         builder.Services.AddApiVersioning(options =>
         {

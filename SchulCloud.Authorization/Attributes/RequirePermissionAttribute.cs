@@ -15,4 +15,13 @@ namespace SchulCloud.Authorization.Attributes;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
 public sealed class RequirePermissionAttribute(string name, PermissionLevel level) : AuthorizeAttribute($"{name}-{level}")
 {
+    /// <summary>
+    /// The name of the permission.
+    /// </summary>
+    public string Name => name;
+
+    /// <summary>
+    /// The minimum required level of the permission.
+    /// </summary>
+    public PermissionLevel Level => level; 
 }

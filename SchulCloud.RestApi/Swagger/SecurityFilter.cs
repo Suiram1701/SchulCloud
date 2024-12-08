@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace SchulCloud.RestApi.Swagger;
 
-internal class SecurityResponsesFilter : IOperationFilter
+internal class SecurityFilter : IOperationFilter
 {
     private const string _unauthorizedExample = """
         {
@@ -15,7 +15,7 @@ internal class SecurityResponsesFilter : IOperationFilter
             "title": "Unauthorized",
             "status": 401,
             "detail": "An API key is required to call this endpoint.",
-            "traceId": "00-00000000000000000000000000000000-0000000000000000-00"
+            "traceId": ""
         }
         """;
 
@@ -25,7 +25,7 @@ internal class SecurityResponsesFilter : IOperationFilter
             "title": "Forbidden",
             "status": 403,
             "detail": "The used API key does not have the privileges to call this endpoint.",
-            "traceId": "00-00000000000000000000000000000000-0000000000000000-00"
+            "traceId": ""
         }
         """;
 
@@ -41,6 +41,15 @@ internal class SecurityResponsesFilter : IOperationFilter
         IEnumerable<RequirePermissionAttribute> permissionAttributes = context.MethodInfo.GetCustomAttributes<RequirePermissionAttribute>();
         if (permissionAttributes.Any())
         {
+            foreach (RequirePermissionAttribute permission in permissionAttributes)
+            {
+                if (!(operation.Description?.EndsWith("\r\n") ?? true))
+                {
+                    operation.Description += "\r\n";
+                }
+                operation.Description += $"Requires the permission **{permission.Name}** with level **{permission.Level}** or greater.";
+            }
+
             OpenApiResponse response = new()
             {
                 Description = "The used API key does not have the privileges to call this endpoint.",

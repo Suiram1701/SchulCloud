@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning.ApiExplorer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using SchulCloud.RestApi.Filtering;
 using SchulCloud.RestApi.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -29,10 +28,11 @@ internal class ConfigureSwagger(IApiVersionDescriptionProvider provider, IOption
 
         options.IncludeXmlComments(typeof(IRestApi).Assembly, includeControllerXmlComments: true);
 
-        options.OperationFilter<FilteringOperationFilter>();
+        options.OperationFilter<ErrorResponseFilter>();
+        options.OperationFilter<FilteringFilter>();
         options.OperationFilter<SortingFilter>();
         options.OperationFilter<PaginationFilter>();
-        options.OperationFilter<SecurityResponsesFilter>();
+        options.OperationFilter<SecurityFilter>();
         options.OperationFilter<BasePathOperationFilter>();
     }
 }

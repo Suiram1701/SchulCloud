@@ -15,4 +15,6 @@ public class ServiceOptions
     /// The path prefix of the application
     /// </summary>
     public string BasePath { get; set; } = default!;
+
+    public string GetPathWithBase(string path) => $"{BasePath.TrimEnd('/')}/{path.TrimStart('/')}";
 }

@@ -12,7 +12,7 @@ internal class BasePathOperationFilter(IOptionsMonitor<ServiceOptions> optionsMo
         string basePath = optionsMonitor.CurrentValue.BasePath;
         if (!(context.ApiDescription.RelativePath?.StartsWith(basePath) ?? false))
         {
-            context.ApiDescription.RelativePath = $"{basePath.TrimEnd('/')}/{context.ApiDescription.RelativePath?.TrimStart('/')}";
+            context.ApiDescription.RelativePath = optionsMonitor.CurrentValue.GetPathWithBase(context.ApiDescription.RelativePath ?? string.Empty);
         }
     }
 }
