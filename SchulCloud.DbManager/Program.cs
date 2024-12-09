@@ -2,10 +2,10 @@
 using Microsoft.Extensions.Options;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
+using SchulCloud.DbManager.Cleaning;
 using SchulCloud.DbManager.Extensions;
-using SchulCloud.DbManager.HealthChecks;
+using SchulCloud.DbManager.Initialization;
 using SchulCloud.DbManager.Options;
-using SchulCloud.DbManager.Services;
 using SchulCloud.Identity;
 using SchulCloud.ServiceDefaults;
 

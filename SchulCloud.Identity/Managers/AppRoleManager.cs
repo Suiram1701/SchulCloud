@@ -14,54 +14,6 @@ public class AppRoleManager<TRole>(
     : RoleManager<TRole>(store, roleValidators, keyNormalizer, errors, logger)
     where TRole : class
 {
-    public override async Task<IdentityResult> DeleteAsync(TRole role)
-    {
-        IRoleDefaultRoleStore<TRole> store = GetDefaultRoleStore();
-        bool defaultRole = await store.GetIsDefaultRoleAsync(role, CancellationToken).ConfigureAwait(false);
-
-        if (defaultRole)
-        {
-            IdentityError error = new()
-            {
-                Code = "RoleNotDeletable",
-                Description = "The role can't be deleted because it is a default role."
-            };
-            return IdentityResult.Failed(error);
-        }
-
-        return await base.DeleteAsync(role).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Gets the flag that indicates whether this is a default role.
-    /// </summary>
-    /// <param name="role">The role.</param>
-    /// <returns>The flag.</returns>
-    public async Task<bool> GetIsDefaultRoleAsync(TRole role)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(role);
-        IRoleDefaultRoleStore<TRole> store = GetDefaultRoleStore();
-
-        return await store.GetIsDefaultRoleAsync(role, CancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Sets the flag that indicates whether this is a default role.
-    /// </summary>
-    /// <param name="role">The role to modify.</param>
-    /// <param name="isDefault">The flag to set.</param>
-    /// <returns>The result.</returns>
-    public async Task<IdentityResult> SetIsDefaultRoleAsync(TRole role, bool isDefault)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(role);
-        IRoleDefaultRoleStore<TRole> store = GetDefaultRoleStore();
-
-        await store.SetIsDefaultRoleAsync(role, isDefault, CancellationToken).ConfigureAwait(false);
-        return await UpdateAsync(role).ConfigureAwait(false);
-    }
-
     /// <summary>
     /// Gets the color of the role.
     /// </summary>
@@ -90,15 +42,6 @@ public class AppRoleManager<TRole>(
 
         await store.SetRoleColorAsync(role, color, CancellationToken).ConfigureAwait(false);
         return await UpdateAsync(role).ConfigureAwait(false);
-    }
-
-    private IRoleDefaultRoleStore<TRole> GetDefaultRoleStore()
-    {
-        if (Store is not IRoleDefaultRoleStore<TRole> cast)
-        {
-            throw new NotSupportedException($"{nameof(IRoleDefaultRoleStore<TRole>)} isn't supported by the store.");
-        }
-        return cast;
     }
 
     private IRoleColorStore<TRole> GetColorStore()

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
-using SchulCloud.DbManager.Services;
 
-namespace SchulCloud.DbManager.HealthChecks;
+namespace SchulCloud.DbManager.Initialization;
 
 internal class DbInitializerCheck(DbInitializer initializer) : IHealthCheck
 {
