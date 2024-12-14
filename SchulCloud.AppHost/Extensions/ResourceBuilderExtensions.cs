@@ -78,6 +78,13 @@ internal static class ResourceBuilderExtensions
             description: "Drops all databases that this instance manages entirely. This will cause this instance to finish its runtime.",
             confirmMessage: "WARNING: This will remove every databases completely. This action is irreversible and will cause the loss of every users data. Are you sure you want to continue?",
             iconName: "Delete");
+
+        builder.WithHttpCommand(
+            name: "cleanup",
+            displayName: "Cleanup",
+            path: "/commands/cleanup",
+            description: "Starts an manually cleanup cycle. Normal scheduled cleanup cycles or not influenced by this.",
+            iconName: "Broom");
         return builder;
     }
 

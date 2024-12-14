@@ -1,11 +1,9 @@
 ﻿using FluentValidation;
-using Microsoft.Extensions.Options;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
 using SchulCloud.DbManager.Cleaning;
 using SchulCloud.DbManager.Extensions;
 using SchulCloud.DbManager.Initialization;
-using SchulCloud.DbManager.Options;
 using SchulCloud.Identity;
 using SchulCloud.ServiceDefaults;
 
@@ -18,13 +16,13 @@ internal class Program
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder
             .AddServiceDefaults()
-            .ConfigureIdentity();
+            .ConfigureIdentity()
+            .ConfigureOptions();
         builder.Services.AddValidatorsFromAssemblyContaining<IDbManager>(includeInternalTypes: true);
 
-        builder.Services.AddOpenTelemetry()
-            .WithTracing(traceBuilder => traceBuilder.AddSource(DbInitializer.ActivitySourceName));
-
         builder.AddAspirePostgresDb<AppDbContext>(ResourceNames.IdentityDatabase);
+        builder.Services.AddDataManager<DatabaseManager>();
+
         builder.Services.AddIdentityCore<ApplicationUser>()
             .AddRoles<ApplicationRole>()
             .AddSchulCloudEntityFrameworkStores<AppDbContext>()
@@ -40,10 +38,9 @@ internal class Program
             .AddCheck<DbInitializerCheck>("DbInitializer")
             .AddCheck<DbCleanerCheck>($"DbCleaner");
 
-        builder.Services.AddOptions<DefaultUserOptions>()
-            .Bind(builder.Configuration.GetSection("DbInitializer:DefaultUser"))
-            .ValidateOnStart();
-        builder.Services.AddTransient<IValidateOptions<DefaultUserOptions>, DefaultUserOptions.Validator>();
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(options => options.AddMeter(DbCleaner.MeterName))
+            .WithTracing(options => options.AddSource(DbInitializer.ActivitySourceName, DbCleaner.ActivitySourceName));
 
         await builder.Build()
             .MapDefaultEndpoints()

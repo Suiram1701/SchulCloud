@@ -15,6 +15,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using SchulCloud.ServiceDefaults.Metrics;
 using SchulCloud.ServiceDefaults.Options;
+using SchulCloud.ServiceDefaults.Services;
 
 namespace SchulCloud.ServiceDefaults;
 
@@ -223,5 +224,12 @@ public static class Extensions
             });
             builder.EnrichNpgsqlDbContext<TContext>();
         }
+    }
+
+    public static IServiceCollection AddDataManager<TManager>(this IServiceCollection services)
+        where TManager : class, IDataManager
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        return services.AddScoped<IDataManager, TManager>();
     }
 }
