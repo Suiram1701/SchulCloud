@@ -1,9 +1,14 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.Options;
+using OpenTelemetry.Trace;
+using Quartz;
+using Quartz.AspNetCore;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
 using SchulCloud.DbManager.Cleaning;
 using SchulCloud.DbManager.Extensions;
 using SchulCloud.DbManager.Initialization;
+using SchulCloud.DbManager.Quartz;
 using SchulCloud.Identity;
 using SchulCloud.ServiceDefaults;
 
@@ -28,19 +33,19 @@ internal class Program
             .AddSchulCloudEntityFrameworkStores<AppDbContext>()
             .AddManagers();
 
-        builder.Services
-            .AddSingleton<DbInitializer>()
-            .AddHostedService(provider => provider.GetRequiredService<DbInitializer>())
-            .AddSingleton<DbCleaner>()
-            .AddHostedService(provider => provider.GetRequiredService<DbCleaner>());
+        builder.Services.AddQuartz();
+        builder.Services.AddQuartzServer(options => options.WaitForJobsToComplete = true);
+        builder.Services.AddTransient<IConfigureOptions<QuartzOptions>, ConfigureQuartz>();
 
         builder.Services.AddHealthChecks()
-            .AddCheck<DbInitializerCheck>("DbInitializer")
-            .AddCheck<DbCleanerCheck>($"DbCleaner");
+            .AddCheck<CleanerJobCheck>($"cleanerJob");
 
         builder.Services.AddOpenTelemetry()
-            .WithMetrics(options => options.AddMeter(DbCleaner.MeterName))
-            .WithTracing(options => options.AddSource(DbInitializer.ActivitySourceName, DbCleaner.ActivitySourceName));
+            .WithMetrics(builder => builder.AddMeter(CleanerJob.MeterName))
+            .WithTracing(builder => builder
+                .AddQuartzInstrumentation(options => options.RecordException = true)
+                .AddSource(InitializerJob.ActivitySourceName, CleanerJob.ActivitySourceName)
+            );
 
         await builder.Build()
             .MapDefaultEndpoints()

@@ -18,17 +18,20 @@ public class Program
         IResourceBuilder<ProjectResource> webFrontend = builder.AddProject<Projects.SchulCloud_Frontend>("web-frontend")
             .WithReference(identityDb)
             .WithReference(mailDev)
+            .WaitFor(identityDb)
             .WaitFor(mailDev)     // The MailKit health check fails if mail dev isn't available on start.
             .WithDefaultHealthChecks()
             .WithDefaultCommands();
 
         IResourceBuilder<ProjectResource> restApi = builder.AddProject<Projects.SchulCloud_RestApi>("rest-api")
             .WithReference(identityDb)
+            .WaitFor(identityDb)
             .WithDefaultHealthChecks()
             .WithDefaultCommands();
 
         builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
             .WithReference(identityDb)
+            .WaitFor(identityDb)
             .WithDefaultHealthChecks()
             .WithDefaultCommands()
             .WithDbManagerCommands();

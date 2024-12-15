@@ -65,17 +65,17 @@ internal static class ResourceBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.WithHttpCommand(
-            name: "reset-db",
-            displayName: "Drop and create database",
-            path: "/commands/reset-db",
-            description: "Drops all databases that this instance manages entirely and recreates them afterwards.",
-            confirmMessage: "WARNING: This action is irreversible and will cause the loss of every users data. Are you sure you want to continue?",
+            name: "initialize-db",
+            displayName: "Initialize database",
+            path: "/commands/initialize-db",
+            description: "Tries to initialize the database with the recent migrations and the default user if not present.",
+            confirmMessage: "WARNING: This action is irreversible and can cause loss of data depending on the migration and can create a new user with admin privileges.",
             iconName: "Database");
         builder.WithHttpCommand(
             name: "drop-db",
             displayName: "Drop database",
             path: "/commands/drop-db",
-            description: "Drops all databases that this instance manages entirely. This will cause this instance to finish its runtime.",
+            description: "Drops all databases that this instance manages entirely. This will also pause the cleaner.",
             confirmMessage: "WARNING: This will remove every databases completely. This action is irreversible and will cause the loss of every users data. Are you sure you want to continue?",
             iconName: "Delete");
 
@@ -83,8 +83,21 @@ internal static class ResourceBuilderExtensions
             name: "cleanup",
             displayName: "Cleanup",
             path: "/commands/cleanup",
-            description: "Starts an manually cleanup cycle. Normal scheduled cleanup cycles or not influenced by this.",
+            description: "Starts an manually cleanup cycle. Normal scheduled cleanup cycles are not influenced by this.",
             iconName: "Broom");
+        builder.WithHttpCommand(
+            name: "cleanup-pause",
+            displayName: "Pause cleaner",
+            path: "/commands/cleanup-pause",
+            description: "Pauses the automated cleanup cycles. If already paused no action is taken.",
+            iconName: "ClockPause");
+        builder.WithHttpCommand(
+            name: "cleanup-resume",
+            displayName: "Resume cleaner",
+            path: "/commands/cleanup-resume",
+            description: "Resumes the cleanup cycles if paused. If not paused no action is taken.",
+            iconName: "Clock");
+
         return builder;
     }
 

@@ -1,5 +1,6 @@
-﻿using SchulCloud.Database;
-using SchulCloud.DbManager.Cleaning;
+﻿using Quartz;
+using SchulCloud.DbManager.Quartz;
+using SchulCloud.ServiceDefaults.Services;
 
 namespace SchulCloud.DbManager.Extensions;
 
@@ -9,22 +10,35 @@ public static class WebApplicationExtensions
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.MapGet("/commands/cleanup", async (HttpContext context, DbCleaner cleaner) =>
+        app.MapGet("/commands/cleanup", async (HttpContext context, ISchedulerFactory schedulerFactory) =>
         {
-            return await cleaner.RunCleanCycle(context.RequestAborted, automated: false).ConfigureAwait(false)
-                ? Results.NoContent()
-                : Results.InternalServerError();
+            IScheduler scheduler = await schedulerFactory.GetScheduler(context.RequestAborted).ConfigureAwait(false);
+            await scheduler.TriggerJob(Jobs.CleanerJob, context.RequestAborted).ConfigureAwait(false);
         });
-        app.MapGet("/commands/reset-db", async (HttpContext context, AppDbContext dbContext) =>
+        app.MapGet("/commands/cleanup-pause", async (HttpContext context, ISchedulerFactory schedulerFactory) =>
         {
-            await dbContext.Database.EnsureDeletedAsync(context.RequestAborted).ConfigureAwait(false);
-            await dbContext.Database.EnsureCreatedAsync(context.RequestAborted).ConfigureAwait(false);
+            IScheduler scheduler = await schedulerFactory.GetScheduler(context.RequestAborted).ConfigureAwait(false);
+            await scheduler.PauseTrigger(Jobs.CleanerJobTimeTrigger, context.RequestAborted).ConfigureAwait(false);
         });
-        app.MapGet("/commands/drop-db", async (HttpContext context, AppDbContext dbContext) =>
+        app.MapGet("/commands/cleanup-resume", async (HttpContext context, ISchedulerFactory schedulerFactory) =>
         {
-            await dbContext.Database.EnsureDeletedAsync(context.RequestAborted).ConfigureAwait(false);
-            _ = app.StopAsync();
+            IScheduler scheduler = await schedulerFactory.GetScheduler(context.RequestAborted).ConfigureAwait(false);
+            await scheduler.ResumeTrigger(Jobs.CleanerJobTimeTrigger, context.RequestAborted).ConfigureAwait(false);
         });
+
+        app.MapGet("/commands/initialize-db", async (HttpContext context, ISchedulerFactory schedulerFactory, IDataManager manager) =>
+        {
+            IScheduler scheduler = await schedulerFactory.GetScheduler(context.RequestAborted).ConfigureAwait(false);
+            await scheduler.TriggerJob(Jobs.InitializerJob, context.RequestAborted).ConfigureAwait(false);
+        });
+        app.MapGet("/commands/drop-db", async (HttpContext context, ISchedulerFactory schedulerFactory, IDataManager manager) =>
+        {
+            IScheduler scheduler = await schedulerFactory.GetScheduler(context.RequestAborted).ConfigureAwait(false);
+            await scheduler.PauseJob(Jobs.CleanerJob).ConfigureAwait(false);
+
+            await manager.RemoveDataSourceAsync(context.RequestAborted).ConfigureAwait(false);
+        });
+
         return app;
     }
 }
