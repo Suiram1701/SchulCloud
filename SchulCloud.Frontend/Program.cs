@@ -14,11 +14,11 @@ using SchulCloud.Frontend.Services;
 using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Authorization.Extensions;
 using MudBlazor.Translations;
-using SchulCloud.Frontend.HostedServices;
 using SchulCloud.Frontend.HealthChecks;
 using SchulCloud.Identity;
 using SchulCloud.Database;
 using SchulCloud.Identity.Services;
+using SchulCloud.Frontend.BackgroundServices;
 
 namespace SchulCloud.Frontend;
 
@@ -76,7 +76,11 @@ public class Program
             .AddHostedService(sp => sp.GetRequiredService<LoginAttemptLoggingService>());
         builder.AddConfiguredGoogleMapsServices();
 
-        builder.Services.AddHealthChecks().AddCheck<LoginAttemptServicesCheck>("LoginAttemptLoggingService");
+        builder.Services.AddHealthChecks()
+            .AddCheck<LoginAttemptServicesCheck>("login-attempt-logging-service");
+
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing => tracing.AddSource(LoginAttemptLoggingService.ActivitySourceName));
 
         WebApplication app = builder.Build();
         app.MapDefaultEndpoints();

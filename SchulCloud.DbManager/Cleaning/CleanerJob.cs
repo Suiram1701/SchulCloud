@@ -41,6 +41,12 @@ internal class CleanerJob : IJob, IDisposable
 
     public async Task Execute(IJobExecutionContext context)
     {
+        ActivityContext? triggerActivity = context.MergedJobDataMap.Get("trigger") as ActivityContext?;
+        if (triggerActivity is not null)
+        {
+            Activity.Current?.AddLink(new(triggerActivity.Value));
+        }
+
         bool automated = context.Trigger.Key.Equals(Jobs.CleanerJobTimeTrigger);
         if (automated)
         {

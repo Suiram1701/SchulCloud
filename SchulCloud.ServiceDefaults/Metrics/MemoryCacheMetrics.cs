@@ -23,7 +23,7 @@ public class MemoryCacheMetrics : IHostedService, IDisposable
 
     private bool disposedValue;
 
-    public const string Name = "caching.memorycache";
+    public const string Name = "SchulCloud.ServiceDefaults.Metrics.MemoryCacheMetrics";
 
     public MemoryCacheMetrics(ILogger<MemoryCacheMetrics> logger, IServiceProvider serviceProvider, IMeterFactory meterFactory)
     {

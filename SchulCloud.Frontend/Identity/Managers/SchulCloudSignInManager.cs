@@ -6,9 +6,9 @@ using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Frontend.Services.Models;
 using System.Net;
 using System.Security.Claims;
-using SchulCloud.Frontend.HostedServices;
 using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
+using SchulCloud.Frontend.BackgroundServices;
 
 namespace SchulCloud.Frontend.Identity.Managers;
 

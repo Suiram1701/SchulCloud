@@ -18,6 +18,12 @@ internal class InitializerJob(ILogger<InitializerJob> logger, IServiceProvider _
 
     public async Task Execute(IJobExecutionContext context)
     {
+        ActivityContext? triggerActivity = context.MergedJobDataMap.Get("trigger") as ActivityContext?;
+        if (triggerActivity is not null)
+        {
+            Activity.Current?.AddLink(new(triggerActivity.Value));
+        }
+
         using IServiceScope serviceScope = _services.CreateScope();
         IDataManager manager = serviceScope.ServiceProvider.GetRequiredService<IDataManager>();
         AppUserManager<ApplicationUser> userManager = serviceScope.ServiceProvider.GetRequiredService<AppUserManager<ApplicationUser>>();

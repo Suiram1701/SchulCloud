@@ -3,22 +3,34 @@ using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Frontend.Services.Models;
 using System.Threading.Channels;
 using SchulCloud.Identity.Models;
+using System.Diagnostics;
 
-namespace SchulCloud.Frontend.HostedServices;
+namespace SchulCloud.Frontend.BackgroundServices;
 
 public class LoginAttemptLoggingService(ILogger<LoginAttemptLoggingService> logger, IServiceScopeFactory scopeFactory, IIPGeolocator geolocator) : BackgroundService
 {
-    private readonly Channel<(ApplicationUser, UserLoginAttempt)> _channel = Channel.CreateUnbounded<(ApplicationUser, UserLoginAttempt)>(new() { SingleReader = true });
+    private readonly Channel<QueueredAttempt> _attemptsChannel = Channel.CreateUnbounded<QueueredAttempt>(new() { SingleReader = true });
+
+    public const string ActivitySourceName = nameof(LoginAttemptLoggingService);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach ((ApplicationUser user, UserLoginAttempt attempt) in _channel.Reader.ReadAllAsync(stoppingToken))
+        using ActivitySource activitySource = new(ActivitySourceName);
+        await foreach (QueueredAttempt queueredAttempt in _attemptsChannel.Reader.ReadAllAsync(stoppingToken))
         {
+            queueredAttempt.Deconstruct(out ApplicationUser user, out UserLoginAttempt attempt, out ActivityContext? triggerContext);
+
+            using Activity? activity = activitySource.StartActivity("process login attempt");
+            if (triggerContext is not null)
+            {
+                activity?.AddLink(new(triggerContext.Value));
+            }
+
+            using IServiceScope serviceScope = scopeFactory.CreateScope();
+            ApplicationUserManager userManager = serviceScope.ServiceProvider.GetRequiredService<ApplicationUserManager>();
+
             try
             {
-                using IServiceScope serviceScope = scopeFactory.CreateScope();
-                ApplicationUserManager userManager = serviceScope.ServiceProvider.GetRequiredService<ApplicationUserManager>();
-
                 string userId = (await userManager.GetUserIdAsync(user))!;
 
                 if (attempt.IpAddress is not null)
@@ -57,9 +69,10 @@ public class LoginAttemptLoggingService(ILogger<LoginAttemptLoggingService> logg
     /// </summary>
     /// <param name="user">The user the attempt is associated with.</param>
     /// <param name="attempt">The attempt to enqueue.</param>
-    /// <returns></returns>
     public async Task EnqueueAttemptAsync(ApplicationUser user, UserLoginAttempt attempt)
     {
-        await _channel.Writer.WriteAsync((user, attempt));
+        await _attemptsChannel.Writer.WriteAsync(new(user, attempt, Activity.Current?.Context));
     }
+
+    private record QueueredAttempt(ApplicationUser User, UserLoginAttempt Attempt, ActivityContext? TriggerContext);
 }
