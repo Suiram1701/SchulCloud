@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using SchulCloud.ServiceDefaults.Authentication;
 using SchulCloud.ServiceDefaults.Metrics;
 using SchulCloud.ServiceDefaults.Options;
 using SchulCloud.ServiceDefaults.Services;
@@ -27,17 +30,12 @@ public static class Extensions
     public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
     {
         builder.ConfigureOpenTelemetry();
-
         builder.AddDefaultHealthChecks();
 
         builder.Services.AddServiceDiscovery();
-
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
-            // Turn on resilience by default
             http.AddStandardResilienceHandler();
-
-            // Turn on service discovery by default
             http.AddServiceDiscovery();
         });
 
@@ -51,6 +49,7 @@ public static class Extensions
             options.BasePath = builder.Configuration["BasePath"] ?? "/";
         });
 
+        builder.ConfigureCommands();
         builder.ConfigureMemoryCacheMetrics();
 
         return builder;
@@ -113,6 +112,43 @@ public static class Extensions
         return builder;
     }
 
+    public static IHostApplicationBuilder ConfigureCommands(this IHostApplicationBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Services.AddAuthentication()
+            .AddScheme<StaticKeySchemeOptions, StaticKeyScheme>("command-api", configure =>
+            {
+                configure.Key = builder.Configuration.GetValue<string>("Commands:ApiKey");
+            });
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy("command-api", policy =>
+            {
+                policy.AuthenticationSchemes = ["command-api"];
+                policy.RequireAuthenticatedUser();
+            });
+
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddFixedWindowLimiter("command-fixed", configure =>
+            {
+                if (builder.Configuration.GetSection("Commands:RateLimiter").Exists())
+                {
+                    builder.Configuration.Bind("Commands:RateLimiter", configure);
+                }
+                else
+                {
+                    configure.Window = TimeSpan.MinValue;
+                    configure.PermitLimit = int.MaxValue;
+                }
+            });
+        });
+
+        builder.Services.AddProblemDetails();
+        return builder;
+    }
+
     public static IHostApplicationBuilder ConfigureMemoryCacheMetrics(this IHostApplicationBuilder builder)
     {
         builder.Services.Configure<MemoryCacheOptions>(options => options.TrackStatistics = true);
@@ -123,10 +159,8 @@ public static class Extensions
         return builder;
     }
 
-    public static WebApplication MapDefaultEndpoints(this WebApplication app)
+    public static WebApplication MapDefaultEndpoints(this WebApplication app, Action<IEndpointRouteBuilder>? commandsBuilder = null )
     {
-        // Adding health checks endpoints to applications in non-development environments has security implications.
-        // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
         if (app.Environment.IsDevelopment())
         {
             // All health checks must pass for app to be considered ready to accept traffic after starting
@@ -142,7 +176,7 @@ public static class Extensions
                 Predicate = r => r.Tags.Contains("live")
             }).DisableHttpMetrics();
 
-            app.MapDefaultCommands();
+            app.MapCommands(commandsBuilder);
         }
 
         return app;
@@ -153,31 +187,48 @@ public static class Extensions
     /// </summary>
     /// <param name="app">The application builder to use.</param>
     /// <returns></returns>
-    public static WebApplication MapDefaultCommands(this WebApplication app)
+    public static WebApplication MapCommands(this WebApplication app, Action<IEndpointRouteBuilder>? commandsBuilder = null)
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.MapGet("/commands/clear-cache", async context =>
+        app.MapWhen(context => context.Request.Path.StartsWithSegments("/commands"), subApp =>
         {
-            if (context.RequestServices.GetService<IMemoryCache>() is MemoryCache cache)
+            subApp.UseRouting();
+
+            subApp.UseAuthentication();
+            subApp.UseAuthorization();
+
+            subApp.UseRateLimiter();
+
+            subApp.UseEndpoints(routeBuilder =>
             {
-                cache.Clear();
-                context.Response.StatusCode = StatusCodes.Status204NoContent;
-            }
-            else
-            {
-                IProblemDetailsService problemService = context.RequestServices.GetRequiredService<IProblemDetailsService>();
-                await problemService.WriteAsync(new()
+                RouteGroupBuilder groupBuilder = routeBuilder.MapGroup("/commands")
+                    .RequireAuthorization("command-api")
+                    .RequireRateLimiting("command-fixed");
+                groupBuilder.MapGet("/clear-cache", async context =>
                 {
-                    HttpContext = context,
-                    ProblemDetails = new()
+                    if (context.RequestServices.GetService<IMemoryCache>() is MemoryCache cache)
                     {
-                        Title = "Unable to clear cache",
-                        Status = StatusCodes.Status501NotImplemented,
-                        Detail = "The server does not implement a clearable cache."
+                        cache.Clear();
+                        context.Response.StatusCode = StatusCodes.Status204NoContent;
                     }
-                }).ConfigureAwait(false);
-            }
+                    else
+                    {
+                        IProblemDetailsService problemService = context.RequestServices.GetRequiredService<IProblemDetailsService>();
+                        await problemService.WriteAsync(new()
+                        {
+                            HttpContext = context,
+                            ProblemDetails = new()
+                            {
+                                Title = "Unable to clear cache",
+                                Status = StatusCodes.Status501NotImplemented,
+                                Detail = "The server does not implement a clearable cache."
+                            }
+                        }).ConfigureAwait(false);
+                    }
+                });
+                commandsBuilder?.Invoke(groupBuilder);
+            });
         });
 
         return app;

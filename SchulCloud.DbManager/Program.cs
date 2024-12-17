@@ -48,8 +48,9 @@ internal class Program
             );
 
         await builder.Build()
-            .MapDefaultEndpoints()
-            .MapCommands()
+            .MapDefaultEndpoints(commandsBuilder: Commands.MapDbManagerCommands)
             .RunAsync();
     }
+
+    
 }

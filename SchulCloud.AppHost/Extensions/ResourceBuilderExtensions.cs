@@ -42,7 +42,7 @@ internal static class ResourceBuilderExtensions
     /// <param name="builder">The resource builder to use.</param>
     /// <returns>The builder pipeline.</returns>
     public static IResourceBuilder<TResource> WithDefaultCommands<TResource>(this IResourceBuilder<TResource> builder)
-        where TResource : IResourceWithEndpoints
+        where TResource : IResourceWithEndpoints, IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(builder);
         return builder.WithHttpCommand(
@@ -60,7 +60,7 @@ internal static class ResourceBuilderExtensions
     /// <param name="builder">The resource builder to use.</param>
     /// <returns>The builder pipeline.</returns>
     public static IResourceBuilder<TResource> WithDbManagerCommands<TResource>(this IResourceBuilder<TResource> builder)
-        where TResource : IResourceWithEndpoints
+        where TResource : IResourceWithEndpoints, IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -129,7 +129,7 @@ internal static class ResourceBuilderExtensions
         string? confirmMessage = null,
         string? iconName = default,
         IconVariant? iconVariant = null)
-        where TResource : IResourceWithEndpoints
+        where TResource : IResourceWithEndpoints, IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -139,6 +139,12 @@ internal static class ResourceBuilderExtensions
         EndpointReference endpoint = builder.Resource.GetEndpoints()
             .FirstOrDefault(endpoint => endpoint.EndpointName == endpointName)
             ?? throw new DistributedApplicationException($"Could not create HTTP command for resource '{builder.Resource.Name}' as no endpoint named '{endpointName}' was found.");
+
+
+        ParameterResource? apiKeyParameter = builder.ApplicationBuilder.Resources.OfType<ParameterResource>().FirstOrDefault(p => p.Name == "command-apiKey");
+        apiKeyParameter ??= builder.ApplicationBuilder.AddParameterFromConfiguration("command-apiKey", "CommandApiKey", secret: true).Resource;
+        string keyValue = apiKeyParameter.Value;
+        builder.WithEnvironment("ASPNETCORE_Commands__ApiKey", keyValue);
 
         return builder.WithCommand(
             name: $"http-{name}",
@@ -155,6 +161,8 @@ internal static class ResourceBuilderExtensions
                 try
                 {
                     using HttpRequestMessage request = new(method, uri);
+                    request.Headers.Add("x-api-key", keyValue);
+
                     using HttpResponseMessage response = await httpClient.SendAsync(request, context.CancellationToken);
                     response.EnsureSuccessStatusCode();
                 }
