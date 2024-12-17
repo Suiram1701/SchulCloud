@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Trace;
 using Quartz;
@@ -51,6 +51,4 @@ internal class Program
             .MapDefaultEndpoints(commandsBuilder: Commands.MapDbManagerCommands)
             .RunAsync();
     }
-
-    
 }

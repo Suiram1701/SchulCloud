@@ -1,4 +1,4 @@
-﻿using Quartz;
+using Quartz;
 using SchulCloud.DbManager.Quartz;
 using SchulCloud.ServiceDefaults.Services;
 using System.Diagnostics;
@@ -43,6 +43,5 @@ internal static class Commands
 
             await manager.RemoveDataSourceAsync(context.RequestAborted).ConfigureAwait(false);
         });
-
     }
 }
