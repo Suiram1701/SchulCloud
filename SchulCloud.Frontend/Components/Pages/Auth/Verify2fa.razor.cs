@@ -1,4 +1,4 @@
-﻿using Fido2NetLib;
+using Fido2NetLib;
 using Humanizer;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -145,7 +145,6 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
                     ComponentState.PersistAsJson(nameof(_errorMessage), _errorMessage);
 
                     return Task.CompletedTask;
-
                 }, RenderMode.InteractiveServer);
             }
         }

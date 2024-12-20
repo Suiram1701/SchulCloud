@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Trace;
 using Quartz;

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -260,7 +260,6 @@ public class FilteringFilterAttribute<TItem> : ActionFilterAttribute
         }
         else
         {
-
             MethodInfo? parseMethod = type.GetMethod(
                 name: "TryParse",
                 bindingAttr: BindingFlags.Static | BindingFlags.Public,

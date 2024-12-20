@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -55,5 +55,4 @@ internal class DefaultUserOptions
             return ValidateOptionsResult.Success;
         }
     }
-
 }
