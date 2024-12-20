@@ -1,18 +1,13 @@
-﻿using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MyCSharp.HttpUserAgentParser;
-using MyCSharp.HttpUserAgentParser.Providers;
 using SchulCloud.Authorization;
 using SchulCloud.Identity.Abstractions;
 using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
 using SchulCloud.Identity.Options;
 using SchulCloud.Identity.Services.Abstractions;
-using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -313,7 +308,7 @@ public partial class AppUserManager<TUser>(
         string userId = await GetUserIdAsync(user).ConfigureAwait(false);
         return await base.RedeemTwoFactorRecoveryCodeAsync(user, HashRecoveryCode(userId, code));
     }
-    
+
     private static string HashRecoveryCode(string userId, string code)
     {
         byte[] keyBytes = Encoding.UTF8.GetBytes(userId);
@@ -354,7 +349,7 @@ public partial class AppUserManager<TUser>(
     public virtual async Task<UserLoginAttempt?> FindLoginAttemptAsync(string id)
     {
         ThrowIfDisposed();
-        ArgumentException.ThrowIfNullOrWhiteSpace(id); 
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
 
         IUserLoginAttemptStore<TUser> store = GetLoginAttemptStore();
         return await store.FindLoginAttemptAsync(id, CancellationToken);
@@ -537,7 +532,7 @@ public partial class AppUserManager<TUser>(
 
         IUserApiKeyStore<TUser> store = GetApiKeyStore();
         UserApiKey? key = await store.FindApiKeyByKeyHashAsync(apiKeyService.HashApiKey(apiKey), CancellationToken);
-        
+
         if (key is not null)
         {
             TUser user = (await store.FindUserByApiKeyAsync(key, CancellationToken))!;

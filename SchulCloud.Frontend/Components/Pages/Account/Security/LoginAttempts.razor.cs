@@ -7,7 +7,6 @@ using MyCSharp.HttpUserAgentParser;
 using MyCSharp.HttpUserAgentParser.Providers;
 using SchulCloud.Frontend.Components.Dialogs;
 using SchulCloud.Frontend.Extensions;
-using System.Net;
 using SchulCloud.Identity.Models;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
@@ -72,7 +71,7 @@ public sealed partial class LoginAttempts : ComponentBase
     private async Task RemoveAllAttempts_ClickAsync()
     {
         IDialogReference dialogReference = await DialogService.ShowConfirmDialogAsync(
-            Localizer["removeAllDialog"], 
+            Localizer["removeAllDialog"],
             Localizer["removeAllDialog_Message"],
             confirmColor: Color.Error);
         if (await dialogReference.GetReturnValueAsync<bool?>() ?? false)

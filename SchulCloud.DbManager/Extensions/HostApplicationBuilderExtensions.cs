@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using SchulCloud.DbManager.Options;
 
 namespace SchulCloud.DbManager.Extensions;

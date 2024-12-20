@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SchulCloud.Frontend.BackgroundServices;
-using System.Threading.Tasks;
 
 namespace SchulCloud.Frontend.HealthChecks;
 

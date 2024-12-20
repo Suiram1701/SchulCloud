@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SchulCloud.Identity.Services.Abstractions;
+﻿namespace SchulCloud.Identity.Services.Abstractions;
 
 /// <summary>
 /// A service that provides methods for api keys.

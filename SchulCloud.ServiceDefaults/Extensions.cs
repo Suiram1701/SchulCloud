@@ -159,7 +159,7 @@ public static class Extensions
         return builder;
     }
 
-    public static WebApplication MapDefaultEndpoints(this WebApplication app, Action<IEndpointRouteBuilder>? commandsBuilder = null )
+    public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())
         {
@@ -175,8 +175,6 @@ public static class Extensions
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
                 Predicate = r => r.Tags.Contains("live")
             }).DisableHttpMetrics();
-
-            app.MapCommands(commandsBuilder);
         }
 
         return app;

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Quartz;
 using SchulCloud.DbManager.Quartz;
-using System.Reflection.Metadata.Ecma335;
 
 namespace SchulCloud.DbManager.Cleaning;
 
@@ -9,7 +8,7 @@ internal class CleanerJobCheck(ISchedulerFactory schedulerFactory) : IHealthChec
 {
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken).ConfigureAwait(false);        
+        IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken).ConfigureAwait(false);
         if (await scheduler.CheckExists(Jobs.CleanerJob, cancellationToken).ConfigureAwait(false))
         {
             return await scheduler.GetTriggerState(Jobs.CleanerJobTimeTrigger, cancellationToken).ConfigureAwait(false) switch

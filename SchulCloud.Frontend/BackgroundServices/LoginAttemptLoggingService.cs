@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Frontend.Services.Models;
-using System.Threading.Channels;
 using SchulCloud.Identity.Models;
 using System.Diagnostics;
+using System.Threading.Channels;
 
 namespace SchulCloud.Frontend.BackgroundServices;
 

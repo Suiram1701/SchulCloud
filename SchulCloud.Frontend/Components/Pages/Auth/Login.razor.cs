@@ -9,13 +9,12 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SchulCloud.Store.Managers;
 using SchulCloud.Frontend.Extensions;
 using SchulCloud.Frontend.Identity.Managers;
+using SchulCloud.Frontend.JsInterop;
 using SchulCloud.Frontend.Models;
 using SchulCloud.Frontend.Services.Exceptions;
 using System.Security.Cryptography;
-using SchulCloud.Frontend.JsInterop;
 
 namespace SchulCloud.Frontend.Components.Pages.Auth;
 

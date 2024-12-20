@@ -1,11 +1,10 @@
 ﻿using Fido2NetLib;
-using Microsoft.AspNetCore.Identity;
+using GoogleMapsComponents;
 using Microsoft.AspNetCore.Localization;
 using MudBlazor;
 using MudBlazor.Services;
-using SchulCloud.Frontend.Options;
 using SchulCloud.Frontend.JsInterop;
-using GoogleMapsComponents;
+using SchulCloud.Frontend.Options;
 using SchulCloud.Identity;
 
 namespace SchulCloud.Frontend.Extensions;

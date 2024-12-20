@@ -47,10 +47,12 @@ internal class Program
                 .AddSource(InitializerJob.ActivitySourceName, CleanerJob.ActivitySourceName)
             );
 
-        await builder.Build()
-            .MapDefaultEndpoints(commandsBuilder: Commands.MapDbManagerCommands)
-            .RunAsync();
-    }
+        WebApplication app = builder.Build();
+        app.UseForwardedHeaders();
 
-    
+        app.MapDefaultEndpoints();
+        app.MapCommands(commandsBuilder: Commands.MapDbManagerCommands);
+
+        await app.RunAsync();
+    }
 }

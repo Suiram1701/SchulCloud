@@ -72,7 +72,7 @@ public class MemoryCacheMetrics : IHostedService, IDisposable
         else
         {
             _currentEntryCount.Record(statistics.CurrentEntryCount);
-            if (statistics.CurrentEstimatedSize is not  null)
+            if (statistics.CurrentEstimatedSize is not null)
             {
                 _currentEstimatedSize.Record(statistics.CurrentEstimatedSize.Value);
             }

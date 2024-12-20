@@ -87,7 +87,7 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
             StateHasChanged();
         }
     }
-    
+
     private async Task Map_OnAfterInitAsync()
     {
         _mapMarker = await Marker.CreateAsync(_map!.JsRuntime, new()

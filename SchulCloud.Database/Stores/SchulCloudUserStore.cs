@@ -392,7 +392,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
                 await ReplaceClaimAsync(user, existingClaim, claim, ct);
             }
         }
-        else if (existingClaim is not null) 
+        else if (existingClaim is not null)
         {
             await RemoveClaimsAsync(user, [existingClaim], ct);
         }

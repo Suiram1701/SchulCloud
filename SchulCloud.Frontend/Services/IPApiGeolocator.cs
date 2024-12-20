@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Frontend.Services.Models;
 using System.Globalization;

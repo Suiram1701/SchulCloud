@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SchulCloud.ServiceDefaults.Services;
+﻿namespace SchulCloud.ServiceDefaults.Services;
 
 /// <summary>
 /// An interface that provides managing functionalities for the data source used for the application.

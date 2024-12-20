@@ -1,5 +1,4 @@
 ﻿using SchulCloud.Identity.Models;
-using System.Net;
 
 namespace SchulCloud.Identity.Abstractions;
 

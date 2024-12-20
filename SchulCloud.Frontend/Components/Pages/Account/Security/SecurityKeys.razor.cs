@@ -1,20 +1,14 @@
 ﻿using Fido2NetLib;
-using Fido2NetLib.Objects;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
-using Microsoft.JSInterop;
 using MudBlazor;
 using SchulCloud.Frontend.Components.Dialogs;
 using SchulCloud.Frontend.Extensions;
+using SchulCloud.Frontend.JsInterop;
 using SchulCloud.Frontend.Models;
 using SchulCloud.Frontend.Services.Exceptions;
-using System.Globalization;
-using System.Net;
-using MaterialSymbols = MudBlazor.FontIcons.MaterialSymbols;
-using SchulCloud.Frontend.JsInterop;
 using SchulCloud.Identity.Models;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;

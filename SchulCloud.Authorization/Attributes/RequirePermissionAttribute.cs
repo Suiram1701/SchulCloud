@@ -1,9 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SchulCloud.Authorization.Attributes;
 
@@ -23,5 +18,5 @@ public sealed class RequirePermissionAttribute(string name, PermissionLevel leve
     /// <summary>
     /// The minimum required level of the permission.
     /// </summary>
-    public PermissionLevel Level => level; 
+    public PermissionLevel Level => level;
 }

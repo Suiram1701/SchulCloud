@@ -40,7 +40,7 @@ public class CachedRequestLimiter<TUser>(IMemoryCache cache, IOptions<RequestLim
         }
         else
         {
-            return false;        
+            return false;
         }
     }
 

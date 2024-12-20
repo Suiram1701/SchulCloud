@@ -2,23 +2,23 @@ using Blazored.LocalStorage;
 using MailKit.Client;
 using Microsoft.AspNetCore.Identity;
 using MudBlazor.Services;
+using MudBlazor.Translations;
 using MyCSharp.HttpUserAgentParser.DependencyInjection;
+using SchulCloud.Authorization.Extensions;
+using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
-using SchulCloud.ServiceDefaults;
+using SchulCloud.Frontend.BackgroundServices;
 using SchulCloud.Frontend.Components;
 using SchulCloud.Frontend.Extensions;
+using SchulCloud.Frontend.HealthChecks;
 using SchulCloud.Frontend.Identity;
 using SchulCloud.Frontend.Identity.EmailSenders;
 using SchulCloud.Frontend.Identity.Managers;
 using SchulCloud.Frontend.Services;
 using SchulCloud.Frontend.Services.Interfaces;
-using SchulCloud.Authorization.Extensions;
-using MudBlazor.Translations;
-using SchulCloud.Frontend.HealthChecks;
 using SchulCloud.Identity;
-using SchulCloud.Database;
 using SchulCloud.Identity.Services;
-using SchulCloud.Frontend.BackgroundServices;
+using SchulCloud.ServiceDefaults;
 
 namespace SchulCloud.Frontend;
 
@@ -83,8 +83,10 @@ public class Program
             .WithTracing(tracing => tracing.AddSource(LoginAttemptLoggingService.ActivitySourceName));
 
         WebApplication app = builder.Build();
-        app.MapDefaultEndpoints();
         app.UseForwardedHeaders();
+
+        app.MapDefaultEndpoints();
+        app.MapCommands();
 
         if (app.Environment.IsDevelopment())
         {

@@ -1,6 +1,5 @@
 ﻿using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using SchulCloud.RestApi.Pagination;
 using SchulCloud.RestApi.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;

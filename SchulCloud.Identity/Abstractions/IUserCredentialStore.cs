@@ -1,6 +1,4 @@
-﻿using Fido2NetLib;
-using Fido2NetLib.Objects;
-using SchulCloud.Identity.Models;
+﻿using SchulCloud.Identity.Models;
 
 namespace SchulCloud.Identity.Abstractions;
 

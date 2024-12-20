@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using System.Security;
 using System.Security.Claims;
 
 namespace SchulCloud.Authorization.Requirements;

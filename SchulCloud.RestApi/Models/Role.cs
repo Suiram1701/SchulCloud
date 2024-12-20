@@ -1,7 +1,4 @@
-﻿using Mapster;
-using System.Drawing;
-
-namespace SchulCloud.RestApi.Models;
+﻿namespace SchulCloud.RestApi.Models;
 
 /// <summary>
 /// A single role.
@@ -17,7 +14,7 @@ public class Role
     /// The name of the name.
     /// </summary>
     public string Name { get; set; } = default!;
-    
+
     /// <summary>
     /// The 32 bit ARGB color of this role.
     /// </summary>

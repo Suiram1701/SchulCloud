@@ -2,13 +2,11 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SchulCloud.Frontend.Services.Interfaces;
-using SchulCloud.Frontend.Services.Models;
-using System.Net;
-using System.Security.Claims;
+using SchulCloud.Frontend.BackgroundServices;
 using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
-using SchulCloud.Frontend.BackgroundServices;
+using System.Net;
+using System.Security.Claims;
 
 namespace SchulCloud.Frontend.Identity.Managers;
 

@@ -2,12 +2,8 @@
 using Microsoft.Extensions.Options;
 using SchulCloud.Identity.Options;
 using SchulCloud.Identity.Services.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SchulCloud.Identity.Services;
 

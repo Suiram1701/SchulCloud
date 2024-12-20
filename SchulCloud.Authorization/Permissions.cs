@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SchulCloud.Authorization;
+﻿namespace SchulCloud.Authorization;
 
 /// <summary>
 /// A class containing strings representing different permissions.

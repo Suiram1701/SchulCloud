@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using SchulCloud.RestApi.Linq;
 using SchulCloud.RestApi.Models;
-using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -187,7 +186,7 @@ public class PaginationFilterAttribute<TItem> : ActionFilterAttribute
 
         return statusCode >= 200 && statusCode < 300;
     }
-  
+
     private static IOrderedQueryable<TItem> OrderBy(IQueryable<TItem> queryable, PropertyInfo property)
     {
         MethodInfo orderMethod = _orderMethod.MakeGenericMethod(property.PropertyType);

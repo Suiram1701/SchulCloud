@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using SchulCloud.Frontend.Options;
 using System.Globalization;
@@ -15,10 +14,11 @@ public sealed partial class CookieConsent : ComponentBase
 
     private CultureInfo Culture
     {
-        get {
+        get
+        {
             CultureInfo currentCulture = CultureInfo.CurrentUICulture;
             return _supportedCultures.FirstOrDefault(supportedCulture => supportedCulture.TwoLetterISOLanguageName == currentCulture.TwoLetterISOLanguageName)
-                ??_supportedCultures[0];
+                ?? _supportedCultures[0];
         }
     }
 

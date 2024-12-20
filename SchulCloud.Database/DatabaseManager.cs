@@ -3,11 +3,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
 using SchulCloud.Database.Models;
 using SchulCloud.ServiceDefaults.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SchulCloud.Database;
 

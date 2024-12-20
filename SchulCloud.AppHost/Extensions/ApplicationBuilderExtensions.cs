@@ -1,11 +1,5 @@
 ﻿using Aspire.Hosting.MailDev;
-using Microsoft.Extensions.Hosting;
 using SchulCloud.AppHost.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SchulCloud.AppHost.Extensions;
 

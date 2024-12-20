@@ -1,6 +1,5 @@
 ﻿using Fido2NetLib;
 using Microsoft.JSInterop;
-using Microsoft.JSInterop.Implementation;
 using SchulCloud.Frontend.Services.Exceptions;
 using static SchulCloud.Frontend.Constants.JSNames;
 

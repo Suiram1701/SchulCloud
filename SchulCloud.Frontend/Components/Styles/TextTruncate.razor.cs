@@ -5,7 +5,7 @@ namespace SchulCloud.Frontend.Components.Styles;
 
 public partial class TextTruncate : ComponentBase
 {
-    protected virtual string ClassNames => 
+    protected virtual string ClassNames =>
         new CssBuilder("text-truncate")
             .AddClass(Class)
             .Build();

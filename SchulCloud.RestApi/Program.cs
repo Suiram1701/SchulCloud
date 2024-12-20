@@ -1,6 +1,5 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 using SchulCloud.Authentication;
 using SchulCloud.Authorization.Extensions;
@@ -70,9 +69,11 @@ internal class Program
         }
 
         WebApplication app = builder.Build();
-        app.MapDefaultEndpoints();
         app.UseForwardedHeaders();
         app.UseRequestIdHeader();
+
+        app.MapDefaultEndpoints();
+        app.MapCommands();
 
         app.UseAuthentication();
         app.UseAuthorization();
