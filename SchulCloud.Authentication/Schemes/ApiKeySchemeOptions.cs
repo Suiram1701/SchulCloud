@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 
-namespace SchulCloud.Authentication.AuthenticationSchemes;
+namespace SchulCloud.Authentication.Schemes;
 
 internal class ApiKeySchemeOptions : AuthenticationSchemeOptions
 {

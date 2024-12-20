@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
-using SchulCloud.Authentication.AuthenticationSchemes;
+using SchulCloud.Authentication.Schemes;
 
 namespace SchulCloud.Authentication;
 

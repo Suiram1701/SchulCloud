@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -12,10 +11,9 @@ using SchulCloud.Store.Managers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 
-namespace SchulCloud.Authentication.AuthenticationSchemes;
+namespace SchulCloud.Authentication.Schemes;
 
 internal class ApiKeyScheme<TUser>(
-    IMemoryCache cache,
     IProblemDetailsService problemDetailsService,
     IOptionsMonitor<ApiKeySchemeOptions> options,
     ILoggerFactory logger,
@@ -37,12 +35,7 @@ internal class ApiKeyScheme<TUser>(
         }
 
         string providedKey = headerValues.ToString();
-        (UserApiKey ApiKey, TUser User)? result = await cache.GetOrCreateAsync(GetCacheKey(providedKey), async entry =>
-        {
-            entry.SetSlidingExpiration(TimeSpan.FromMinutes(10));
-            return await userManager.FindApiKeyAsync(providedKey).ConfigureAwait(false);
-        }).ConfigureAwait(false);
-
+        (UserApiKey ApiKey, TUser User)? result = await userManager.FindApiKeyAsync(providedKey).ConfigureAwait(false);
         if (result is not null)
         {
             ClaimsIdentity identity = await GenerateClaimsAsync(result.Value.User, result.Value.ApiKey).ConfigureAwait(false);
@@ -107,6 +100,4 @@ internal class ApiKeyScheme<TUser>(
 
         return identity;
     }
-
-    private static string GetCacheKey(string apiKey) => $"api-key-auth-{apiKey}";
 }
