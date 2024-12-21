@@ -20,7 +20,9 @@
     <PackageReference Include="MudBlazor.Translations" Version="1.5.1" />
     <PackageReference Include="MyCSharp.HttpUserAgentParser" Version="3.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Quartz" Version="1.10.0-beta.1" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="Quartz.AspNetCore" Version="3.13.1" />
     <PackageReference Include="Suiram1.BlazorRoutesGenerator" Version="1.1.1" />
   </ItemGroup>
 

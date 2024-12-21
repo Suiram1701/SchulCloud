@@ -4,16 +4,18 @@ using Microsoft.AspNetCore.Identity;
 using MudBlazor.Services;
 using MudBlazor.Translations;
 using MyCSharp.HttpUserAgentParser.DependencyInjection;
+using OpenTelemetry.Trace;
+using Quartz;
+using Quartz.AspNetCore;
 using SchulCloud.Authorization.Extensions;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
-using SchulCloud.Frontend.BackgroundServices;
 using SchulCloud.Frontend.Components;
 using SchulCloud.Frontend.Extensions;
-using SchulCloud.Frontend.HealthChecks;
 using SchulCloud.Frontend.Identity;
 using SchulCloud.Frontend.Identity.EmailSenders;
 using SchulCloud.Frontend.Identity.Managers;
+using SchulCloud.Frontend.Jobs;
 using SchulCloud.Frontend.Services;
 using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Identity;
@@ -70,17 +72,21 @@ public class Program
             .AddScoped<CookieConsentService>()
             .AddScoped<IUserPreferencesStore, CookieUserPreferencesStore>();
 
-        builder.Services
-            .AddSingleton<IIPGeolocator, IPApiGeolocator>()
-            .AddSingleton<LoginAttemptLoggingService>()
-            .AddHostedService(sp => sp.GetRequiredService<LoginAttemptLoggingService>());
+        builder.Services.AddSingleton<IIPGeolocator, IPApiGeolocator>();
         builder.AddConfiguredGoogleMapsServices();
 
-        builder.Services.AddHealthChecks()
-            .AddCheck<LoginAttemptServicesCheck>("login-attempt-logging-service");
+        builder.Services.AddQuartz(options =>
+        {
+            options.AddJob<LoginAttemptProcessJob>(options => options
+                .WithIdentity(Jobs.Jobs.LoginAttemptProcessJob)
+                .WithDescription("A job that processes login attempts reported from the frontend.")
+                .StoreDurably()
+            );
+        });
+        builder.Services.AddQuartzServer(options => options.WaitForJobsToComplete = true);
 
         builder.Services.AddOpenTelemetry()
-            .WithTracing(tracing => tracing.AddSource(LoginAttemptLoggingService.ActivitySourceName));
+            .WithTracing(tracing => tracing.AddQuartzInstrumentation());
 
         WebApplication app = builder.Build();
         app.UseForwardedHeaders();

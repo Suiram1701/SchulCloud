@@ -2,9 +2,10 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SchulCloud.Frontend.BackgroundServices;
+using Quartz;
 using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
+using System.Diagnostics;
 using System.Net;
 using System.Security.Claims;
 
@@ -15,7 +16,7 @@ namespace SchulCloud.Frontend.Identity.Managers;
 /// </summary>
 public class SchulCloudSignInManager(
     ApplicationUserManager userManager,
-    LoginAttemptLoggingService loginLogService,
+    ISchedulerFactory schedulerFactory,
     IHttpContextAccessor contextAccessor,
     IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory,
     IOptions<IdentityOptions> optionsAccessor,
@@ -221,7 +222,14 @@ public class SchulCloudSignInManager(
                 UserAgent = userAgent,
                 DateTime = DateTime.UtcNow
             };
-            await loginLogService.EnqueueAttemptAsync(user, attempt);
+
+            IScheduler scheduler = await schedulerFactory.GetScheduler();
+
+            JobDataMap jobData = [
+                new KeyValuePair<string, object?>("user", user),
+                new KeyValuePair<string, object?>("attempt", attempt),
+                new KeyValuePair<string, object?>("trigger", Activity.Current?.Context)];
+            await scheduler.TriggerJob(Jobs.Jobs.LoginAttemptProcessJob, jobData);
         }
     }
 
