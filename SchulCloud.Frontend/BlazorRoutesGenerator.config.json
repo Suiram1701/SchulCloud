@@ -1,0 +1,9 @@
+{
+  "namesOverwrites": {
+    "SchulCloud.Frontend.Components.Pages.Account.Overview": "AccountOverview",
+    "SchulCloud.Frontend.Components.Pages.Account.Settings": "AccountSettings",
+    "SchulCloud.Frontend.Components.Pages.Account.Security.Overview": "SecurityOverview",
+    "SchulCloud.Frontend.Components.Pages.Account.Security.TwoFactor.Authenticator": "TwoFactorAuthenticator",
+    "SchulCloud.Frontend.Components.Pages.Account.Security.TwoFactor.Recovery": "TwoFactorRecovery"
+  }
+}

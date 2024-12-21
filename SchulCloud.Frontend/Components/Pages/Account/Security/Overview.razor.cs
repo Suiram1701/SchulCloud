@@ -11,11 +11,11 @@ using SchulCloud.Identity.Enums;
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
 
 [Route("/account/security")]
-public sealed partial class SecurityOverview : ComponentBase, IDisposable
+public sealed partial class Overview : ComponentBase, IDisposable
 {
     #region Injections
     [Inject]
-    private IStringLocalizer<SecurityOverview> Localizer { get; set; } = default!;
+    private IStringLocalizer<Overview> Localizer { get; set; } = default!;
 
     [Inject]
     private ISnackbar SnackbarService { get; set; } = default!;
@@ -198,7 +198,7 @@ public sealed partial class SecurityOverview : ComponentBase, IDisposable
         IDialogReference dialogReference = await DialogService.ShowConfirmDialogAsync(Localizer["recovery_RenewBtn"], Localizer["recovery_RenewMessage"]);
         if (await dialogReference.GetReturnValueAsync<bool?>() ?? false)
         {
-            NavigationManager.NavigateToRecovery();
+            NavigationManager.NavigateToTwoFactorRecovery();
         }
     }
 

@@ -148,7 +148,7 @@
                         }
                         else
                         {
-                            <MudButton Color="Color.Primary" Href="@Routes.Authenticator()">@Localizer["authenticator_EnableBtn"]</MudButton>
+                            <MudButton Color="Color.Primary" Href="@Routes.TwoFactorAuthenticator()">@Localizer["authenticator_EnableBtn"]</MudButton>
                         }
                     </ChildContent>
                 </MudExpansionPanel>
@@ -282,7 +282,7 @@
                         <MudTooltip Text="@Localizer["authenticator_EnableFirst"]" Disabled="_mfaEnabled">
                             @if (_mfaRemainingRecoveryCodes == 0)
                             {
-                                <MudButton Color="Color.Primary" Href="@Routes.Recovery()" Disabled="!_mfaEnabled">
+                                <MudButton Color="Color.Primary" Href="@Routes.TwoFactorRecovery()" Disabled="!_mfaEnabled">
                                     @Localizer["recovery_GenerateNewBtn"]
                                 </MudButton>
                             }

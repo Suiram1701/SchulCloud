@@ -21,7 +21,7 @@
     <PackageReference Include="MyCSharp.HttpUserAgentParser" Version="3.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
-    <PackageReference Include="Suiram1.BlazorRoutesGenerator" Version="1.1.0" />
+    <PackageReference Include="Suiram1.BlazorRoutesGenerator" Version="1.1.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,7 +31,11 @@
     <ProjectReference Include="..\SchulCloud.Database\SchulCloud.Database.csproj" />
     <ProjectReference Include="..\SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj" />
   </ItemGroup>
-    
+
+  <ItemGroup>
+    <AdditionalFiles Include="BlazorRoutesGenerator.config.json" />
+  </ItemGroup>
+	
   <ItemGroup>
     <Folder Include="wwwroot\dist\" />
   </ItemGroup>
