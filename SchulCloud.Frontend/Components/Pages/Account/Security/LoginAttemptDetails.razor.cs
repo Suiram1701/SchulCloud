@@ -1,5 +1,4 @@
-﻿using GoogleMapsComponents;
-using GoogleMapsComponents.Maps;
+﻿using GoogleMapsComponents.Maps;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -8,6 +7,8 @@ using MudBlazor;
 using MyCSharp.HttpUserAgentParser;
 using MyCSharp.HttpUserAgentParser.Providers;
 using SchulCloud.Frontend.Extensions;
+using Microsoft.JSInterop;
+using GoogleMapsComponents;
 using SchulCloud.Identity.Models;
 
 namespace SchulCloud.Frontend.Components.Pages.Account.Security;
@@ -21,6 +22,9 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
 
     [Inject]
     private ISnackbar SnackbarService { get; set; } = default!;
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
 
     [Inject]
     private IHttpUserAgentParserProvider UserAgentParserProvider { get; set; } = default!;
@@ -43,6 +47,7 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
     private GoogleMap? _map;
     private Marker? _mapMarker;
     private MapOptions? _mapOptions;
+    private IJSObjectReference? _importRef;
 
     [Parameter]
     public string AttemptId { get; set; } = default!;
@@ -73,12 +78,7 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
 
                     if (_attempt.Latitude is not null && _attempt.Longitude is not null)
                     {
-                        _mapOptions = new()
-                        {
-                            MapTypeId = MapTypeId.Satellite,
-                            Center = new(_attempt.Latitude!.Value, _attempt.Longitude!.Value),
-                            Zoom = 10,
-                        };
+                        await InitializeMapAsync();
                     }
                 }
             }
@@ -88,6 +88,20 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
         }
     }
 
+    private async Task InitializeMapAsync()
+    {
+        (bool success, _importRef) = await JSRuntime.InvokeAsyncWithErrorHandling<IJSObjectReference>("import", "/_content/BlazorGoogleMaps/js/objectManager.js");
+        if (success)
+        {
+            _mapOptions = new()
+            {
+                MapTypeId = MapTypeId.Satellite,
+                Center = new(_attempt!.Latitude!.Value, _attempt.Longitude!.Value),
+                Zoom = 10,
+            };
+        }
+    }
+    
     private async Task Map_OnAfterInitAsync()
     {
         _mapMarker = await Marker.CreateAsync(_map!.JsRuntime, new()
@@ -123,14 +137,32 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
 
     public async ValueTask DisposeAsync()
     {
-        if (_map is not null)
+        try
         {
-            await _map.DisposeAsync();
+            if (_mapMarker is not null)
+            {
+                await _mapMarker.DisposeAsync();
+            }
         }
+        catch (JSDisconnectedException) { }
 
-        if (_mapMarker is not null)
+
+        try
         {
-            await _mapMarker.DisposeAsync();
+            if (_map is not null)
+            {
+                await _map.DisposeAsync();
+            }
         }
+        catch (JSDisconnectedException) { }
+
+        try
+        {
+            if (_importRef is not null)
+            {
+                await _importRef.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException) { }
     }
 }

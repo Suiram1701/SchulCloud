@@ -1,4 +1,5 @@
 ﻿@using SchulCloud.Authorization
+@using SchulCloud.Frontend.Components.Buttons
 
 <AppPageTitle Title="@Localizer["title"]" />
 
@@ -61,7 +62,10 @@
     <TitleContent>@Localizer["showKeyDialog"]</TitleContent>
     <DialogContent>
         @Localizer["showKeyDialog_Message"]
-        <MudText Class="mt-4"><b>@_apiKey</b></MudText>
+        <MudStack AlignItems="AlignItems.Center" Row>
+            <MudText Class="mt-4 mr-2"><b>@_apiKey</b></MudText>
+            <CopyClipboardButton CopyText="@_apiKey" />
+        </MudStack>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Secondary" OnClick="ShowKeyDialog_DownloadKey_ClickAsync">@Localizer["showKeyDialog_DownloadBtn"]</MudButton>

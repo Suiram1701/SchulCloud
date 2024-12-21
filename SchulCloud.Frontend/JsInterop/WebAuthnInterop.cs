@@ -1,7 +1,7 @@
 ﻿using Fido2NetLib;
 using Microsoft.JSInterop;
 using SchulCloud.Frontend.Services.Exceptions;
-using static SchulCloud.Frontend.Constants.JSNames;
+using static SchulCloud.Frontend.JsInterop.JSNames;
 
 namespace SchulCloud.Frontend.JsInterop;
 

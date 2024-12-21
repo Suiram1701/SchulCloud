@@ -37,10 +37,6 @@
   <ItemGroup>
     <AdditionalFiles Include="BlazorRoutesGenerator.config.json" />
   </ItemGroup>
-	
-  <ItemGroup>
-    <Folder Include="wwwroot\dist\" />
-  </ItemGroup>
 
   <Target Name="CopyIsolatedCss" AfterTargets="Build">
     <Copy SourceFiles="$(IntermediateOutputPath)scopedcss\bundle\$(PackageId).styles.css" DestinationFiles="wwwroot\dist\css\AppBundle.styles.css" ContinueOnError="true" />

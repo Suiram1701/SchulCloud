@@ -1,0 +1,5 @@
+﻿<MudTooltip Text="@Localizer["tooltip"]" Disabled="@_copiedTooltipVisible">
+    <MudTooltip Text="@Localizer["tooltip_TextCopied"]" Visible="@_copiedTooltipVisible" ShowOnHover="false">
+        <MudButton OnClick="Copy_ClickAsync" Disabled="@(!IsSupported)"><MudIcon Icon="@MaterialSymbols.Outlined.CopyAll" /></MudButton>
+    </MudTooltip>
+</MudTooltip>

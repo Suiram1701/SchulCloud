@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SchulCloud.Frontend.Constants;
-using static SchulCloud.Frontend.Constants.JSNames;
+using SchulCloud.Frontend.JsInterop;
+using static SchulCloud.Frontend.JsInterop.JSNames;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace SchulCloud.Frontend.Extensions;

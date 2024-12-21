@@ -5,7 +5,7 @@ const outputPath = './wwwroot/dist/js';
 
 export default {
     input: {
-        'Main': './Scripts/Main.ts'
+        'AppBundle': './Scripts/Main.ts'
     },
     output: [
         {

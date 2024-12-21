@@ -16,6 +16,7 @@ using SchulCloud.Frontend.Identity;
 using SchulCloud.Frontend.Identity.EmailSenders;
 using SchulCloud.Frontend.Identity.Managers;
 using SchulCloud.Frontend.Jobs;
+using SchulCloud.Frontend.JsInterop;
 using SchulCloud.Frontend.Services;
 using SchulCloud.Frontend.Services.Interfaces;
 using SchulCloud.Identity;
@@ -70,7 +71,8 @@ public class Program
             .AddBlazoredLocalStorage()
             .AddScoped<CookieService>()
             .AddScoped<CookieConsentService>()
-            .AddScoped<IUserPreferencesStore, CookieUserPreferencesStore>();
+            .AddScoped<IUserPreferencesStore, CookieUserPreferencesStore>()
+            .AddScoped<ClipboardInterop>();
 
         builder.Services.AddSingleton<IIPGeolocator, IPApiGeolocator>();
         builder.AddConfiguredGoogleMapsServices();
