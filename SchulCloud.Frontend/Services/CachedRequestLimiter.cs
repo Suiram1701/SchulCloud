@@ -34,8 +34,11 @@ public class CachedRequestLimiter<TUser>(IMemoryCache cache, IOptions<RequestLim
             }
 
             DateTimeOffset expiration = DateTimeOffset.UtcNow.Add(value);
-            _cache.Set(cacheKey, expiration, expiration);
 
+            using ICacheEntry entry = _cache.CreateEntry(cacheKey)
+                .SetAbsoluteExpiration(expiration)
+                .SetValue(expiration)
+                .SetSize(16);     // Estimated size of DateTimeOffset tried using sizeof in CSharpREPL (using sizeof here would require to enable unsafe).
             return true;
         }
         else

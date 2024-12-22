@@ -23,7 +23,7 @@ public class MemoryCacheMetrics : IHostedService, IDisposable
 
     private bool disposedValue;
 
-    public const string Name = "SchulCloud.ServiceDefaults.Metrics.MemoryCacheMetrics";
+    public const string Name = "Microsoft.Extensions.Caching.Memory";
 
     public MemoryCacheMetrics(ILogger<MemoryCacheMetrics> logger, IServiceProvider serviceProvider, IMeterFactory meterFactory)
     {
@@ -38,10 +38,10 @@ public class MemoryCacheMetrics : IHostedService, IDisposable
         _timer.Elapsed += Timer_Elapsed;
 
         _meter = meterFactory.Create(name: Name, version: "1.0.0");
-        _currentEntryCount = _meter.CreateGauge<long>(name: $"{Name}.entries", description: "The count of all entries in the cache.", unit: "Entries");
-        _currentEstimatedSize = _meter.CreateGauge<long>(name: $"{Name}.entries.size", description: "The estimated size of all cache entries.", unit: "bytes");
-        _totalHits = _meter.CreateGauge<long>(name: $"{Name}.total.hits", description: "The total number of cache hits.", unit: "Hits");
-        _totalMisses = _meter.CreateGauge<long>(name: $"{Name}.total.misses", description: "The total number of cache misses.", unit: "Misses");
+        _currentEntryCount = _meter.CreateGauge<long>(name: "cache.entries", description: "The count of all entries in the cache.", unit: "Entries");
+        _currentEstimatedSize = _meter.CreateGauge<long>(name: "cache.entries.size", description: "The estimated size of all cache entries.", unit: "bytes");
+        _totalHits = _meter.CreateGauge<long>(name: "cache.hits", description: "The total number of cache hits.", unit: "Hits");
+        _totalMisses = _meter.CreateGauge<long>(name: "cache.misses", description: "The total number of cache misses.", unit: "Misses");
     }
 
     public Task StartAsync(CancellationToken cancellationToken)

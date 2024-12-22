@@ -14,8 +14,6 @@ internal class InitializerJob(ILogger<InitializerJob> logger, IServiceProvider _
 {
     private DefaultUserOptions DefaultUserOption => defaultUserOptions.CurrentValue;
 
-    public const string ActivitySourceName = nameof(InitializerJob);
-
     public async Task Execute(IJobExecutionContext context)
     {
         ActivityContext? triggerActivity = context.MergedJobDataMap.Get("trigger") as ActivityContext?;

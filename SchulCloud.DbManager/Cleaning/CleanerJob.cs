@@ -14,13 +14,11 @@ internal class CleanerJob : IJob, IDisposable
     private readonly ILogger _logger;
     private readonly IOptionsMonitor<CleanerOptions> _optionsMonitor;
 
-    private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
     private readonly Counter<int> _executions;
     private readonly Histogram<double> _executionTimes;
     private readonly Counter<int> _objectsRemoved;
 
-    public const string ActivitySourceName = nameof(CleanerJob);
     public const string MeterName = "SchulCloud.DbManager.Cleaning.CleanerJob";
 
     private CleanerOptions CleanerOptions => _optionsMonitor.CurrentValue;
@@ -31,11 +29,9 @@ internal class CleanerJob : IJob, IDisposable
         _logger = logger;
         _optionsMonitor = options;
 
-        _activitySource = new(ActivitySourceName);
-
         _meter = meterFactory.Create(MeterName, version: "1.0.0");
         _executions = _meter.CreateCounter<int>("cleanerJob.executions", description: "The amount of clean cycles executed during this runtime.", unit: "Executions");
-        _executionTimes = _meter.CreateHistogram<double>("cleanerJob.executionTimes", description: "The time it took for a clean cycle to execute.", unit: "Milliseconds");
+        _executionTimes = _meter.CreateHistogram<double>("cleanerJob.executionTimes", description: "The time it took for a clean cycle to execute.", unit: "Seconds");
         _objectsRemoved = _meter.CreateCounter<int>("cleanerJob.removedObjects", description: "The total count of obsolete items removed.", unit: "Items");
     }
 
@@ -96,7 +92,7 @@ internal class CleanerJob : IJob, IDisposable
             { "Cleaned items", cleanedTag }
         };
         _executions.Add(1, tags);
-        _executionTimes.Record(sw.Elapsed.TotalMilliseconds, tags);
+        _executionTimes.Record(sw.Elapsed.TotalSeconds, tags);
         _objectsRemoved.Add(removedCount, tags);
     }
 

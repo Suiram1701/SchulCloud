@@ -1,4 +1,5 @@
 using Fido2NetLib;
+using Fido2NetLib.Objects;
 using Humanizer;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -226,11 +227,13 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
             Model.AuthenticatorDataAccessKey = key;
 
             string cacheKey = await GetSecurityKeyDataCacheKeyAsync(key);
-            using (ICacheEntry entry = Cache.CreateEntry(cacheKey))
-            {
-                entry.SetValue(new SecurityKeyAuthState(assertionOptions, authenticatorResponse));
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-            }
+
+
+            ICacheEntry entry = Cache.CreateEntry(cacheKey)
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+                .SetValue(new SecurityKeyAuthState(assertionOptions, authenticatorResponse))
+                .SetSize(101);     // Calculated by adding properties sizes of options and response together using a integrated security key.
+            entry.Dispose();
 
             StateHasChanged();
             await JSRuntime.FormSubmitAsync(_formRef);

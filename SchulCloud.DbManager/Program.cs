@@ -7,7 +7,6 @@ using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
 using SchulCloud.DbManager.Cleaning;
 using SchulCloud.DbManager.Extensions;
-using SchulCloud.DbManager.Initialization;
 using SchulCloud.DbManager.Quartz;
 using SchulCloud.Identity;
 using SchulCloud.ServiceDefaults;
@@ -44,7 +43,6 @@ internal class Program
             .WithMetrics(builder => builder.AddMeter(CleanerJob.MeterName))
             .WithTracing(builder => builder
                 .AddQuartzInstrumentation(options => options.RecordException = true)
-                .AddSource(InitializerJob.ActivitySourceName, CleanerJob.ActivitySourceName)
             );
 
         WebApplication app = builder.Build();
