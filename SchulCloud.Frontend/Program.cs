@@ -1,5 +1,6 @@
 using Blazored.LocalStorage;
 using MailKit.Client;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Identity;
 using MudBlazor.Services;
 using MudBlazor.Translations;
@@ -10,6 +11,7 @@ using Quartz.AspNetCore;
 using SchulCloud.Authorization.Extensions;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
+using SchulCloud.Frontend.CircuitHandlers;
 using SchulCloud.Frontend.Components;
 using SchulCloud.Frontend.Extensions;
 using SchulCloud.Frontend.Identity;
@@ -63,7 +65,9 @@ public class Program
 
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
-        builder.Services.AddCascadingAuthenticationState();
+        builder.Services
+            .AddSingleton<CircuitHandler, TelemetryHandler>()
+            .AddCascadingAuthenticationState();
 
         builder.Services
             .AddMudServices()
@@ -88,7 +92,10 @@ public class Program
         builder.Services.AddQuartzServer(options => options.WaitForJobsToComplete = true);
 
         builder.Services.AddOpenTelemetry()
-            .WithTracing(tracing => tracing.AddQuartzInstrumentation());
+            .WithTracing(tracing => tracing
+                .AddQuartzInstrumentation()
+                .AddSource(TelemetryHandler.ActivitySourceName))
+            .WithMetrics(metrics => metrics.AddMeter(TelemetryHandler.MeterName));
 
         WebApplication app = builder.Build();
         app.UseForwardedHeaders();
