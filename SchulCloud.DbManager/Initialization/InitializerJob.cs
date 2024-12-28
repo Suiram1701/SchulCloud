@@ -4,7 +4,7 @@ using Quartz;
 using SchulCloud.Authorization;
 using SchulCloud.DbManager.Options;
 using SchulCloud.ServiceDefaults.Services;
-using SchulCloud.Store.Managers;
+using SchulCloud.Identity.Managers;
 using System.Diagnostics;
 using System.Reflection;
 

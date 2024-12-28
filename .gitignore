@@ -36,7 +36,7 @@ bld/
 .vs/
 
 # excluded because they will be copied/generated on every build
-dist/
+_content/
 
 # Visual Studio 2017 auto generated files
 Generated\ Files/

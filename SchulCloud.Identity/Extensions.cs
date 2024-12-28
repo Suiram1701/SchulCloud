@@ -4,7 +4,6 @@ using Microsoft.Extensions.Hosting;
 using SchulCloud.Identity.Managers;
 using SchulCloud.Identity.Options;
 using SchulCloud.Identity.Services.Abstractions;
-using SchulCloud.Store.Managers;
 
 namespace SchulCloud.Identity;
 

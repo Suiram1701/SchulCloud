@@ -11,7 +11,7 @@ using SchulCloud.Identity.Services.Abstractions;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace SchulCloud.Store.Managers;
+namespace SchulCloud.Identity.Managers;
 
 /// <summary>
 /// A user manager that provides functionalities of this application.

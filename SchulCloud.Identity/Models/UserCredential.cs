@@ -30,7 +30,7 @@ public class UserCredential
     /// <summary>
     /// Contains flags that represents information about the used security key.
     /// </summary>
-    public AuthenticatorTransport[]? Transports { get; set; }
+    public AuthenticatorTransport[] Transports { get; set; } = [];
 
     public bool IsBackupEligible { get; set; }
 

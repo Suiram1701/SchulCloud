@@ -19,17 +19,17 @@
                 </MudNavLink>
             }
 
-            @if (UserManager.SupportsUserLoginAttempts)
-            {
-                <MudNavLink Href="@Routes.LoginAttempts()" ActiveClass="border-solid border-b-2 mud-border-primary mud-primary-text">
-                    <MudText Align="Align.Center">@Localizer["tabLogInAttempts"]</MudText>
-                </MudNavLink>
-            }
-
             @if (UserManager.SupportsUserApiKeys && ApiKeyOptionsAccessor.Value.MaxKeysPerUser != 0)
             {
                 <MudNavLink Href="@Routes.ApiKeys()" ActiveClass="border-solid border-b-2 mud-border-primary mud-primary-text">
                     <MudText Align="Align.Center">@Localizer["tabApiKeys"]</MudText>
+                </MudNavLink>
+            }
+
+            @if (UserManager.SupportsUserLoginAttempts)
+            {
+                <MudNavLink Href="@Routes.LoginAttempts()" ActiveClass="border-solid border-b-2 mud-border-primary mud-primary-text">
+                    <MudText Align="Align.Center">@Localizer["tabLogInAttempts"]</MudText>
                 </MudNavLink>
             }
         </MudStack>

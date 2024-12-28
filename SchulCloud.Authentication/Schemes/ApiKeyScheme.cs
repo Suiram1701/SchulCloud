@@ -6,8 +6,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using SchulCloud.Authorization;
+using SchulCloud.Identity.Managers;
 using SchulCloud.Identity.Models;
-using SchulCloud.Store.Managers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 

@@ -1,19 +1,19 @@
 import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
 
-const outputPath = './wwwroot/dist/js';
+const isDevelopment = (process.env.NODE_ENV || '').trim() === 'Debug';
 
 export default {
     input: {
-        'AppBundle': './Scripts/Main.ts'
+        'SchulCloud.Frontend': './Scripts/App.ts'
     },
     output: [
         {
             name: 'SchulCloud',
-            dir: outputPath,
+            dir: './wwwroot/_content/SchulCloud.Frontend/',
             entryFileNames: '[name].min.js',
             format: 'iife',
-            sourcemap: true,
+            sourcemap: isDevelopment,
             plugins: [terser()]
         }
     ],

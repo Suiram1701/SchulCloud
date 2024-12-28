@@ -10,14 +10,14 @@
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="BlazorGoogleMaps" Version="4.9.2" />
-    <PackageReference Include="Fido2.AspNet" Version="4.0.0-beta.13" />
+    <PackageReference Include="Fido2.AspNet" Version="4.0.0-beta.16" />
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
     <PackageReference Include="Humanizer.Core.de" Version="2.14.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.0" />
     <PackageReference Include="MudBlazor" Version="7.15.0" />
     <PackageReference Include="MudBlazor.FontIcons.MaterialSymbols" Version="1.2.0" />
-    <PackageReference Include="MudBlazor.Translations" Version="1.5.1" />
+    <PackageReference Include="MudBlazor.Translations" Version="1.6.0" />
     <PackageReference Include="MyCSharp.HttpUserAgentParser" Version="3.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Quartz" Version="1.10.0-beta.1" />
@@ -38,25 +38,23 @@
     <AdditionalFiles Include="BlazorRoutesGenerator.config.json" />
   </ItemGroup>
 
-  <Target Name="CopyIsolatedCss" AfterTargets="Build">
-    <Copy SourceFiles="$(IntermediateOutputPath)scopedcss\bundle\$(PackageId).styles.css" DestinationFiles="wwwroot\dist\css\AppBundle.styles.css" ContinueOnError="true" />
+  <Target Name="PrepareAssets" AfterTargets="Build">
+    <ItemGroup>
+      <Assets Include="wwwroot\**\*" />
+    </ItemGroup>
+	  
+    <RemoveDir Directories="wwwroot\_content\" ContinueOnError="true" />
+    <Copy SourceFiles="@(Assets)" DestinationFolder="wwwroot\_content\$(PackageId)\" />
+    <Copy SourceFiles="$(IntermediateOutputPath)scopedcss\bundle\$(PackageId).styles.css" DestinationFiles="wwwroot\_content\$(PackageId)\$(PackageId).styles.css" />
   </Target>
 
-  <Target Name="BuildJS" AfterTargets="Build">
-    <Exec Command="npm install" WorkingDirectory="$(ProjectDir)\" />
-    <Exec Command="npx rollup -c" WorkingDirectory="$(ProjectDir)\" />
+  <Target Name="TranspileTypeScript" AfterTargets="Build">
+    <Exec Command="npm install" WorkingDirectory=".\" />
+    <Exec Command="set NODE_ENV=$(Configuration) %26%26 npx rollup -c" WorkingDirectory=".\" />
   </Target>
 
   <ItemGroup>
-    <Content Update="wwwroot\**\*">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="package-lock.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
+	  <Content Update="package-lock.json" CopyToOutputDirectory="Never" />
     <Content Update="package.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>

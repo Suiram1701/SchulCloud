@@ -1,5 +1,6 @@
 ﻿using Fido2NetLib;
 using Fido2NetLib.Objects;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -9,7 +10,7 @@ using SchulCloud.Identity.Models;
 using SchulCloud.Identity.Options;
 using System.Text;
 
-namespace SchulCloud.Store.Managers;
+namespace SchulCloud.Identity.Managers;
 
 partial class AppUserManager<TUser>
 {
@@ -46,20 +47,22 @@ partial class AppUserManager<TUser>
         };
 
         IEnumerable<UserCredential> existingCreds = await store.FindCredentialsByUserAsync(user, CancellationToken).ConfigureAwait(false);
-        PublicKeyCredentialDescriptor[] existingKeys = existingCreds.Select(cred => cred.ToCredentialDescriptor()).ToArray();
+        PublicKeyCredentialDescriptor[] existingKeys = [..existingCreds.Select(cred => cred.ToCredentialDescriptor())];
 
-        ResidentKeyRequirement residentKey = isPasskey
-            ? ResidentKeyRequirement.Required
-            : ResidentKeyRequirement.Discouraged;
         IdentityFido2Options options = GetFido2Options();
-
-        AuthenticationExtensionsClientInputs extensions = new()
+        return fido2.RequestNewCredential(new()
         {
-            Extensions = true,
-            UserVerificationMethod = true,
-            CredProps = true
-        };
-        return fido2.RequestNewCredential(fido2User, [.. existingKeys], options.ToAuthenticatorSelection(residentKey), options.AttestationConveyancePreference, extensions);
+            User = fido2User,
+            ExcludeCredentials = existingKeys,
+            AuthenticatorSelection = options.ToAuthenticatorSelection(isPasskey ? ResidentKeyRequirement.Required : ResidentKeyRequirement.Discouraged),
+            AttestationPreference = options.AttestationConveyancePreference,
+            Extensions = new()
+            {
+                Extensions = true,
+                UserVerificationMethod = true,
+                CredProps = true
+            }
+        });
     }
 
     /// <summary>
@@ -88,28 +91,16 @@ partial class AppUserManager<TUser>
 
         try
         {
-            // NOTE: Currently every verification error throws an exception.
-            MakeNewCredentialResult makeResult = await fido2.MakeNewCredentialAsync(authenticatorResponse, options, isUniqueCallback, CancellationToken).ConfigureAwait(false);
-            if (makeResult.Result is null)
+            RegisteredPublicKeyCredential registeredCredential = await fido2.MakeNewCredentialAsync(new()
             {
-                throw new Fido2VerificationException(makeResult.ErrorMessage);
-            }
+                AttestationResponse = authenticatorResponse,
+                OriginalOptions = options,
+                IsCredentialIdUniqueToUserCallback = isUniqueCallback
+            }, CancellationToken).ConfigureAwait(false);
+            UserCredential credential = registeredCredential.Adapt<UserCredential>();
+            credential.Name = name;
+            credential.RegDate = DateTime.UtcNow;
 
-            UserCredential credential = new()
-            {
-                Id = makeResult.Result.Id,
-                Name = name,
-                PublicKey = makeResult.Result.PublicKey,
-                SignCount = makeResult.Result.SignCount,
-                Transports = makeResult.Result.Transports,
-                IsBackupEligible = makeResult.Result.IsBackupEligible,
-                IsBackedUp = makeResult.Result.IsBackedUp,
-                AttestationObject = makeResult.Result.AttestationObject,
-                AttestationClientDataJson = makeResult.Result.AttestationClientDataJson,
-                AttestationFormat = makeResult.Result.AttestationFormat,
-                RegDate = DateTime.UtcNow,
-                AaGuid = makeResult.Result.AaGuid
-            };
             await store.AddCredentialAsync(user, credential, CancellationToken).ConfigureAwait(false);
 
             if (isPasskey && SupportsUserPasskeys)
@@ -149,12 +140,16 @@ partial class AppUserManager<TUser>
             existingKeys = existingCreds.Select(cred => cred.ToCredentialDescriptor()).ToArray();
         }
 
-        AuthenticationExtensionsClientInputs extensions = new()
+        return fido2.GetAssertionOptions(new()
         {
-            Extensions = true,
-            UserVerificationMethod = true
-        };
-        return fido2.GetAssertionOptions([.. existingKeys], GetFido2Options().UserVerificationRequirement, extensions);
+            AllowedCredentials = existingKeys,
+            UserVerification = GetFido2Options().UserVerificationRequirement,
+            Extensions = new()
+            {
+                Extensions = true,
+                UserVerificationMethod = true
+            }
+        });
     }
 
     /// <summary>
@@ -195,18 +190,17 @@ partial class AppUserManager<TUser>
 
         try
         {
-            // NOTE: Every verification error throws an exception.
-            VerifyAssertionResult result = await fido2.MakeAssertionAsync(
-                authenticatorResponse,
-                options,
-                credential.PublicKey,
-                [],
-                credential.SignCount,
-                isOwnedByUserHandleCallback,
-                CancellationToken).ConfigureAwait(false);
+            VerifyAssertionResult assertionResult = await fido2.MakeAssertionAsync(new()
+            {
+                AssertionResponse = authenticatorResponse,
+                OriginalOptions = options,
+                StoredPublicKey = credential.PublicKey,
+                StoredSignatureCounter = credential.SignCount,
+                IsUserHandleOwnerOfCredentialIdCallback = isOwnedByUserHandleCallback
+            }, CancellationToken).ConfigureAwait(false);
+            credential.SignCount = assertionResult.SignCount;
+            credential.IsBackedUp = assertionResult.IsBackedUp;
 
-            credential.SignCount = result.SignCount;
-            credential.IsBackedUp = result.IsBackedUp;
             await store.UpdateCredentialAsync(credential, CancellationToken);
         }
         catch (Fido2VerificationException ex)
