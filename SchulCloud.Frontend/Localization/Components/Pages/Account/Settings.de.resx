@@ -100,4 +100,19 @@
   <data name="title" xml:space="preserve">
     <value>Konto Einstellungen</value>
   </data>
+  <data name="language" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="language_Tooltip" xml:space="preserve">
+    <value>In dieser Sprache werden Daten wie z.B. Zeiten, Währungen und sonstige Einheiten angezeigt.</value>
+  </data>
+  <data name="languageDisplay" xml:space="preserve">
+    <value>Anzeigesprache</value>
+  </data>
+  <data name="languageDisplay_Tooltip" xml:space="preserve">
+    <value>In dieser Sprache werden alle Grafikelemente und Texte angezeigt.</value>
+  </data>
+  <data name="culture_Auto" xml:space="preserve">
+    <value>Sprache des Browser</value>
+  </data>
 </root>

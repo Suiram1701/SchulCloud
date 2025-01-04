@@ -8,6 +8,7 @@ using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
 using SchulCloud.Identity.Options;
 using SchulCloud.Identity.Services.Abstractions;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -41,62 +42,32 @@ public partial class AppUserManager<TUser>(
     /// <summary>
     /// Indicate whether the internal store supports passkey sign ins.
     /// </summary>
-    public virtual bool SupportsUserPasskeys
-    {
-        get
-        {
-            ThrowIfDisposed();
-            return Store is IUserPasskeysStore<TUser> && SupportsUserCredentials;
-        }
-    }
+    public virtual bool SupportsUserPasskeys => SupportsStore<IUserPasskeysStore<TUser>>() && SupportsUserCredentials;
 
     /// <summary>
     /// Indicates whether the internal store support two factor via email.
     /// </summary>
-    public virtual bool SupportsUserTwoFactorEmail
-    {
-        get
-        {
-            ThrowIfDisposed();
-            return Store is IUserTwoFactorEmailStore<TUser>;
-        }
-    }
+    public virtual bool SupportsUserTwoFactorEmail => SupportsStore<IUserTwoFactorEmailStore<TUser>>();
 
     /// <summary>
     /// Indicates whether the internal store supports two factor via security keys.
     /// </summary>
-    public virtual bool SupportsUserTwoFactorSecurityKeys
-    {
-        get
-        {
-            ThrowIfDisposed();
-            return Store is IUserTwoFactorSecurityKeyStore<TUser> && SupportsUserCredentials;
-        }
-    }
+    public virtual bool SupportsUserTwoFactorSecurityKeys => SupportsStore<IUserTwoFactorSecurityKeyStore<TUser>>();
 
     /// <summary>
     /// Indicates whether the internal store supports log in attempts.
     /// </summary>
-    public virtual bool SupportsUserLoginAttempts
-    {
-        get
-        {
-            ThrowIfDisposed();
-            return Store is IUserLoginAttemptStore<TUser>;
-        }
-    }
+    public virtual bool SupportsUserLoginAttempts => SupportsStore<IUserLoginAttemptStore<TUser>>();
+
+    /// <summary>
+    /// Indicates whether the internal stores supports language settings.
+    /// </summary>
+    public virtual bool SupportsUserLanguages => SupportsStore<IUserLanguageStore<TUser>>();
 
     /// <summary>
     /// Indicates whether the internal store supports user api keys.
     /// </summary>
-    public virtual bool SupportsUserApiKeys
-    {
-        get
-        {
-            ThrowIfDisposed();
-            return Store is IUserApiKeyStore<TUser> && _services.GetService<IApiKeyService>() is not null;
-        }
-    }
+    public virtual bool SupportsUserApiKeys => SupportsStore<IUserApiKeyStore<TUser>>();
 
     /// <summary>
     /// Gets a flag that indicates whether a user has passkey sign ins enabled.
@@ -506,6 +477,66 @@ public partial class AppUserManager<TUser>(
     }
 
     /// <summary>
+    /// Sets the culture of a user in which data will be shown.
+    /// </summary>
+    /// <param name="user">The user to update the culture for.</param>
+    /// <param name="culture">The new culture.</param>
+    /// <returns>The result of this operation.</returns>
+    public virtual async Task<IdentityResult> SetCultureAsync(TUser user, CultureInfo? culture)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserLanguageStore<TUser> store = GetLanguageStore();
+        await store.SetCultureAsync(user, culture, CancellationToken);
+        return await UpdateAsync(user);
+    }
+
+    /// <summary>
+    /// Sets the ui culture of a user.
+    /// </summary>
+    /// <param name="user">The user to update the ui culture for.</param>
+    /// <param name="culture">The new ui culture.</param>
+    /// <returns>The result of this operation.</returns>
+    public virtual async Task<IdentityResult> SetUiCultureAsync(TUser user, CultureInfo? culture)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserLanguageStore<TUser> store = GetLanguageStore();
+        await store.SetUiCultureAsync(user, culture, CancellationToken);
+        return await UpdateAsync(user);
+    }
+
+    /// <summary>
+    /// Gets the current culture of a user in which data will be shown.
+    /// </summary>
+    /// <param name="user">The user who's culture should retrieved.</param>
+    /// <returns>The culture. If <c>null</c> it wasn't set yet.</returns>
+    public virtual async Task<CultureInfo?> GetCultureAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserLanguageStore<TUser> store = GetLanguageStore();
+        return await store.GetCultureAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Sets the ui culture of a user.
+    /// </summary>
+    /// <param name="user">The user for that the ui culture should be retrieved</param>
+    /// <returns>The ui culture. If <c>null</c> it wasn't set yet.</returns>
+    public virtual async Task<CultureInfo?> GetUiCultureAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserLanguageStore<TUser> store = GetLanguageStore();
+        return await store.GetUiCultureAsync(user, CancellationToken);
+    }
+
+    /// <summary>
     /// Finds an api key by its id.
     /// </summary>
     /// <param name="id">The id of the api key.</param>
@@ -638,83 +669,37 @@ public partial class AppUserManager<TUser>(
         return await UpdateSecurityStampAsync(user);
     }
 
-    private IUserPasskeysStore<TUser> GetPasskeysStore()
+    private IUserPasskeysStore<TUser> GetPasskeysStore() => GetStoreBase<IUserPasskeysStore<TUser>>();
+
+    private IUserAuthenticatorKeyStore<TUser> GetAuthenticatorKeyStore() => GetStoreBase<IUserAuthenticatorKeyStore<TUser>>();
+
+    private IUserTwoFactorStore<TUser> GetTwoFactorStore() => GetStoreBase<IUserTwoFactorStore<TUser>>();
+
+    private IUserTwoFactorEmailStore<TUser> GetTwoFactorEmailStore() => GetStoreBase<IUserTwoFactorEmailStore<TUser>>();
+
+    private IUserTwoFactorSecurityKeyStore<TUser> GetTwoFactorSecurityKeyStore() => GetStoreBase<IUserTwoFactorSecurityKeyStore<TUser>>();
+
+    private IUserTwoFactorRecoveryCodeStore<TUser> GetTwoFactorRecoveryCodeStore() => GetStoreBase<IUserTwoFactorRecoveryCodeStore<TUser>>();
+
+    private IUserLoginAttemptStore<TUser> GetLoginAttemptStore() => GetStoreBase<IUserLoginAttemptStore<TUser>>();
+
+    private IUserPermissionStore<TUser> GetPermissionsStore() => GetStoreBase<IUserPermissionStore<TUser>>();
+
+    private IUserLanguageStore<TUser> GetLanguageStore() => GetStoreBase<IUserLanguageStore<TUser>>();
+
+    private IUserApiKeyStore<TUser> GetApiKeyStore() => GetStoreBase<IUserApiKeyStore<TUser>>();
+
+    private bool SupportsStore<TStore>()
     {
-        if (Store is not IUserPasskeysStore<TUser> cast)
-        {
-            throw new NotSupportedException($"{nameof(IUserPasskeysStore<TUser>)} isn't supported by the store.");
-        }
-        return cast;
+        ThrowIfDisposed();
+        return Store is TStore;
     }
 
-    private IUserAuthenticatorKeyStore<TUser> GetAuthenticatorKeyStore()
+    private TStore GetStoreBase<TStore>()
     {
-        if (Store is not IUserAuthenticatorKeyStore<TUser> cast)
+        if (Store is not TStore cast)
         {
-            throw new NotSupportedException($"{nameof(IUserAuthenticatorKeyStore<TUser>)} isn't supported by the store.");
-        }
-        return cast;
-    }
-
-    private IUserTwoFactorStore<TUser> GetTwoFactorStore()
-    {
-        if (Store is not IUserTwoFactorStore<TUser> cast)
-        {
-            throw new NotSupportedException($"{nameof(IUserTwoFactorStore<TUser>)} isn't supported by the store.");
-        }
-        return cast;
-    }
-
-    private IUserTwoFactorEmailStore<TUser> GetTwoFactorEmailStore()
-    {
-        if (Store is not IUserTwoFactorEmailStore<TUser> cast)
-        {
-            throw new NotSupportedException($"{nameof(IUserTwoFactorEmailStore<TUser>)} isn't supported by the store.");
-        }
-        return cast;
-    }
-
-    private IUserTwoFactorSecurityKeyStore<TUser> GetTwoFactorSecurityKeyStore()
-    {
-        if (Store is not IUserTwoFactorSecurityKeyStore<TUser> cast)
-        {
-            throw new NotSupportedException($"{nameof(IUserTwoFactorSecurityKeyStore<TUser>)} isn't supported by the store.");
-        }
-        return cast;
-    }
-
-    private IUserTwoFactorRecoveryCodeStore<TUser> GetTwoFactorRecoveryCodeStore()
-    {
-        if (Store is not IUserTwoFactorRecoveryCodeStore<TUser> cast)
-        {
-            throw new NotSupportedException($"{nameof(IUserTwoFactorRecoveryCodeStore<TUser>)} isn't supported by the store.");
-        }
-        return cast;
-    }
-
-    private IUserLoginAttemptStore<TUser> GetLoginAttemptStore()
-    {
-        if (Store is not IUserLoginAttemptStore<TUser> cast)
-        {
-            throw new NotSupportedException($"{nameof(IUserLoginAttemptStore<TUser>)} isn't supported by the store.");
-        }
-        return cast;
-    }
-
-    private IUserPermissionStore<TUser> GetPermissionsStore()
-    {
-        if (Store is not IUserPermissionStore<TUser> cast)
-        {
-            throw new NotSupportedException($"{nameof(IUserPermissionStore<TUser>)} isn't supported by the store.");
-        }
-        return cast;
-    }
-
-    private IUserApiKeyStore<TUser> GetApiKeyStore()
-    {
-        if (Store is not IUserApiKeyStore<TUser> cast)
-        {
-            throw new NotSupportedException($"{nameof(IUserApiKeyStore<TUser>)} isn't supported by the store.");
+            throw new NotSupportedException($"{nameof(TStore)} isn't supported by the store.");
         }
         return cast;
     }

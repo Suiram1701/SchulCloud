@@ -5,6 +5,7 @@ using MudBlazor;
 using MudBlazor.Services;
 using SchulCloud.Frontend.JsInterop;
 using SchulCloud.Frontend.Options;
+using SchulCloud.Frontend.RequestCultureProviders;
 using SchulCloud.Identity;
 
 namespace SchulCloud.Frontend.Extensions;
@@ -28,6 +29,7 @@ public static class ApplicationBuilderExtensions
                 (localizationOptions.SupportedUICultures ??= []).Clear();
 
                 localizationOptions.RequestCultureProviders = [
+                    new ClaimCultureProvider(),
                     new CookieRequestCultureProvider(),
                     new AcceptLanguageHeaderRequestCultureProvider()
                 ];

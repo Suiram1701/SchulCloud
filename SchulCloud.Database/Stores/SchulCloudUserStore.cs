@@ -7,6 +7,7 @@ using SchulCloud.Database.Enums;
 using SchulCloud.Database.Models;
 using SchulCloud.Identity.Abstractions;
 using SchulCloud.Identity.Models;
+using System.Globalization;
 using System.Net;
 using System.Security.Claims;
 
@@ -20,6 +21,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     IUserPasskeysStore<TUser>,
     IUserLoginAttemptStore<TUser>,
     IUserPermissionStore<TUser>,
+    IUserLanguageStore<TUser>,
     IUserApiKeyStore<TUser>
     where TUser : AppUser
     where TRole : IdentityRole
@@ -426,10 +428,64 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
 
     private async Task<Claim?> GetPermissionTypeAsync(TUser user, string permissionName, CancellationToken ct)
     {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
+
         IEnumerable<Claim> userClaims = await GetClaimsAsync(user, ct);
         return userClaims
             .Where(claim => claim.Type == Authorization.ClaimTypes.Permission)
             .FirstOrDefault(claim => Permission.Parse(claim.Value).Name == permissionName);
+    }
+    #endregion
+
+    #region IUserLanguageStore
+    private const string _settingClaimPrefix = "Setting";
+
+    public async Task SetCultureAsync(TUser user, CultureInfo? culture, CancellationToken ct) => await SetCultureBaseAsync(user, culture, "Culture", ct);
+
+    public async Task SetUiCultureAsync(TUser user, CultureInfo? culture, CancellationToken ct) => await SetCultureBaseAsync(user, culture, "UiCulture", ct);
+
+    public async Task<CultureInfo?> GetCultureAsync(TUser user, CancellationToken ct) => await GetCultureBaseAsync(user, "Culture", ct);
+
+    public async Task<CultureInfo?> GetUiCultureAsync(TUser user, CancellationToken ct) => await GetCultureBaseAsync(user, "UiCulture", ct);
+
+    private async Task SetCultureBaseAsync(TUser user, CultureInfo? culture, string type, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
+
+        IEnumerable<Claim> userClaims = await GetClaimsAsync(user, ct);
+        Claim? existingClaim = userClaims.SingleOrDefault(claim => claim.Type == $"{_settingClaimPrefix}:{type}");
+        if (culture is not null)
+        {
+            Claim newClaim = new($"{_settingClaimPrefix}:{type}", culture.Name);
+            if (existingClaim is null)
+            {
+                await AddClaimsAsync(user, [newClaim], ct);
+            }
+            else
+            {
+                await ReplaceClaimAsync(user, existingClaim, newClaim, ct);
+            }
+        }
+        else if (existingClaim is not null)
+        {
+            await RemoveClaimsAsync(user, [existingClaim], ct);
+        }
+    }
+
+    private async Task<CultureInfo?> GetCultureBaseAsync(TUser user, string type, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
+
+        IEnumerable<Claim> userClaims = await GetClaimsAsync(user, ct);
+        string? cultureValue = userClaims.SingleOrDefault(claim => claim.Type == $"{_settingClaimPrefix}:{type}")?.Value;
+
+        return !string.IsNullOrEmpty(cultureValue) ? new CultureInfo(cultureValue) : null;
     }
     #endregion
 

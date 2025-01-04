@@ -17,14 +17,7 @@ partial class AppUserManager<TUser>
     /// <summary>
     /// Indicates whether the store supports fido2 credentials
     /// </summary>
-    public virtual bool SupportsUserCredentials
-    {
-        get
-        {
-            ThrowIfDisposed();
-            return Store is IUserCredentialStore<TUser> && _services.GetService<IFido2>() is not null;
-        }
-    }
+    public virtual bool SupportsUserCredentials => SupportsStore<IUserCredentialStore<TUser>>() && _services.GetService<IFido2>() is not null;
 
     /// <summary>
     /// Creates options that can be used to request a fido2 credential creation.
@@ -322,14 +315,7 @@ partial class AppUserManager<TUser>
         return entry?.MetadataStatement;
     }
 
-    private IUserCredentialStore<TUser> GetCredentialStore()
-    {
-        if (Store is not IUserCredentialStore<TUser> cast)
-        {
-            throw new NotSupportedException($"{nameof(IUserCredentialStore<TUser>)} isn't supported by the store.");
-        }
-        return cast;
-    }
+    private IUserCredentialStore<TUser> GetCredentialStore() => GetStoreBase<IUserCredentialStore<TUser>>();
 
     private IFido2 GetFido2Service() => _services.GetRequiredService<IFido2>();
 
