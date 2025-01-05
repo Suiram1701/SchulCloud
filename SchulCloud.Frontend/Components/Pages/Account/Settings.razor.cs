@@ -30,6 +30,7 @@ public sealed partial class Settings : ComponentBase
     private RequestLocalizationOptions LocalizationOptions => LocalizationOptionsAccessor.Value;
 
     private ApplicationUser _user = default!;
+    private bool _fromBrowserCulture;
     private CultureInfo? _culture;
     private CultureInfo? _uiCulture;
 
@@ -49,21 +50,24 @@ public sealed partial class Settings : ComponentBase
 
         if (ReloadToken ?? false)
         {
-            if (HttpContext is not null)
-            {
-                await SignInManager.RefreshSignInAsync(_user);
-                NavigationManager.NavigateToAccountSettings(reload: false);
-            }
-            else
-            {
-                NavigationManager.Refresh(forceReload: true);
-            }
-
+            await RefreshSessionAsync();
             return;
         }
 
         _culture = await UserManager.GetCultureAsync(_user);
         _uiCulture = await UserManager.GetUiCultureAsync(_user);
+        _fromBrowserCulture = _culture is null || _uiCulture is null;
+    }
+
+    private async Task OnBrowserCultureChangedAsync(bool newValue)
+    {
+        CultureInfo? newCulture = !newValue
+            ? CultureInfo.CurrentUICulture
+            : null;
+        await UserManager.SetCultureAsync(_user, newCulture);
+        await UserManager.SetUiCultureAsync(_user, newCulture);
+
+        NavigationManager.NavigateToAccountSettings(reload: true, forceLoad: true);
     }
 
     private async Task OnCultureChangedAsync(CultureInfo? newCulture)
@@ -76,5 +80,18 @@ public sealed partial class Settings : ComponentBase
     {
         await UserManager.SetUiCultureAsync(_user, newCulture);
         NavigationManager.NavigateToAccountSettings(reload: true, forceLoad: true);
+    }
+
+    private async Task RefreshSessionAsync()
+    {
+        if (HttpContext is not null)
+        {
+            await SignInManager.RefreshSignInAsync(_user);
+            NavigationManager.NavigateToAccountSettings(reload: false);
+        }
+        else
+        {
+            NavigationManager.Refresh(forceReload: true);
+        }
     }
 }

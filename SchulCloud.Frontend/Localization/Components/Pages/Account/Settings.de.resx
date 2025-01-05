@@ -112,7 +112,10 @@
   <data name="languageDisplay_Tooltip" xml:space="preserve">
     <value>In dieser Sprache werden alle Grafikelemente und Texte angezeigt.</value>
   </data>
-  <data name="culture_Auto" xml:space="preserve">
-    <value>Sprache des Browser</value>
+  <data name="languageAuto" xml:space="preserve">
+    <value>Browser Sprache</value>
+  </data>
+  <data name="languageAuto_Tooltip" xml:space="preserve">
+    <value>Die Sprache wird von den Spracheinstellungen des Browser bezogen.</value>
   </data>
 </root>

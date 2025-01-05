@@ -37,13 +37,19 @@
 
         <MudMenu Label="@(_culture?.NativeName ?? Localizer["selectCulture_Auto"])" StartIcon="@MaterialSymbols.Outlined.Translate" EndIcon="@MaterialSymbols.Outlined.KeyboardArrowDown">
             <MudMenuItem Disabled="@(_culture is null)" OnClick="@(async () => await ChangeCulture_ClickAsync(null))">
-                @Localizer["selectCulture_Auto"]
+                <MudStack AlignItems="AlignItems.Center" Row>
+                    <MudIcon Icon="@MaterialSymbols.Outlined.Language" />
+                    @Localizer["selectCulture_Auto"]
+                </MudStack>
             </MudMenuItem>
 
             @foreach (CultureInfo culture in LocalizationOptions.SupportedUICultures ?? [])
             {
                 <MudMenuItem Disabled="culture.Equals(_culture)" OnClick="@(async () => await ChangeCulture_ClickAsync(culture))">
-                    @culture.NativeName
+                    <MudStack AlignItems="AlignItems.Center" Row>
+                        <MudImage Height="30" Src="@Assets[$"/_content/SchulCloud.Frontend/{culture.Name.Replace('-', '_')}.svg"]" Alt="@culture.Name" />
+                        @culture.NativeName
+                    </MudStack>
                 </MudMenuItem>
             }
         </MudMenu>

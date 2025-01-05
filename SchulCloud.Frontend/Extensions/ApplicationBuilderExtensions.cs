@@ -29,8 +29,7 @@ public static class ApplicationBuilderExtensions
                 (localizationOptions.SupportedUICultures ??= []).Clear();
 
                 localizationOptions.RequestCultureProviders = [
-                    new ClaimCultureProvider(),
-                    new CookieRequestCultureProvider(),
+                    new ClaimsCultureProvider(anonymousProvider: new CookieRequestCultureProvider()),
                     new AcceptLanguageHeaderRequestCultureProvider()
                 ];
             })
