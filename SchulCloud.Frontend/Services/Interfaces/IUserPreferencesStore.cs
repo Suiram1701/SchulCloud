@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Localization;
-using SchulCloud.Frontend.Enums;
+using SchulCloud.Identity.Enums;
 
 namespace SchulCloud.Frontend.Services.Interfaces;
 

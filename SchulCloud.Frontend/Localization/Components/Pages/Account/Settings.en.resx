@@ -118,4 +118,22 @@
   <data name="languageAuto_Tooltip" xml:space="preserve">
     <value>The language is taken from the browser's language settings.</value>
   </data>
+  <data name="colorTheme" xml:space="preserve">
+    <value>color representation</value>
+  </data>
+  <data name="theme" xml:space="preserve">
+    <value>color theme</value>
+  </data>
+  <data name="theme_AutoMode" xml:space="preserve">
+    <value>automatic</value>
+  </data>
+  <data name="theme_DarkMode" xml:space="preserve">
+    <value>dark</value>
+  </data>
+  <data name="theme_LightMode" xml:space="preserve">
+    <value>light</value>
+  </data>
+  <data name="theme_Tooltip" xml:space="preserve">
+    <value>The color theme in which this page is displayed for this account.</value>
+  </data>
 </root>

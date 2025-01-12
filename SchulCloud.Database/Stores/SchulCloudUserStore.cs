@@ -6,10 +6,12 @@ using SchulCloud.Authorization;
 using SchulCloud.Database.Enums;
 using SchulCloud.Database.Models;
 using SchulCloud.Identity.Abstractions;
+using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
 using System.Globalization;
 using System.Net;
 using System.Security.Claims;
+using LoginAttemptResult = SchulCloud.Database.Enums.LoginAttemptResult;
 
 namespace SchulCloud.Database.Stores;
 
@@ -22,6 +24,7 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     IUserLoginAttemptStore<TUser>,
     IUserPermissionStore<TUser>,
     IUserLanguageStore<TUser>,
+    IUserColorThemeStore<TUser>,
     IUserApiKeyStore<TUser>
     where TUser : AppUser
     where TRole : IdentityRole
@@ -439,8 +442,9 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
     }
     #endregion
 
-    #region IUserLanguageStore
     private const string _settingClaimPrefix = "Setting";
+    
+    #region IUserLanguageStore
 
     public async Task SetCultureAsync(TUser user, CultureInfo? culture, CancellationToken ct) => await SetCultureBaseAsync(user, culture, "Culture", ct);
 
@@ -486,6 +490,47 @@ public class SchulCloudUserStore<TUser, TRole, TContext>(TContext context, Ident
         string? cultureValue = userClaims.SingleOrDefault(claim => claim.Type == $"{_settingClaimPrefix}:{type}")?.Value;
 
         return !string.IsNullOrEmpty(cultureValue) ? new CultureInfo(cultureValue) : null;
+    }
+    #endregion
+
+    #region IUserColorThemeStore
+    public async Task SetColorThemeAsync(TUser user, ColorTheme? theme, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
+
+
+        IEnumerable<Claim> userClaims = await GetClaimsAsync(user, ct);
+        Claim? existingClaim = userClaims.SingleOrDefault(claim => claim.Type == $"{_settingClaimPrefix}:ColorTheme");
+        if (theme is not null)
+        {
+            Claim newClaim = new($"{_settingClaimPrefix}:ColorTheme", theme.ToString()!);
+            if (existingClaim is null)
+            {
+                await AddClaimsAsync(user, [newClaim], ct);
+            }
+            else
+            {
+                await ReplaceClaimAsync(user, existingClaim, newClaim, ct);
+            }
+        }
+        else if (existingClaim is not null)
+        {
+            await RemoveClaimsAsync(user, [existingClaim], ct);
+        }
+    }
+
+    public async Task<ColorTheme?> GetColorThemeAsync(TUser user, CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ct.ThrowIfCancellationRequested();
+
+        IEnumerable<Claim> userClaims = await GetClaimsAsync(user, ct);
+        string? themeValue = userClaims.SingleOrDefault(claim => claim.Type == $"{_settingClaimPrefix}:ColorTheme")?.Value;
+
+        return !string.IsNullOrEmpty(themeValue) ? Enum.Parse<ColorTheme>(themeValue) : null;
     }
     #endregion
 

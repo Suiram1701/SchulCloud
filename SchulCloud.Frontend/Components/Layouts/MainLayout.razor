@@ -2,7 +2,7 @@
 
 @inherits LayoutComponentBase
 
-<MudThemeProvider IsDarkMode />
+<MudThemeProvider @ref="_themeProvider" ObserveSystemThemeChange="_isAutoThemeMode" IsDarkMode="_isDarkMode" />
 
 <MudLayout>
     <MudAppBar Elevation="1" Dense>
@@ -24,7 +24,7 @@
             <ActivatorContent>
                 <MudButton>
                     @{
-                        string username = UserManager.GetUserName(_userPrincipial)!;
+                        string username = UserManager.GetUserName(_user)!;
                     }
                     <MudAvatar Size="Size.Medium">@NameToDisplayedAvatar(username)</MudAvatar>
                     <MudText Class="ml-2" Typo="Typo.subtitle1"><b>@username</b></MudText>

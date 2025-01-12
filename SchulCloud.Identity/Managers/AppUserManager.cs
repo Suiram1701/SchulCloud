@@ -9,6 +9,7 @@ using SchulCloud.Identity.Models;
 using SchulCloud.Identity.Options;
 using SchulCloud.Identity.Services.Abstractions;
 using System.Globalization;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -60,9 +61,14 @@ public partial class AppUserManager<TUser>(
     public virtual bool SupportsUserLoginAttempts => SupportsStore<IUserLoginAttemptStore<TUser>>();
 
     /// <summary>
-    /// Indicates whether the internal stores supports language settings.
+    /// Indicates whether the internal store supports language settings.
     /// </summary>
     public virtual bool SupportsUserLanguages => SupportsStore<IUserLanguageStore<TUser>>();
+
+    /// <summary>
+    /// Indicates whether the internal store supports color theme settings.
+    /// </summary>
+    public virtual bool SupportsUserColorThemes => SupportsStore<IUserColorThemeStore<TUser>>();
 
     /// <summary>
     /// Indicates whether the internal store supports user api keys.
@@ -537,6 +543,56 @@ public partial class AppUserManager<TUser>(
     }
 
     /// <summary>
+    /// Sets the displayed color theme of a certain user.
+    /// </summary>
+    /// <param name="user">The user to set the theme for.</param>
+    /// <param name="theme">The color theme to set.</param>
+    /// <returns>The result of this operation.</returns>
+    public virtual async Task<IdentityResult> SetColorThemeAsync(TUser user, ColorTheme theme)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserColorThemeStore<TUser> store = GetColorThemeStore();
+        if (theme != ColorTheme.Auto)
+        {
+            await store.SetColorThemeAsync(user, theme, CancellationToken);
+        }
+        else
+        {
+            await store.SetColorThemeAsync(user, null, CancellationToken);
+        }
+        
+        return await UpdateAsync(user);
+    }
+
+    /// <summary>
+    /// Gets the displayed color theme of a certain user.
+    /// </summary>
+    /// <param name="user">The user to get the theme from.</param>
+    /// <returns>The color theme. If it were not set yet <see cref="ColorTheme.Auto"/> will be returned.</returns>
+    public virtual async Task<ColorTheme> GetColorThemeAsync(TUser user)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+
+        IUserColorThemeStore<TUser> store = GetColorThemeStore();
+        return await store.GetColorThemeAsync(user, CancellationToken) ?? ColorTheme.Auto;
+    }
+
+    /// <summary>
+    /// Gets the color theme of the currently authenticated user by his clams principal.
+    /// </summary>
+    /// <param name="principal">The claims principal of the user.</param>
+    /// <returns>The color theme saved in the principal.</returns>
+    public virtual ColorTheme GetColorTheme(ClaimsPrincipal principal)
+    {
+        ArgumentNullException.ThrowIfNull(principal);
+        string? claimValue = principal.FindFirstValue("Setting:ColorTheme");
+
+        return !string.IsNullOrEmpty(claimValue) ? Enum.Parse<ColorTheme>(claimValue) : ColorTheme.Auto;
+    }
+
+    /// <summary>
     /// Finds an api key by its id.
     /// </summary>
     /// <param name="id">The id of the api key.</param>
@@ -686,6 +742,8 @@ public partial class AppUserManager<TUser>(
     private IUserPermissionStore<TUser> GetPermissionsStore() => GetStoreBase<IUserPermissionStore<TUser>>();
 
     private IUserLanguageStore<TUser> GetLanguageStore() => GetStoreBase<IUserLanguageStore<TUser>>();
+
+    private IUserColorThemeStore<TUser> GetColorThemeStore() => GetStoreBase<IUserColorThemeStore<TUser>>();
 
     private IUserApiKeyStore<TUser> GetApiKeyStore() => GetStoreBase<IUserApiKeyStore<TUser>>();
 

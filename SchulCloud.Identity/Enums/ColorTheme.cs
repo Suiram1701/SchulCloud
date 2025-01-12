@@ -1,4 +1,4 @@
-﻿namespace SchulCloud.Frontend.Enums;
+﻿namespace SchulCloud.Identity.Enums;
 
 /// <summary>
 /// Represents different color themes to display a website.

@@ -118,4 +118,22 @@
   <data name="languageAuto_Tooltip" xml:space="preserve">
     <value>Die Sprache wird von den Spracheinstellungen des Browser bezogen.</value>
   </data>
+  <data name="colorTheme" xml:space="preserve">
+    <value>Farbdarstellung</value>
+  </data>
+  <data name="theme_Tooltip" xml:space="preserve">
+    <value>Das Farbthema in dem diese Seite für dieses Konto dargestellt wird.</value>
+  </data>
+  <data name="theme_AutoMode" xml:space="preserve">
+    <value>Automatisch</value>
+  </data>
+  <data name="theme_LightMode" xml:space="preserve">
+    <value>Hell</value>
+  </data>
+  <data name="theme_DarkMode" xml:space="preserve">
+    <value>Dunkel</value>
+  </data>
+  <data name="theme" xml:space="preserve">
+    <value>Farbthema</value>
+  </data>
 </root>

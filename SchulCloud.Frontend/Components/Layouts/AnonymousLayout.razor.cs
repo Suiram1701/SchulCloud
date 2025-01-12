@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using SchulCloud.Frontend.Enums;
+using SchulCloud.Identity.Enums;
 using SchulCloud.Frontend.Options;
 using SchulCloud.Frontend.Services.Interfaces;
 using System.Globalization;

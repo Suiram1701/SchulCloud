@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using SchulCloud.Identity.Enums;
 using System.Globalization;
 
 namespace SchulCloud.Frontend.Components.Pages.Account;
@@ -30,9 +31,12 @@ public sealed partial class Settings : ComponentBase
     private RequestLocalizationOptions LocalizationOptions => LocalizationOptionsAccessor.Value;
 
     private ApplicationUser _user = default!;
+
     private bool _fromBrowserCulture;
     private CultureInfo? _culture;
     private CultureInfo? _uiCulture;
+
+    private ColorTheme _theme;
 
     [SupplyParameterFromQuery(Name = "reload")]
     public bool? ReloadToken { get; set; }
@@ -57,6 +61,8 @@ public sealed partial class Settings : ComponentBase
         _culture = await UserManager.GetCultureAsync(_user);
         _uiCulture = await UserManager.GetUiCultureAsync(_user);
         _fromBrowserCulture = _culture is null || _uiCulture is null;
+
+        _theme = await UserManager.GetColorThemeAsync(_user);
     }
 
     private async Task OnBrowserCultureChangedAsync(bool newValue)
@@ -67,27 +73,35 @@ public sealed partial class Settings : ComponentBase
         await UserManager.SetCultureAsync(_user, newCulture);
         await UserManager.SetUiCultureAsync(_user, newCulture);
 
-        NavigationManager.NavigateToAccountSettings(reload: true, forceLoad: true);
+        RefreshSettings();
     }
 
     private async Task OnCultureChangedAsync(CultureInfo? newCulture)
     {
         await UserManager.SetCultureAsync(_user, newCulture);
-        NavigationManager.NavigateToAccountSettings(reload: true, forceLoad: true);
+        RefreshSettings();
     }
 
     private async Task OnUiCultureChangedAsync(CultureInfo? newCulture)
     {
         await UserManager.SetUiCultureAsync(_user, newCulture);
-        NavigationManager.NavigateToAccountSettings(reload: true, forceLoad: true);
+        RefreshSettings();
     }
+
+    private async Task OnColorThemeChangedAsync(ColorTheme theme)
+    {
+        await UserManager.SetColorThemeAsync(_user, theme);
+        RefreshSettings();
+    }
+
+    private void RefreshSettings() => NavigationManager.NavigateToAccountSettings(reload: true, forceLoad: true);
 
     private async Task RefreshSessionAsync()
     {
         if (HttpContext is not null)
         {
             await SignInManager.RefreshSignInAsync(_user);
-            NavigationManager.NavigateToAccountSettings(reload: false);
+            NavigationManager.NavigateToAccountSettings(reload: null);
         }
         else
         {

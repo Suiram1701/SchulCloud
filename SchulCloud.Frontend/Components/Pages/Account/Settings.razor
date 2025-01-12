@@ -1,4 +1,5 @@
 ﻿@using System.Globalization;
+@using SchulCloud.Identity.Enums;
 
 <AppPageTitle Title="@Localizer["title"]" />
 
@@ -6,61 +7,101 @@
 
 <MudPaper Class="px-3 py-3">
     <MudGrid Spacing="2">
-        <MudItem xs="12">
-            <MudText Typo="Typo.h5">@Localizer["language"]</MudText>
-        </MudItem>
+        @if (UserManager.SupportsUserLanguages)
+        {
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5">@Localizer["language"]</MudText>
+            </MudItem>
 
-        <MudItem xs="6" sm="3" lg="2">
-            <MudStack Class="mt-3" Justify="Justify.Center" Row>
-                <MudText Class="mr-n1">@Localizer["languageAuto"]</MudText>
-                <MudTooltip Text="@Localizer["languageAuto_Tooltip"]"><MudIcon Icon="@MaterialSymbols.Outlined.Help" /></MudTooltip>
-            </MudStack>
-        </MudItem>
-        <MudItem xs="6" md="5" lg="4">
-            <MudCheckBox T="bool" Value="_fromBrowserCulture" ValueChanged="OnBrowserCultureChangedAsync" />
-        </MudItem>
-        <div class="end-spacer mud-grid-item mud-grid-item-sm-3 mud-grid-item-md-4 mud-grid-item-lg-6" />     @* Replaces <MudItem xs="0" sm="3" md="4" lg="6" /> because on a component CSS isolation isn't working as it should *@
+            <MudItem xs="6" sm="3" lg="2">
+                <MudStack Class="mt-3" Justify="Justify.Center" Row>
+                    <MudText Class="mr-n1">@Localizer["languageAuto"]</MudText>
+                    <MudTooltip Text="@Localizer["languageAuto_Tooltip"]"><MudIcon Icon="@MaterialSymbols.Outlined.Help" /></MudTooltip>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="6" md="5" lg="4">
+                <MudCheckBox T="bool" Value="_fromBrowserCulture" ValueChanged="OnBrowserCultureChangedAsync" />
+            </MudItem>
+            <div class="end-spacer mud-grid-item mud-grid-item-sm-3 mud-grid-item-md-4 mud-grid-item-lg-6" />     @* Replaces <MudItem xs="0" sm="3" md="4" lg="6" /> because on a component CSS isolation isn't working as it should *@
 
-        <MudItem xs="6" sm="3" lg="2">
-            <MudStack Class="mt-3" Justify="Justify.Center" Row>
-                <MudText Class="mr-n1">@Localizer["language"]</MudText>
-                <MudTooltip Text="@Localizer["language_Tooltip"]"><MudIcon Icon="@MaterialSymbols.Outlined.Help" /></MudTooltip>
-            </MudStack>
-        </MudItem>
-        <MudItem xs="6" md="5" lg="4">
-            <MudSelect Value="@_culture" ValueChanged="@(async (CultureInfo? culture) => await OnCultureChangedAsync(culture))" Disabled="_fromBrowserCulture" Variant="Variant.Outlined">
-                @foreach (CultureInfo culture in LocalizationOptions.SupportedCultures ?? [])
-                {
-                    <MudSelectItem Value="culture">
+            <MudItem xs="6" sm="3" lg="2">
+                <MudStack Class="mt-3" Justify="Justify.Center" Row>
+                    <MudText Class="mr-n1">@Localizer["language"]</MudText>
+                    <MudTooltip Text="@Localizer["language_Tooltip"]"><MudIcon Icon="@MaterialSymbols.Outlined.Help" /></MudTooltip>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="6" md="5" lg="4">
+                <MudSelect Value="@_culture" ValueChanged="@(async (CultureInfo? culture) => await OnCultureChangedAsync(culture))" Disabled="_fromBrowserCulture" Variant="Variant.Outlined">
+                    @foreach (CultureInfo culture in LocalizationOptions.SupportedCultures ?? [])
+                    {
+                        <MudSelectItem Value="culture">
+                            <MudStack AlignItems="AlignItems.Center" Row>
+                                <MudImage Height="30" Src="@Assets[$"_content/SchulCloud.Frontend/{culture.Name.Replace('-', '_')}.svg"]" Alt="@culture.Name" />
+                                @culture.NativeName
+                            </MudStack>
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <div class="end-spacer mud-grid-item mud-grid-item-sm-3 mud-grid-item-md-4 mud-grid-item-lg-6" />     @* Replaces <MudItem xs="0" sm="3" md="4" lg="6" /> because on a component CSS isolation isn't working as it should *@
+
+            <MudItem xs="6" sm="3" lg="2">
+                <MudStack Class="mt-3" Justify="Justify.Center" Row>
+                    <MudText Class="mr-n1">@Localizer["languageDisplay"]</MudText>
+                    <MudTooltip Text="@Localizer["languageDisplay_Tooltip"]"><MudIcon Icon="@MaterialSymbols.Outlined.Help" /></MudTooltip>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="6" md="5" lg="4">
+                <MudSelect Value="@_uiCulture" ValueChanged="@(async (CultureInfo? culture) => await OnUiCultureChangedAsync(culture))" Disabled="_fromBrowserCulture" Variant="Variant.Outlined">
+                    @foreach (CultureInfo culture in LocalizationOptions.SupportedUICultures ?? [])
+                    {
+                        <MudSelectItem Value="culture">
+                            <MudStack AlignItems="AlignItems.Center" Row>
+                                <MudImage Height="30" Src="@Assets[$"/_content/SchulCloud.Frontend/{culture.Name.Replace('-', '_')}.svg"]" Alt="@culture.Name" />
+                                @culture.NativeName
+                            </MudStack>
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <div class="end-spacer mud-grid-item mud-grid-item-sm-3 mud-grid-item-md-4 mud-grid-item-lg-6" />     @* Replaces <MudItem xs="0" sm="3" md="4" lg="6" /> because on a component CSS isolation isn't working as it should *@
+        }
+
+        @if (UserManager.SupportsUserColorThemes)
+        {
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5">@Localizer["colorTheme"]</MudText>
+            </MudItem>
+
+            <MudItem xs="6" sm="3" lg="2">
+                <MudStack Class="mt-3" Justify="Justify.Center" Row>
+                    <MudText Class="mr-n1">@Localizer["theme"]</MudText>
+                    <MudTooltip Text="@Localizer["theme_Tooltip"]"><MudIcon Icon="@MaterialSymbols.Outlined.Help" /></MudTooltip>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="6" md="5" lg="4">
+                <MudSelect Value="@_theme" ValueChanged="@(async (ColorTheme theme) => await OnColorThemeChangedAsync(theme))" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@ColorTheme.Auto">
                         <MudStack AlignItems="AlignItems.Center" Row>
-                            <MudImage Height="30" Src="@Assets[$"_content/SchulCloud.Frontend/{culture.Name.Replace('-', '_')}.svg"]" Alt="@culture.Name" />
-                            @culture.NativeName
+                            <MudIcon Icon="@MaterialSymbols.Outlined.Contrast" />
+                            @Localizer["theme_AutoMode"]
                         </MudStack>
                     </MudSelectItem>
-                }
-            </MudSelect>
-        </MudItem>
-        <div class="end-spacer mud-grid-item mud-grid-item-sm-3 mud-grid-item-md-4 mud-grid-item-lg-6" />     @* Replaces <MudItem xs="0" sm="3" md="4" lg="6" /> because on a component CSS isolation isn't working as it should *@
-
-        <MudItem xs="6" sm="3" lg="2">
-            <MudStack Class="mt-3" Justify="Justify.Center" Row>
-                <MudText Class="mr-n1">@Localizer["languageDisplay"]</MudText>
-                <MudTooltip Text="@Localizer["languageDisplay_Tooltip"]"><MudIcon Icon="@MaterialSymbols.Outlined.Help" /></MudTooltip>
-            </MudStack>
-        </MudItem>
-        <MudItem xs="6" md="5" lg="4">
-            <MudSelect Value="@_uiCulture" ValueChanged="@(async (CultureInfo? culture) => await OnUiCultureChangedAsync(culture))" Disabled="_fromBrowserCulture" Variant="Variant.Outlined">
-                @foreach (CultureInfo culture in LocalizationOptions.SupportedUICultures ?? [])
-                {
-                    <MudSelectItem Value="culture">
+                    <MudSelectItem Value="@ColorTheme.Light">
                         <MudStack AlignItems="AlignItems.Center" Row>
-                            <MudImage Height="30" Src="@Assets[$"/_content/SchulCloud.Frontend/{culture.Name.Replace('-', '_')}.svg"]" Alt="@culture.Name" />
-                            @culture.NativeName
+                            <MudIcon Icon="@MaterialSymbols.Outlined.LightMode" />
+                            @Localizer["theme_LightMode"]
                         </MudStack>
                     </MudSelectItem>
-                }
-            </MudSelect>
-        </MudItem>
-        <div class="end-spacer mud-grid-item mud-grid-item-sm-3 mud-grid-item-md-4 mud-grid-item-lg-6" />     @* Replaces <MudItem xs="0" sm="3" md="4" lg="6" /> because on a component CSS isolation isn't working as it should *@
+                    <MudSelectItem Value="@ColorTheme.Dark">
+                        <MudStack AlignItems="AlignItems.Center" Row>
+                            <MudIcon Icon="@MaterialSymbols.Outlined.DarkMode" />
+                            @Localizer["theme_DarkMode"]
+                        </MudStack>
+                    </MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <div class="end-spacer mud-grid-item mud-grid-item-sm-3 mud-grid-item-md-4 mud-grid-item-lg-6" />     @* Replaces <MudItem xs="0" sm="3" md="4" lg="6" /> because on a component CSS isolation isn't working as it should *@
+        }
     </MudGrid>
 </MudPaper>
