@@ -94,7 +94,10 @@ public sealed partial class Settings : ComponentBase
         RefreshSettings();
     }
 
+
     private void RefreshSettings() => NavigationManager.NavigateToAccountSettings(reload: true, forceLoad: true);
+
+    private string GetFlagImgUrl(CultureInfo culture) => Assets[$"/_content/SchulCloud.Frontend/{culture.Name.Replace('-', '_')}.svg"];
 
     private async Task RefreshSessionAsync()
     {

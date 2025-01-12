@@ -1,10 +1,11 @@
 ﻿@using System.Globalization
+@using SchulCloud.Identity.Enums;
 @using SchulCloud.Frontend.Enums
 @using SchulCloud.Frontend.Options;
 
 @inherits LayoutComponentBase
 
-<MudThemeProvider @bind-IsDarkMode="_isDarkMode" ObserveSystemThemeChange="false" />
+<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="_isDarkMode" ObserveSystemThemeChange="@IsAutoColorTheme" />
 
 <MudLayout>
     <MudAppBar>
@@ -28,18 +29,27 @@
         <MudSpacer />
 
         @{
-            string colorThemeKey = _isDarkMode ? "Light" : "Dark";
+            (string currentIconName, string currentLocKey) = GetColorThemeInfo(_colorTheme);
         }
-        <MudTooltip Class="mx-3" Text="@Localizer[$"selectColorTheme_{colorThemeKey}"]">
-            <MudToggleIconButton Toggled="!_isDarkMode" ToggledChanged="IsDarkMode_ChangedAsync"
-                                 Icon="@MaterialSymbols.Outlined.LightMode" ToggledIcon="@MaterialSymbols.Outlined.DarkMode" />
-        </MudTooltip>
+        <MudMenu Class="mx-3" StartIcon="@currentIconName" Label="@Localizer[currentLocKey]" EndIcon="@MaterialSymbols.Outlined.KeyboardArrowDown">
+            @foreach (ColorTheme theme in Enum.GetValues<ColorTheme>())
+            {
+                (string iconName, string localizerKey) = GetColorThemeInfo(theme);
 
-        <MudMenu Label="@(_culture?.NativeName ?? Localizer["selectCulture_Auto"])" StartIcon="@MaterialSymbols.Outlined.Translate" EndIcon="@MaterialSymbols.Outlined.KeyboardArrowDown">
+                <MudMenuItem OnClick="(async () => await ChangeColorTheme_ClickAsync(theme))">
+                    <MudStack AlignItems="AlignItems.Center" Row>
+                        <MudIcon Icon="@iconName" />
+                        @Localizer[localizerKey]
+                    </MudStack>
+                </MudMenuItem>
+            }
+        </MudMenu>
+
+        <MudMenu Label="@(_culture?.NativeName ?? Localizer["culture_Auto"])" StartIcon="@MaterialSymbols.Outlined.Translate" EndIcon="@MaterialSymbols.Outlined.KeyboardArrowDown">
             <MudMenuItem Disabled="@(_culture is null)" OnClick="@(async () => await ChangeCulture_ClickAsync(null))">
                 <MudStack AlignItems="AlignItems.Center" Row>
                     <MudIcon Icon="@MaterialSymbols.Outlined.Language" />
-                    @Localizer["selectCulture_Auto"]
+                    @Localizer["culture_Auto"]
                 </MudStack>
             </MudMenuItem>
 
@@ -47,7 +57,7 @@
             {
                 <MudMenuItem Disabled="culture.Equals(_culture)" OnClick="@(async () => await ChangeCulture_ClickAsync(culture))">
                     <MudStack AlignItems="AlignItems.Center" Row>
-                        <MudImage Height="30" Src="@Assets[$"/_content/SchulCloud.Frontend/{culture.Name.Replace('-', '_')}.svg"]" Alt="@culture.Name" />
+                        <MudImage Height="30" Src="@GetFlagImgUrl(culture)" Alt="@culture.Name" />
                         @culture.NativeName
                     </MudStack>
                 </MudMenuItem>

@@ -100,16 +100,19 @@
   <data name="signInLink" xml:space="preserve">
     <value>Anmelden</value>
   </data>
-  <data name="selectColorTheme_Light" xml:space="preserve">
-    <value>Hell</value>
-  </data>
-  <data name="selectColorTheme_Dark" xml:space="preserve">
-    <value>Dunkel</value>
-  </data>
-  <data name="selectCulture_Auto" xml:space="preserve">
+  <data name="culture_Auto" xml:space="preserve">
     <value>Automatisch</value>
   </data>
   <data name="privacyLink" xml:space="preserve">
     <value>Datenschutzrichtlinie</value>
+  </data>
+  <data name="theme_AutoMode" xml:space="preserve">
+    <value>Automatisch</value>
+  </data>
+  <data name="theme_LightMode" xml:space="preserve">
+    <value>Hell</value>
+  </data>
+  <data name="theme_DarkMode" xml:space="preserve">
+    <value>Dunkel</value>
   </data>
 </root>

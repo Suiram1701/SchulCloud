@@ -2,7 +2,7 @@
 
 @inherits LayoutComponentBase
 
-<MudThemeProvider @ref="_themeProvider" ObserveSystemThemeChange="_isAutoThemeMode" IsDarkMode="_isDarkMode" />
+<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="_isDarkMode" ObserveSystemThemeChange="_isAutoThemeMode" />
 
 <MudLayout>
     <MudAppBar Elevation="1" Dense>

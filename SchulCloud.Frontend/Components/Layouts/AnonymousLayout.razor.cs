@@ -6,6 +6,8 @@ using SchulCloud.Identity.Enums;
 using SchulCloud.Frontend.Options;
 using SchulCloud.Frontend.Services.Interfaces;
 using System.Globalization;
+using MudBlazor.FontIcons.MaterialSymbols;
+using MudBlazor;
 
 namespace SchulCloud.Frontend.Components.Layouts;
 
@@ -33,7 +35,12 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
 
     private RequestLocalizationOptions LocalizationOptions => LocalizationOptionsAccessor.Value;
 
+    private MudThemeProvider _themeProvider = default!;
+
+    private bool IsAutoColorTheme => _colorTheme == ColorTheme.Auto;
     private bool _isDarkMode;
+
+    private ColorTheme _colorTheme;
     private CultureInfo? _culture;
 
     private PersistingComponentStateSubscription? _stateSubscription;
@@ -45,15 +52,14 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
     {
         if (HttpContext is not null)
         {
-            ColorTheme colorTheme = await UserPreferences.GetPreferredColorThemeAsync();
-            _isDarkMode = colorTheme == ColorTheme.Dark;
+            _colorTheme = await UserPreferences.GetPreferredColorThemeAsync();
 
             RequestCulture? cultures = await UserPreferences.GetPreferredCulturesAsync();
             _culture = cultures?.UICulture;
 
             _stateSubscription = ComponentState.RegisterOnPersisting(() =>
             {
-                ComponentState.PersistAsJson(nameof(_isDarkMode), _isDarkMode);
+                ComponentState.PersistAsJson(nameof(_colorTheme), _colorTheme);
                 ComponentState.PersistAsJson(nameof(_culture), _culture?.ToString());
 
                 return Task.CompletedTask;
@@ -61,7 +67,7 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
         }
         else
         {
-            ComponentState.TryTakeFromJson(nameof(_isDarkMode), out _isDarkMode);
+            ComponentState.TryTakeFromJson(nameof(_colorTheme), out _colorTheme);
             if (ComponentState.TryTakeFromJson(nameof(_culture), out string? culture))
             {
                 if (!string.IsNullOrEmpty(culture))
@@ -70,15 +76,34 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
                 }
             }
         }
+
+        _isDarkMode = _colorTheme == ColorTheme.Dark;
     }
 
-    private async Task IsDarkMode_ChangedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _isDarkMode = !_isDarkMode;
+        if (firstRender && IsAutoColorTheme)
+        {
+            _isDarkMode = await _themeProvider.GetSystemPreference();
+            StateHasChanged();
 
-        ColorTheme theme = _isDarkMode
-            ? ColorTheme.Dark
-            : ColorTheme.Light;
+            await _themeProvider.WatchSystemPreference(darkMode =>
+            {
+                _isDarkMode = darkMode;
+                StateHasChanged();
+
+                return Task.CompletedTask;
+            });
+        }
+    }
+
+    private async Task ChangeColorTheme_ClickAsync(ColorTheme theme)
+    {
+        _colorTheme = theme;
+        _isDarkMode = _colorTheme == ColorTheme.Auto
+            ? await _themeProvider.GetSystemPreference()
+            : _colorTheme == ColorTheme.Dark;
+
         await UserPreferences.SetPreferredColorThemeAsync(theme);
     }
 
@@ -91,6 +116,18 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
 
         NavigationManager.Refresh(forceReload: true);
     }
+
+    private static (string icon, string localizerKey) GetColorThemeInfo(ColorTheme theme)
+    {
+        string icon = theme == ColorTheme.Auto
+            ? Outlined.Contrast
+            : $"material-symbols-outlined/{theme}_mode".ToLowerInvariant();
+        string key = $"theme_{theme}Mode";
+
+        return (icon, key);
+    }
+
+    private string GetFlagImgUrl(CultureInfo culture) => Assets[$"/_content/SchulCloud.Frontend/{culture.Name.Replace('-', '_')}.svg"];
 
     public void Dispose()
     {
