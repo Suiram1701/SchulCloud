@@ -127,7 +127,7 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
         return (icon, key);
     }
 
-    private string GetFlagImgUrl(CultureInfo culture) => Assets[$"/_content/SchulCloud.Frontend/{culture.Name.Replace('-', '_')}.svg"];
+    private string GetFlagImgUrl(CultureInfo culture) => Assets[$"/_content/flags/{culture.Name.Replace('-', '_')}.svg"];
 
     public void Dispose()
     {

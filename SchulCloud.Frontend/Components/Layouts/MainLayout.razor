@@ -1,4 +1,5 @@
 ﻿@using SchulCloud.Frontend.Options
+@using SchulCloud.Frontend.Extensions;
 
 @inherits LayoutComponentBase
 
@@ -9,9 +10,7 @@
         <MudIconButton Icon="@MaterialSymbols.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleMenu_Click" />
 
         @{
-            PresentationOptions.Favicon? favicon = PresentationOptionsAccessor.Value.Favicons.FirstOrDefault(fav => fav.Sizes == "any");
-            favicon ??= PresentationOptionsAccessor.Value.Favicons.FirstOrDefault();
-
+            PresentationOptions.Favicon? favicon = PresentationOptionsAccessor.Value.GetBestFavicon();
             if (favicon is not null)
             {
                 <MudImage Class="mx-2" Src="@favicon.Path" Width="40" Fluid />

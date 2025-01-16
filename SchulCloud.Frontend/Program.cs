@@ -113,7 +113,12 @@ public class Program
             app.UseHsts();
         }
 
+        app.Use(async (context, next) =>
+        {
+            await next(context);
+        });
         app.MapStaticAssets();
+        app.UseFaviconRedirect();
 
         app.UseHttpsRedirection();
         app.UseStatusCodePagesWithReExecute("/error/{0}");

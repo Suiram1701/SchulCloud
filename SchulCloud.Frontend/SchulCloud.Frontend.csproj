@@ -35,32 +35,40 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="BlazorRoutesGenerator.config.json" />
+    <AdditionalFiles Include="BlazorRoutesGenerator.config.json" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
-  <Target Name="PrepareAssets" AfterTargets="Build">
-    <ItemGroup>
-      <Assets Include="wwwroot\**\*" />
+  <ItemGroup>
+	<Content Update="package-lock.json" CopyToOutputDirectory="Never" />
+	<Content Update="package.json" CopyToOutputDirectory="Never" />
+	<Content Update="tsconfig.json" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+  <!-- Exclude every else web asset excluding _content -->
+  <ItemGroup>
+    <Content Remove="wwwroot/**" />
+    <Content Include="wwwroot/_content/**/*" />
+    <None Include="wwwroot/**/*" />
+  </ItemGroup>
+
+  <!-- Copies assets from wwwroot/ to wwwroot/_content/ -->
+  <Target Name="_SetupWebAssets" AfterTargets="BeforeBuild">
+	<ItemGroup>
+      <WebAssets Include="wwwroot\**\*" Exclude="wwwroot\_content\**\*" />
     </ItemGroup>
 	  
-    <RemoveDir Directories="wwwroot\_content\" ContinueOnError="true" />
-    <Copy SourceFiles="@(Assets)" DestinationFolder="wwwroot\_content\$(PackageId)\" />
-    <Copy SourceFiles="$(IntermediateOutputPath)scopedcss\bundle\$(PackageId).styles.css" DestinationFiles="wwwroot\_content\$(PackageId)\$(PackageId).styles.css" />
+    <Copy SourceFiles="@(WebAssets)" DestinationFolder="wwwroot\_content\%(RecursiveDir)" />
   </Target>
 
-  <Target Name="TranspileTypeScript" AfterTargets="Build">
+  <!-- Copies isolated css file into the asset structure -->
+  <Target Name="_CopyIsolatedCSS" AfterTargets="Build">
+    <Copy SourceFiles="$(IntermediateOutputPath)scopedcss\bundle\$(PackageId).styles.css"
+          DestinationFiles="wwwroot\_content\$(PackageId).styles.css" />
+  </Target>
+
+  <Target Name="_TranspileTypeScript" AfterTargets="Build">
     <Exec Command="npm install" WorkingDirectory=".\" />
     <Exec Command="set NODE_ENV=$(Configuration) %26%26 npx rollup -c" WorkingDirectory=".\" />
   </Target>
-
-  <ItemGroup>
-	  <Content Update="package-lock.json" CopyToOutputDirectory="Never" />
-    <Content Update="package.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
-    <Content Update="tsconfig.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
     
 </Project>
