@@ -12,7 +12,7 @@ public sealed partial class RenameDialog : ComponentBase
     #endregion
 
     [CascadingParameter]
-    private MudDialogInstance DialogInstance { get; set; } = default!;
+    private IMudDialogInstance DialogInstance { get; set; } = default!;
 
     private MudForm _renameForm = default!;
     private string _newName = string.Empty;

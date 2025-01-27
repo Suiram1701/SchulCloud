@@ -10,7 +10,7 @@ export default {
     },
     output: [
         {
-            name: 'Frontend',
+            name: 'SchulCloud',
             dir: outputDir,
             entryFileNames: '[name].min.js',
             format: 'iife',

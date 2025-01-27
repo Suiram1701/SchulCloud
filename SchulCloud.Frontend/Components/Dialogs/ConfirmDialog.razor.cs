@@ -12,7 +12,7 @@ public sealed partial class ConfirmDialog
     #endregion
 
     [CascadingParameter]
-    private MudDialogInstance DialogInstance { get; set; } = default!;
+    private IMudDialogInstance DialogInstance { get; set; } = default!;
 
     [Parameter]
     public string Message { get; set; } = default!;
