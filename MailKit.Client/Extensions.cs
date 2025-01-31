@@ -32,11 +32,10 @@ public static class Extensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var settings = new MailKitClientSettings();
+        MailKitClientSettings settings = new();
         builder.Configuration
                .GetSection(configurationSectionName)
                .Bind(settings);
-
         if (builder.Configuration.GetConnectionString(connectionName) is string connectionString)
         {
             settings.ParseConnectionString(connectionString);
@@ -55,7 +54,7 @@ public static class Extensions
         if (settings.DisableHealthChecks is false)
         {
             builder.Services.AddHealthChecks()
-                .AddCheck<MailKitHealthCheck>(serviceKey is null ? "MailKit" : $"MailKit_{connectionName}", default, []);
+                .AddCheck<MailKitHealthCheck>(serviceKey is null ? "MailKit" : $"MailKit_{connectionName}");
         }
 
         if (settings.DisableTracing is false)

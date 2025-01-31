@@ -1,4 +1,5 @@
 using Aspire.Hosting.MailDev;
+using Aspire.Hosting.MinIO;
 using SchulCloud.AppHost.Extensions;
 using SchulCloud.ServiceDefaults;
 
@@ -13,10 +14,13 @@ public class Program
         IResourceBuilder<PostgresServerResource> postgresServer = builder.AddPostgresServer("postgres-server");
         IResourceBuilder<PostgresDatabaseResource> identityDb = postgresServer.AddDatabase(ResourceNames.IdentityDatabase);
 
+        IResourceBuilder<MinIOResource> minIOStorage = builder.AddMinIO(ResourceNames.MinIOStorage);
+
         IResourceBuilder<MailDevResource> mailDev = builder.AddMailDev(ResourceNames.MailServer);
 
         IResourceBuilder<ProjectResource> webFrontend = builder.AddProject<Projects.SchulCloud_Frontend>("web-frontend")
             .WithReference(identityDb)
+            .WithReference(minIOStorage)
             .WithReference(mailDev)
             .WaitFor(identityDb)
             .WaitFor(mailDev)     // The MailKit health check fails if mail dev isn't available on start.
@@ -26,6 +30,7 @@ public class Program
         IResourceBuilder<ProjectResource> restApi = builder.AddProject<Projects.SchulCloud_RestApi>("rest-api")
             .WithReference(identityDb)
             .WaitFor(identityDb)
+            .WithReference(minIOStorage)
             .WithDefaultHealthChecks()
             .WithDefaultCommands();
 

@@ -7,5 +7,7 @@ public static class ResourceNames
 {
     public const string IdentityDatabase = "identity-db";
 
+    public const string MinIOStorage = "minio-storage";
+
     public const string MailServer = "maildev";
 }

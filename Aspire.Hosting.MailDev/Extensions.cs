@@ -12,6 +12,9 @@ public static class Extensions
         IResourceBuilder<ParameterResource>? username = null,
         IResourceBuilder<ParameterResource>? password = null)
     {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
         ParameterResource passwordParameter = password?.Resource
             ?? ParameterResourceBuilderExtensions.CreateDefaultPasswordParameter(builder, $"{name}-password");
 

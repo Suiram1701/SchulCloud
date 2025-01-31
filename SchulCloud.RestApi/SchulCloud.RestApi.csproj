@@ -33,8 +33,4 @@
 	<Using Include="SchulCloud.RestApi.Pagination" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ModelValidators\" />
-  </ItemGroup>
-
 </Project>

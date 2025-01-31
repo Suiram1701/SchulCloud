@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Aspire.Hosting.MinIO\Aspire.Hosting.MinIO.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\SchulCloud.DbManager\SchulCloud.DbManager.csproj" />
     <ProjectReference Include="..\SchulCloud.Frontend\SchulCloud.Frontend.csproj" />
     <ProjectReference Include="..\Aspire.Hosting.MailDev\Aspire.Hosting.MailDev.csproj" IsAspireProjectResource="false" />

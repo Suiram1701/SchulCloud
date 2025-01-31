@@ -45,7 +45,7 @@ public sealed class MailKitClientSettings
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new InvalidOperationException(
-                $"The connection string is missing. " +
+                "The connection string is missing. " +
                 $"It should be provided in 'ConnectionStrings:<connectionName> or '{_defaultConfigSectionName}:Endpoint' configuration section.'");
         }
 
@@ -72,7 +72,7 @@ public sealed class MailKitClientSettings
                 Endpoint = endpoint;
             }
 
-            if (builder.TryGetValue("Username", out object? username) && builder.TryGetValue("password", out object? password))
+            if (builder.TryGetValue("Username", out object? username) && builder.TryGetValue("Password", out object? password))
             {
                 Credentials = new(username.ToString(), password.ToString());
             }
