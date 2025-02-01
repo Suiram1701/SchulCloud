@@ -3,11 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SchulCloud.Authorization;
+using SchulCloud.FileStorage.Abstractions;
 using SchulCloud.Identity.Abstractions;
 using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
 using SchulCloud.Identity.Options;
 using SchulCloud.Identity.Services.Abstractions;
+using SixLabors.ImageSharp;
 using System.Globalization;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -74,6 +76,11 @@ public partial class AppUserManager<TUser>(
     /// Indicates whether the internal store supports user api keys.
     /// </summary>
     public virtual bool SupportsUserApiKeys => SupportsStore<IUserApiKeyStore<TUser>>();
+
+    /// <summary>
+    /// Indicates whether the internal store supports profile images.
+    /// </summary>
+    public virtual bool SupportsProfileImages => _services.GetService<IProfileImageStore<TUser>>() is not null;
 
     /// <summary>
     /// Gets a flag that indicates whether a user has passkey sign ins enabled.
@@ -723,6 +730,76 @@ public partial class AppUserManager<TUser>(
         await store.RemoveApiKeyAsync(apiKey, CancellationToken);
 
         return await UpdateSecurityStampAsync(user);
+    }
+
+    /// <summary>
+    /// Retrieves the profile image of a certain user.
+    /// </summary>
+    /// <param name="user">The user to get the profile image of.</param>
+    /// <returns>The profile image. If <c>null</c> not image is available.</returns>
+    public virtual async Task<Stream?> GetProfileImageAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IProfileImageStore<TUser> store = _services.GetRequiredService<IProfileImageStore<TUser>>();
+        return await store.GetImageAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Updates the profile image of a certain user.
+    /// </summary>
+    /// <remarks>
+    /// The image will be automatically converted into PNG format. Acceptable formats are PNG, QOI, PBM, BMP, WebP, JPEG, GIF, TGA and TIFF.
+    /// If none of the acceptable formats could be read from the stream an IdentityError with code <c>Bad Image</c> will be returned.
+    /// </remarks>
+    /// <param name="user">The user to update the image of.</param>
+    /// <param name="image">The new image to set.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> UpdateProfileImageAsync(TUser user, Stream image)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(image);
+
+        using MemoryStream pngStream = new();
+        try
+        {
+            using Image img = await Image.LoadAsync(image, CancellationToken).ConfigureAwait(false);
+            await img.SaveAsPngAsync(pngStream, CancellationToken).ConfigureAwait(false);
+            pngStream.Seek(0, SeekOrigin.Begin);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogInformation(ex, "Could not load image.");
+
+            return IdentityResult.Failed(new IdentityError
+            {
+                Code = "Bad Image",
+                Description = "Invalid image format"
+            });
+        }
+
+        IProfileImageStore<TUser> store = _services.GetRequiredService<IProfileImageStore<TUser>>();
+        await store.UpdateImageAsync(user, pngStream, CancellationToken).ConfigureAwait(false);
+
+        return IdentityResult.Success;
+    }
+
+    /// <summary>
+    /// Removes the profile image of a certain user.
+    /// </summary>
+    /// <param name="user">The user to remove the image of.</param>
+    /// <returns>The result of the operation.</returns>
+    public virtual async Task<IdentityResult> RemoveProfileImageAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        IProfileImageStore<TUser> store = _services.GetRequiredService<IProfileImageStore<TUser>>();
+        await store.RemoveImageAsync(user, CancellationToken).ConfigureAwait(false);
+
+        return IdentityResult.Success;
     }
 
     private IUserPasskeysStore<TUser> GetPasskeysStore() => GetStoreBase<IUserPasskeysStore<TUser>>();

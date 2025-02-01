@@ -14,7 +14,7 @@ internal sealed class AwsS3HealthCheck(AwsS3ClientFactory factory) : IHealthChec
     {
         try
         {
-            IAmazonS3 client = await factory.GetS3Client();
+            IAmazonS3 client = factory.GetS3Client();
             _ = await client.ListBucketsAsync(cancellationToken);     // A simple test whether the server responds
 
             return HealthCheckResult.Healthy();

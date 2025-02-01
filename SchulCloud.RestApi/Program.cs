@@ -1,3 +1,4 @@
+using AwsS3.Client;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.Options;
@@ -6,6 +7,7 @@ using SchulCloud.Authorization.Extensions;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
 using SchulCloud.Database.Models;
+using SchulCloud.FileStorage.S3;
 using SchulCloud.Identity;
 using SchulCloud.Identity.Services;
 using SchulCloud.RestApi.Extensions;
@@ -27,10 +29,12 @@ internal class Program
             .ConfigureIdentity();
 
         builder.AddAspirePostgresDb<AppDbContext>(ResourceNames.IdentityDatabase);
+        builder.AddMinIOAwsClient(ResourceNames.MinIOStorage);
 
         builder.Services.AddIdentityCore<AppUser>()
             .AddRoles<AppRole>()
             .AddSchulCloudEntityFrameworkStores<AppDbContext>()
+            .AddS3ProfileImageStorage()
             .AddManagers()
             .AddApiKeysService<ApiKeyService>();
         builder.ConfigureIdentity();

@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SchulCloud.Authentication\SchulCloud.Authentication.csproj" />
     <ProjectReference Include="..\SchulCloud.Database\SchulCloud.Database.csproj" />
+    <ProjectReference Include="..\SchulCloud.FileStorage.S3\SchulCloud.FileStorage.S3.csproj" />
     <ProjectReference Include="..\SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj" />
     <ProjectReference Include="..\SchulCloud.Identity\SchulCloud.Identity.csproj" />
   </ItemGroup>
