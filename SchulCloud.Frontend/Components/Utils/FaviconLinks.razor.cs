@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using SchulCloud.Frontend.Options;
 
-namespace SchulCloud.Frontend.Components;
+namespace SchulCloud.Frontend.Components.Utils;
 
 public partial class FaviconLinks : ComponentBase
 {

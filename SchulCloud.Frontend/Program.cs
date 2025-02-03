@@ -1,3 +1,4 @@
+using AwsS3.Client;
 using Blazored.LocalStorage;
 using MailKit.Client;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -11,6 +12,7 @@ using Quartz.AspNetCore;
 using SchulCloud.Authorization.Extensions;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
+using SchulCloud.FileStorage.S3;
 using SchulCloud.Frontend.CircuitHandlers;
 using SchulCloud.Frontend.Components;
 using SchulCloud.Frontend.Extensions;
@@ -40,10 +42,12 @@ public class Program
         builder.Services.AddMemoryCache();
 
         builder.AddAspirePostgresDb<AppDbContext>(ResourceNames.IdentityDatabase, pooledService: false);
+        builder.AddMinIOAwsClient(ResourceNames.MinIOStorage);
         builder.AddMailKitClient(ResourceNames.MailServer);
 
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddSchulCloudEntityFrameworkStores<AppDbContext>()
+            .AddS3ProfileImageStorage()
             .ConfigureDefaultIdentityCookies()
             .AddManagers()
             .AddApiKeysService<ApiKeyService>()

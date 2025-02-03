@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using SchulCloud.Frontend.Options;
 using System.Globalization;
 
-namespace SchulCloud.Frontend.Components;
+namespace SchulCloud.Frontend.Components.Utils;
 
 public sealed partial class CookieConsent : ComponentBase
 {

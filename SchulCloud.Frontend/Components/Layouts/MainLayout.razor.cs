@@ -5,13 +5,15 @@ using Microsoft.Extensions.Options;
 using MudBlazor;
 using SchulCloud.Frontend.Options;
 using SchulCloud.Identity.Enums;
-using System.Security.Claims;
 
 namespace SchulCloud.Frontend.Components.Layouts;
 
 public sealed partial class MainLayout : LayoutComponentBase
 {
     #region Injections
+    [Inject]
+    private ILogger<MainLayout> Logger { get; set; } = default!;
+
     [Inject]
     private IStringLocalizer<MainLayout> Localizer { get; set; } = default!;
 
@@ -24,7 +26,7 @@ public sealed partial class MainLayout : LayoutComponentBase
 
     private MudThemeProvider _themeProvider = default!;
 
-    private ClaimsPrincipal _user = default!;
+    private ApplicationUser _user = default!;
     private bool _drawerOpen = false;
 
     private bool _isAutoThemeMode;
@@ -36,9 +38,19 @@ public sealed partial class MainLayout : LayoutComponentBase
     protected override async Task OnInitializedAsync()
     {
         AuthenticationState state = await AuthenticationState;
-        _user = state.User;
 
-        ColorTheme theme = UserManager.GetColorTheme(_user);
+        try
+        {
+            Logger.LogDebug("Wait for semaphore");
+            Logger.LogDebug("Entered semaphore");
+            _user = (await UserManager.GetUserAsync(state.User))!;
+        }
+        finally
+        {
+            Logger.LogDebug("Released semaphore");
+        }
+
+        ColorTheme theme = UserManager.GetColorTheme(state.User);
         _isAutoThemeMode = theme == ColorTheme.Auto;
         _isDarkMode = theme == ColorTheme.Dark;
     }
@@ -64,6 +76,4 @@ public sealed partial class MainLayout : LayoutComponentBase
     {
         _drawerOpen = !_drawerOpen;
     }
-
-    private static string NameToDisplayedAvatar(string username) => string.Concat(username.Split(' ', 2).Select(part => part.First()));
 }

@@ -1,0 +1,13 @@
+﻿@using System.Net.Mime
+
+<MudAvatar Size="Size.Medium">
+    @if (!string.IsNullOrEmpty(_base64ProfileImage))
+    {
+        <MudImage Src="@($"data:{MediaTypeNames.Image.Png};base64,{_base64ProfileImage}")" />
+    }
+    else
+    {
+        @NameToDisplayedAvatar(_username ?? string.Empty)
+    }
+</MudAvatar>
+<MudText Class="ml-2" Typo="Typo.subtitle1"><b>@_username</b></MudText>

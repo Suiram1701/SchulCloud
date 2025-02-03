@@ -20,8 +20,10 @@ public class Program
 
         IResourceBuilder<ProjectResource> webFrontend = builder.AddProject<Projects.SchulCloud_Frontend>("web-frontend")
             .WithReference(identityDb)
+            .WithReference(minIOStorage)
             .WithReference(mailDev)
             .WaitFor(identityDb)
+            .WaitFor(minIOStorage)
             .WaitFor(mailDev)     // The MailKit health check fails if mail dev isn't available on start.
             .WithDefaultHealthChecks()
             .WithDefaultCommands();

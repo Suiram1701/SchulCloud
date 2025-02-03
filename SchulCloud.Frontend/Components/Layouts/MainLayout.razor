@@ -22,12 +22,7 @@
         <MudMenu AnchorOrigin="Origin.BottomRight">
             <ActivatorContent>
                 <MudButton>
-                    @{
-                        string username = UserManager.GetUserName(_user)!;
-                    }
-                    <MudAvatar Size="Size.Medium">@NameToDisplayedAvatar(username)</MudAvatar>
-                    <MudText Class="ml-2" Typo="Typo.subtitle1"><b>@username</b></MudText>
-
+                    <UserCard User="_user" />
                     <MudIcon Icon="@MaterialSymbols.Outlined.ArrowDropDown" />
                 </MudButton>
             </ActivatorContent>
