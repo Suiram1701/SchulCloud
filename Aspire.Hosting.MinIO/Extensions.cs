@@ -14,9 +14,9 @@ public static class Extensions
     /// <param name="username">The admin username of MinIO.</param>
     /// <param name="password">The admin password of MinIO.</param>
     /// <returns>The resource builder.</returns>
-    public static IResourceBuilder<MinIOResource> AddMinIO(
+    public static IResourceBuilder<MinIOServerResource> AddMinIO(
         this IDistributedApplicationBuilder builder,
-        string name,
+        [ResourceName] string name,
         int? httpPort = null,
         IResourceBuilder<ParameterResource>? username = null,
         IResourceBuilder<ParameterResource>? password = null)
@@ -27,7 +27,7 @@ public static class Extensions
         ParameterResource usernameResource = username?.Resource ?? ParameterResourceBuilderExtensions.CreateGeneratedParameter(builder, $"{name}-Username", secret: false, new());
         ParameterResource passwordResource = password?.Resource ?? ParameterResourceBuilderExtensions.CreateDefaultPasswordParameter(builder, $"{name}-Password");
 
-        MinIOResource minIO = new(name, usernameResource, passwordResource);
+        MinIOServerResource minIO = new(name, usernameResource, passwordResource);
         return builder.AddResource(minIO)
             .WithImage("minio/minio", tag: "RELEASE.2025-01-20T14-49-07Z")
             .WithImageRegistry("docker.io")
@@ -46,7 +46,7 @@ public static class Extensions
     /// <param name="builder">The MinIO container to add this to.</param>
     /// <param name="port">The exposed http port of the web interface</param>
     /// <returns>The resource builder.</returns>
-    public static IResourceBuilder<MinIOResource> WithConsole(this IResourceBuilder<MinIOResource> builder, int? port = null)
+    public static IResourceBuilder<MinIOServerResource> WithConsole(this IResourceBuilder<MinIOServerResource> builder, int? port = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -62,9 +62,30 @@ public static class Extensions
     /// <param name="name">The name of the volume.</param>
     /// <param name="isReadOnly">Specified whether the volume if read only.</param>
     /// <returns>The resource builder.</returns>
-    public static IResourceBuilder<MinIOResource> WithDataVolume(this IResourceBuilder<MinIOResource> builder, string? name = null, bool isReadOnly = false)
+    public static IResourceBuilder<MinIOServerResource> WithDataVolume(this IResourceBuilder<MinIOServerResource> builder, string? name = null, bool isReadOnly = false)
     {
         ArgumentNullException.ThrowIfNull(builder);
         return builder.WithVolume(name ?? VolumeNameGenerator.Generate(builder, "data"), "/var/lib/minio/data", isReadOnly);
+    }
+
+    /// <summary>
+    /// Adds a new <see cref="MinIOBucketResource"/> referring to a specific bucket.
+    /// </summary>
+    /// <remarks>
+    /// If a bucket with the name <paramref name="bucketName"/> is already registered an <see cref="InvalidOperationException"/> will be thrown.
+    /// </remarks>
+    /// <param name="builder">The parent MinIO server.</param>
+    /// <param name="name">The name of this resource.</param>
+    /// <param name="bucketName">The name of the bucket. If <c>null</c> <paramref name="name"/> will be used.</param>
+    /// <returns>The resource builder of this bucket.</returns>
+    public static IResourceBuilder<MinIOBucketResource> AddBucket(this IResourceBuilder<MinIOServerResource> builder, string name, string? bucketName = null)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        bucketName ??= name;
+
+        builder.Resource.AddBucket(name, bucketName);
+        MinIOBucketResource bucket = new(name, bucketName, builder.Resource);
+        return builder.ApplicationBuilder.AddResource(bucket);
     }
 }

@@ -10,6 +10,11 @@ namespace AwsS3.Client;
 /// <param name="settings">Settings to use for client construction.</param>
 public sealed class AwsS3ClientFactory(ILogger<AwsS3ClientFactory> logger, AwsS3ClientSettings settings) : IDisposable
 {
+    /// <summary>
+    /// The settings this factory uses.
+    /// </summary>
+    public AwsS3ClientSettings Settings => settings;
+
     private AmazonS3Client? _client;
 
     /// <summary>

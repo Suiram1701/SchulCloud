@@ -22,6 +22,11 @@ public class AwsS3ClientSettings
     public AmazonS3Config AwsS3Config { get; set; } = new();
 
     /// <summary>
+    /// The name of the bucket to use.
+    /// </summary>
+    public string? BucketName { get; set; }
+
+    /// <summary>
     /// Indicates whether health checks should be disabled.
     /// </summary>
     public bool DisableHealthChecks { get; set; }
@@ -55,6 +60,10 @@ public class AwsS3ClientSettings
         if (builder.TryGetValue("Username", out object? username) && builder.TryGetValue("Password", out object? password))
         {
             Credentials = new(username.ToString(), password.ToString());
+        }
+        if (builder.TryGetValue("Bucket", out object? bucketName))
+        {
+            BucketName = bucketName.ToString();
         }
     }
 }

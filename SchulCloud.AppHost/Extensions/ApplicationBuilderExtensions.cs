@@ -31,7 +31,7 @@ internal static class ApplicationBuilderExtensions
         return builder.AddMailDev(name, username: username, password: password);
     }
 
-    public static IResourceBuilder<MinIOResource> AddMinIO(this IDistributedApplicationBuilder builder, string name)
+    public static IResourceBuilder<MinIOServerResource> AddMinIO(this IDistributedApplicationBuilder builder, string name)
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);

@@ -42,7 +42,7 @@ public class Program
         builder.Services.AddMemoryCache();
 
         builder.AddAspirePostgresDb<AppDbContext>(ResourceNames.IdentityDatabase, pooledService: false);
-        builder.AddMinIOAwsClient(ResourceNames.MinIOStorage);
+        builder.AddMinIOAwsClient(ResourceNames.SchulCloudStorage);
         builder.AddMailKitClient(ResourceNames.MailServer);
 
         IdentityBuilder identityBuilder = builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()

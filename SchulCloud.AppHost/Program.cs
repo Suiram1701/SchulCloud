@@ -14,31 +14,34 @@ public class Program
         IResourceBuilder<PostgresServerResource> postgresServer = builder.AddPostgresServer("postgres-server");
         IResourceBuilder<PostgresDatabaseResource> identityDb = postgresServer.AddDatabase(ResourceNames.IdentityDatabase);
 
-        IResourceBuilder<MinIOResource> minIOStorage = builder.AddMinIO(ResourceNames.MinIOStorage);
+        IResourceBuilder<MinIOServerResource> minIOStorage = builder.AddMinIO("minio-server");
+        IResourceBuilder<MinIOBucketResource> schulcloudBucket = minIOStorage.AddBucket(ResourceNames.SchulCloudStorage);
 
         IResourceBuilder<MailDevResource> mailDev = builder.AddMailDev(ResourceNames.MailServer);
 
         IResourceBuilder<ProjectResource> webFrontend = builder.AddProject<Projects.SchulCloud_Frontend>("web-frontend")
             .WithReference(identityDb)
-            .WithReference(minIOStorage)
+            .WithReference(schulcloudBucket)
             .WithReference(mailDev)
             .WaitFor(identityDb)
-            .WaitFor(minIOStorage)
-            .WaitFor(mailDev)     // The MailKit health check fails if mail dev isn't available on start.
+            .WaitFor(schulcloudBucket)
+            .WaitFor(mailDev)
             .WithDefaultHealthChecks()
             .WithDefaultCommands();
 
         IResourceBuilder<ProjectResource> restApi = builder.AddProject<Projects.SchulCloud_RestApi>("rest-api")
             .WithReference(identityDb)
-            .WithReference(minIOStorage)
+            .WithReference(schulcloudBucket)
             .WaitFor(identityDb)
-            .WaitFor(minIOStorage)
+            .WaitFor(schulcloudBucket)
             .WithDefaultHealthChecks()
             .WithDefaultCommands();
 
         builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
             .WithReference(identityDb)
+            .WithReference(schulcloudBucket)
             .WaitFor(identityDb)
+            .WaitFor(schulcloudBucket)
             .WithDefaultHealthChecks()
             .WithDefaultCommands()
             .WithDbManagerCommands();
@@ -46,6 +49,7 @@ public class Program
         builder.AddYarp("gateway")
             .WithEndpoint(scheme: "http", port: 8000)
             .WithEndpoint(scheme: "https", port: 8001)
+            .WithExternalHttpEndpoints()
             .WithReference(webFrontend)
             .WithReference(restApi)
             .LoadFromConfiguration("ReverseProxy");

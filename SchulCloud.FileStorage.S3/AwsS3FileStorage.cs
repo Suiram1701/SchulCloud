@@ -9,6 +9,17 @@ using System.Net.Mime;
 
 namespace SchulCloud.FileStorage.S3;
 
+/// <summary>
+/// An implementation file storage stores that will use an AWS S3 bucket.
+/// </summary>
+/// <typeparam name="TUser">The type of user.</typeparam>
+/// <param name="logger">A logger this instance will use.</param>
+/// <param name="configuration">
+/// A configuration that will be used if the bucket name is not set by <c><paramref name="clientFactory"/>.Settings</c>. 
+/// The bucket name will be retrieved from the configuration key <c>S3:BucketName</c>.
+/// </param>
+/// <param name="clientFactory">The client factory to get the AWS S3 client.</param>
+/// <param name="userManager">A user manager that will be used to get information from user instances.</param>
 public partial class AwsS3FileStorage<TUser>(
     ILogger<AwsS3FileStorage<TUser>> logger,
     IConfiguration configuration,
@@ -16,8 +27,11 @@ public partial class AwsS3FileStorage<TUser>(
     UserManager<TUser> userManager) : IProfileImageStore<TUser>
     where TUser : class
 {
-    private readonly string _bucketName = configuration["S3:BucketName"]
-        ?? throw new ArgumentNullException("Bucket configuration through 'S3:BucketName' is missing.");
+    /// <summary>
+    /// The name of the bucket this storage will use.
+    /// </summary>
+    public string BucketName => clientFactory.Settings.BucketName ?? GetBucketNameFromConfig();
+
     private readonly IAmazonS3 _client = clientFactory.GetS3Client();
 
     public async Task<Stream?> GetImageAsync(TUser user, CancellationToken ct)
@@ -29,7 +43,7 @@ public partial class AwsS3FileStorage<TUser>(
         string objectKey = GetProfileImageObjectKey(userId);
         try
         {
-            GetObjectResponse response = await _client.GetObjectAsync(_bucketName, objectKey, ct).ConfigureAwait(false);
+            GetObjectResponse response = await _client.GetObjectAsync(BucketName, objectKey, ct).ConfigureAwait(false);
             return response.ResponseStream;
         }
         catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
@@ -38,7 +52,7 @@ public partial class AwsS3FileStorage<TUser>(
         }
         catch (AmazonS3Exception ex)
         {
-            LogAwsS3Exception(logger, ex, _bucketName, objectKey);
+            LogAwsS3Exception(logger, ex, BucketName, objectKey);
             throw;
         }
     }
@@ -56,14 +70,14 @@ public partial class AwsS3FileStorage<TUser>(
             _ = await _client.PutObjectAsync(new()
             {
                 Key = objectKey,
-                BucketName = _bucketName,
+                BucketName = BucketName,
                 InputStream = image,
                 ContentType = MediaTypeNames.Image.Png
             }, ct).ConfigureAwait(false);
         }
         catch (AmazonS3Exception ex)
         {
-            LogAwsS3Exception(logger, ex, _bucketName, objectKey);
+            LogAwsS3Exception(logger, ex, BucketName, objectKey);
             throw;
         }
     }
@@ -77,14 +91,16 @@ public partial class AwsS3FileStorage<TUser>(
         string objectKey = GetProfileImageObjectKey(userId);
         try
         {
-            _ = await _client.DeleteObjectAsync(_bucketName, objectKey, ct).ConfigureAwait(false);
+            _ = await _client.DeleteObjectAsync(BucketName, objectKey, ct).ConfigureAwait(false);
         }
         catch (AmazonS3Exception ex)
         {
-            LogAwsS3Exception(logger, ex, _bucketName, objectKey);
+            LogAwsS3Exception(logger, ex, BucketName, objectKey);
             throw;
         }
     }
+
+    private string GetBucketNameFromConfig() => configuration["S3:BucketName"] ?? throw new ArgumentNullException("Bucket configuration through 'S3:BucketName' is missing.");
 
     private static string GetProfileImageObjectKey(string userId) => $"profile-images/{userId}.png";
 
