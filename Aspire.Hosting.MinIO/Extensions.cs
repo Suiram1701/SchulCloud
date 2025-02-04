@@ -24,10 +24,9 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-        ParameterResource usernameResource = username?.Resource ?? ParameterResourceBuilderExtensions.CreateGeneratedParameter(builder, $"{name}-Username", secret: false, new());
         ParameterResource passwordResource = password?.Resource ?? ParameterResourceBuilderExtensions.CreateDefaultPasswordParameter(builder, $"{name}-Password");
 
-        MinIOServerResource minIO = new(name, usernameResource, passwordResource);
+        MinIOServerResource minIO = new(name, username?.Resource, passwordResource);
         return builder.AddResource(minIO)
             .WithImage("minio/minio", tag: "RELEASE.2025-01-20T14-49-07Z")
             .WithImageRegistry("docker.io")
@@ -35,7 +34,7 @@ public static class Extensions
             .WithHttpEndpoint(port: httpPort, targetPort: 9000)
             .WithEnvironment(context =>
             {
-                context.EnvironmentVariables["MINIO_ROOT_USER"] = minIO.UsernameParameter;
+                context.EnvironmentVariables["MINIO_ROOT_USER"] = minIO.UsernameReference;
                 context.EnvironmentVariables["MINIO_ROOT_PASSWORD"] = minIO.PasswordParameter;
             });
     }

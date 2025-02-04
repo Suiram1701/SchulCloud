@@ -53,11 +53,11 @@ public partial class AwsS3FileStorage<TUser>(
         catch (AmazonS3Exception ex)
         {
             LogAwsS3Exception(logger, ex, BucketName, objectKey);
-            throw;
+            return null;     // The profile image isn't critical so its may okay if its not available.
         }
     }
 
-    public async Task UpdateImageAsync(TUser user, Stream image, CancellationToken ct)
+    public async Task<bool> UpdateImageAsync(TUser user, Stream image, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(image);
@@ -74,15 +74,16 @@ public partial class AwsS3FileStorage<TUser>(
                 InputStream = image,
                 ContentType = MediaTypeNames.Image.Png
             }, ct).ConfigureAwait(false);
+            return true;
         }
         catch (AmazonS3Exception ex)
         {
             LogAwsS3Exception(logger, ex, BucketName, objectKey);
-            throw;
+            return false;
         }
     }
 
-    public async Task RemoveImageAsync(TUser user, CancellationToken ct)
+    public async Task<bool> RemoveImageAsync(TUser user, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(user);
         ct.ThrowIfCancellationRequested();
@@ -92,11 +93,12 @@ public partial class AwsS3FileStorage<TUser>(
         try
         {
             _ = await _client.DeleteObjectAsync(BucketName, objectKey, ct).ConfigureAwait(false);
+            return true;
         }
         catch (AmazonS3Exception ex)
         {
             LogAwsS3Exception(logger, ex, BucketName, objectKey);
-            throw;
+            return false;
         }
     }
 

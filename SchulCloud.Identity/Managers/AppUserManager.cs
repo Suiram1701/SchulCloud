@@ -8,6 +8,7 @@ using SchulCloud.Identity.Abstractions;
 using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
 using SchulCloud.Identity.Options;
+using SchulCloud.Identity.Services;
 using SchulCloud.Identity.Services.Abstractions;
 using SixLabors.ImageSharp;
 using System.Globalization;
@@ -29,13 +30,16 @@ public partial class AppUserManager<TUser>(
     IEnumerable<IUserValidator<TUser>> userValidators,
     IEnumerable<IPasswordValidator<TUser>> passwordValidators,
     ILookupNormalizer keyNormalizer,
-    IdentityErrorDescriber errors,
+    IdentityErrorDescriber errorDescriber,
     IServiceProvider services,
     ILogger<UserManager<TUser>> logger)
-    : UserManager<TUser>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger: logger)
+    : UserManager<TUser>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errorDescriber, services, logger: logger)
     where TUser : class
 {
     private readonly IServiceProvider _services = services;
+
+    public new ExtendedIdentityErrorDescriber ErrorDescriber { get; } = errorDescriber as ExtendedIdentityErrorDescriber
+        ?? services.GetRequiredService<ExtendedIdentityErrorDescriber>();
 
     /// <summary>
     /// Extended token provider options
@@ -771,19 +775,16 @@ public partial class AppUserManager<TUser>(
         }
         catch (Exception ex)
         {
-            Logger.LogInformation(ex, "Could not load image.");
-
-            return IdentityResult.Failed(new IdentityError
-            {
-                Code = "Bad Image",
-                Description = "Invalid image format"
-            });
+            Logger.LogInformation(ex, "Unable to process new profile image.");
+            return IdentityResult.Failed(ErrorDescriber.BadImage());
         }
 
         IProfileImageStore<TUser> store = _services.GetRequiredService<IProfileImageStore<TUser>>();
-        await store.UpdateImageAsync(user, pngStream, CancellationToken).ConfigureAwait(false);
+        bool succeeded = await store.UpdateImageAsync(user, pngStream, CancellationToken).ConfigureAwait(false);
 
-        return IdentityResult.Success;
+        return succeeded
+            ? IdentityResult.Success
+            : IdentityResult.Failed(ErrorDescriber.ProfileImageError(await GetUserIdAsync(user)));
     }
 
     /// <summary>
@@ -797,11 +798,13 @@ public partial class AppUserManager<TUser>(
         ArgumentNullException.ThrowIfNull(user);
 
         IProfileImageStore<TUser> store = _services.GetRequiredService<IProfileImageStore<TUser>>();
-        await store.RemoveImageAsync(user, CancellationToken).ConfigureAwait(false);
+        bool succeeded = await store.RemoveImageAsync(user, CancellationToken).ConfigureAwait(false);
 
-        return IdentityResult.Success;
+        return succeeded
+            ? IdentityResult.Success
+            : IdentityResult.Failed(ErrorDescriber.ProfileImageError(await GetUserIdAsync(user)));
     }
-
+    
     private IUserPasskeysStore<TUser> GetPasskeysStore() => GetStoreBase<IUserPasskeysStore<TUser>>();
 
     private IUserAuthenticatorKeyStore<TUser> GetAuthenticatorKeyStore() => GetStoreBase<IUserAuthenticatorKeyStore<TUser>>();

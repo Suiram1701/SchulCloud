@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SchulCloud.Identity.Managers;
 using SchulCloud.Identity.Options;
+using SchulCloud.Identity.Services;
 using SchulCloud.Identity.Services.Abstractions;
 
 namespace SchulCloud.Identity;
@@ -47,7 +48,7 @@ public static class Extensions
     }
 
     /// <summary>
-    /// Adds the <see cref="AppUserManager{TUser}"/> and <see cref="AppRoleManager{TRole}"/> to the identity builder.
+    /// Adds the <see cref="AppUserManager{TUser}"/>, <see cref="AppRoleManager{TRole}"/> and other required services to the identity builder.
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <returns>The builder pipeline.</returns>
@@ -65,6 +66,9 @@ public static class Extensions
             Type customRoleManagerType = typeof(AppRoleManager<>).MakeGenericType(builder.RoleType);
             builder.Services.AddManager(roleManagerType, customRoleManagerType);
         }
+
+        builder.Services.AddScoped<ExtendedIdentityErrorDescriber>();
+        builder.AddErrorDescriber<ExtendedIdentityErrorDescriber>();
 
         return builder;
     }

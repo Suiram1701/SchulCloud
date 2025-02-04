@@ -21,14 +21,14 @@ public interface IProfileImageStore<TUser>
     /// <param name="user">The user to update the image of.</param>
     /// <param name="image">The new image set.</param>
     /// <param name="ct">Cancellation token</param>
-    /// <returns>A task to await the operation.</returns>
-    public Task UpdateImageAsync(TUser user, Stream image, CancellationToken ct);
+    /// <returns>Indicates whether the update was successful.</returns>
+    public Task<bool> UpdateImageAsync(TUser user, Stream image, CancellationToken ct);
 
     /// <summary>
     /// Removes the profile image of a certain user.
     /// </summary>
     /// <param name="user">The user to remove the image of.</param>
     /// <param name="ct">Cancellation token</param>
-    /// <returns>A task to await the operation.</returns>
-    public Task RemoveImageAsync(TUser user, CancellationToken ct);
+    /// <returns>Indicates whether the removal was successful.</returns>
+    public Task<bool> RemoveImageAsync(TUser user, CancellationToken ct);
 }

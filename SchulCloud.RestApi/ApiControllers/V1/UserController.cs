@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using SchulCloud.Authorization;
 using SchulCloud.Authorization.Attributes;
 using SchulCloud.Authorization.Extensions;
+using SchulCloud.Identity.Services;
+using SchulCloud.RestApi.Extensions;
 using SchulCloud.RestApi.Models;
-using System.Net.Mime;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace SchulCloud.RestApi.ApiControllers.V1;
@@ -156,15 +157,15 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
             return authResponse;
 
         using Stream imageStream = image.OpenReadStream();
-        IdentityResult createResult = await userManager.UpdateProfileImageAsync(user, imageStream).ConfigureAwait(false);
-        if (createResult.Errors.Any(error => error.Code == "Bad Image"))
-        {
-            return Problem(
-                title: "Invalid image",
-                statusCode: StatusCodes.Status400BadRequest,
-                detail: "The provided image couldn't be read.");
-        }
+        IdentityResult updateResult = await userManager.UpdateProfileImageAsync(user, imageStream).ConfigureAwait(false);
 
+        if (!updateResult.Succeeded)
+        {
+            int errorCode = updateResult.Errors.Any(error => error.Code == nameof(ExtendedIdentityErrorDescriber.BadImage))
+                ? StatusCodes.Status400BadRequest
+                : StatusCodes.Status500InternalServerError;
+            return this.IdentityErrors(updateResult.Errors, errorCode);
+        }
         return NoContent();
     }
 
@@ -193,8 +194,10 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
         if (authResponse is not null)
             return authResponse;
 
-        await userManager.RemoveProfileImageAsync(user).ConfigureAwait(false);
-        return NoContent();
+        IdentityResult deleteResult = await userManager.RemoveProfileImageAsync(user).ConfigureAwait(false);
+        return deleteResult.Succeeded
+            ? NoContent()
+            : this.IdentityErrors(deleteResult.Errors);
     }
 
     private ObjectResult UserNotFoundResponse(string userId)

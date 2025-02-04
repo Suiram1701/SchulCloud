@@ -17,7 +17,7 @@ public class MinIOServerResource(string name, ParameterResource? username, Param
     /// </summary>
     public ParameterResource? UsernameParameter { get; } = username;
 
-    private ReferenceExpression UsernameReference => UsernameParameter is not null
+    internal ReferenceExpression UsernameReference => UsernameParameter is not null
         ? ReferenceExpression.Create($"{UsernameParameter}")
         : ReferenceExpression.Create($"minio");     // Default username
 

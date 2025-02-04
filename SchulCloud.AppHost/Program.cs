@@ -39,9 +39,7 @@ public class Program
 
         builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
             .WithReference(identityDb)
-            .WithReference(schulcloudBucket)
             .WaitFor(identityDb)
-            .WaitFor(schulcloudBucket)
             .WithDefaultHealthChecks()
             .WithDefaultCommands()
             .WithDbManagerCommands();
