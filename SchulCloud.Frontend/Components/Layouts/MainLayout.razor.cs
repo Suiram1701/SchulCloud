@@ -12,9 +12,6 @@ public sealed partial class MainLayout : LayoutComponentBase
 {
     #region Injections
     [Inject]
-    private ILogger<MainLayout> Logger { get; set; } = default!;
-
-    [Inject]
     private IStringLocalizer<MainLayout> Localizer { get; set; } = default!;
 
     [Inject]
@@ -35,20 +32,13 @@ public sealed partial class MainLayout : LayoutComponentBase
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
 
+    [CascadingParameter]
+    private Task<ApplicationUser> CurrentUser { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
         AuthenticationState state = await AuthenticationState;
-
-        try
-        {
-            Logger.LogDebug("Wait for semaphore");
-            Logger.LogDebug("Entered semaphore");
-            _user = (await UserManager.GetUserAsync(state.User))!;
-        }
-        finally
-        {
-            Logger.LogDebug("Released semaphore");
-        }
+        _user = await CurrentUser;
 
         ColorTheme theme = UserManager.GetColorTheme(state.User);
         _isAutoThemeMode = theme == ColorTheme.Auto;

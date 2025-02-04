@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -40,7 +39,7 @@ public sealed partial class Recovery : ComponentBase
     private const int _codeCount = 10;
 
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    private Task<ApplicationUser> CurrentUser { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,8 +49,7 @@ public sealed partial class Recovery : ComponentBase
             return;
         }
 
-        AuthenticationState authenticationState = await AuthenticationState;
-        _user = (await UserManager.GetUserAsync(authenticationState.User))!;
+        _user = await CurrentUser;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -71,7 +71,8 @@ public class Program
             .AddInteractiveServerComponents();
         builder.Services
             .AddSingleton<CircuitHandler, TelemetryHandler>()
-            .AddCascadingAuthenticationState();
+            .AddCascadingAuthenticationState()
+            .AddCascadingUser();
 
         builder.Services
             .AddMudServices()

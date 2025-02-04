@@ -1,6 +1,5 @@
 ﻿using Humanizer;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
@@ -45,7 +44,7 @@ public sealed partial class ResetPassword : ComponentBase
     private readonly PasswordResetModel _model = new();
 
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    private Task<ApplicationUser?> CurrentUser { get; set; } = default!;
 
     [SupplyParameterFromQuery(Name = "userId")]
     public string? UserId { get; set; }
@@ -58,16 +57,20 @@ public sealed partial class ResetPassword : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState state = await AuthenticationState;
-        if (SignInManager.IsSignedIn(state.User))
+        ApplicationUser? authUser = await CurrentUser;     // Await the request of the CascadingParameter to prevent a possible concurrent request with the FindByIdAsync request.
+        if (UserId is null)
         {
-            UserId ??= UserManager.GetUserId(state.User);
+            _user = authUser;
+            if (_user is not null)
+            {
+                UserId = await UserManager.GetUserIdAsync(_user);
+            }
         }
-
-        if (UserId is not null)
+        else
         {
             _user = await UserManager.FindByIdAsync(UserId);
         }
+
     }
 
     private async Task SendResetCode_ClickAsync()

@@ -61,14 +61,13 @@ public sealed partial class Overview : ComponentBase, IDisposable
     private HttpContext? HttpContext { get; set; }
 
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    private Task<ApplicationUser> CurrentUser { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authenticationState = await AuthenticationState;
         if (Forget2faClient ?? false)
         {
-            await Forget2faClientAsync(authenticationState);
+            await Forget2faClientAsync();
             return;
         }
 
@@ -83,11 +82,11 @@ public sealed partial class Overview : ComponentBase, IDisposable
                 out _mfaSecurityKeyEnabled,
                 out _mfaRemainingRecoveryCodes,
                 out _latestUseTimes);
-            _user = (await UserManager.GetUserAsync(authenticationState.User))!;
+            _user = await CurrentUser;
         }
         else
         {
-            _user = (await UserManager.GetUserAsync(authenticationState.User))!;
+            _user = await CurrentUser;
 
             await UpdateSecurityStateAsync();
             _latestUseTimes = await UserManager.GetLatestLoginMethodUseTimeOfUserAsync(_user);
@@ -202,11 +201,11 @@ public sealed partial class Overview : ComponentBase, IDisposable
         }
     }
 
-    private async Task Forget2faClientAsync(AuthenticationState authenticationState)
+    private async Task Forget2faClientAsync()
     {
         if (HttpContext is not null)
         {
-            ApplicationUser user = (await UserManager.GetUserAsync(authenticationState.User))!;
+            ApplicationUser user = await CurrentUser;
             if (await SignInManager.IsTwoFactorClientRememberedAsync(user))
             {
                 await SignInManager.ForgetTwoFactorClientAsync();

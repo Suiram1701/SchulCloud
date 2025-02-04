@@ -45,7 +45,6 @@ public static class Extensions
     /// </remarks>
     /// <param name="user">The user</param>
     /// <returns>The anonymized email address.</returns>
-    /// <exception cref="ArgumentException"></exception>
     public static async Task<string> GetAnonymizedEmailAsync<TUser>(this UserManager<TUser> manager, TUser user)
         where TUser : class
     {

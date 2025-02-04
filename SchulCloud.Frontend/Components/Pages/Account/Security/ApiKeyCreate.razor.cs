@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 using MudBlazor;
@@ -46,12 +45,11 @@ public sealed partial class ApiKeyCreate : ComponentBase
     private string? _apiKey;
 
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    private Task<ApplicationUser> CurrentUser { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authenticationState = await AuthenticationState;
-        _user = (await UserManager.GetUserAsync(authenticationState.User))!;
+        _user = await CurrentUser;
         _userPermissions = await UserManager.GetPermissionLevelsAsync(_user);
     }
 

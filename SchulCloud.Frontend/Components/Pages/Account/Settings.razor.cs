@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -42,15 +41,14 @@ public sealed partial class Settings : ComponentBase
     public bool? ReloadToken { get; set; }
 
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    private Task<ApplicationUser> CurrentUser { get; set; } = default!;
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authenticationState = await AuthenticationState;
-        _user = (await UserManager.GetUserAsync(authenticationState.User))!;
+        _user = await CurrentUser;
 
         if (ReloadToken ?? false)
         {
@@ -93,7 +91,6 @@ public sealed partial class Settings : ComponentBase
         await UserManager.SetColorThemeAsync(_user, theme);
         RefreshSettings();
     }
-
 
     private void RefreshSettings() => NavigationManager.NavigateToAccountSettings(reload: true, forceLoad: true);
 

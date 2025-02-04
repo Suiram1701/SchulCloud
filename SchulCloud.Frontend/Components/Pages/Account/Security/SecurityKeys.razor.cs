@@ -1,6 +1,5 @@
 ﻿using Fido2NetLib;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
@@ -53,7 +52,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
     private readonly CancellationTokenSource _webAuthnCts = new();
 
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    private Task<ApplicationUser> CurrentUser { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,11 +62,10 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
             return;
         }
 
-        AuthenticationState authenticationState = await AuthenticationState;
-        _user = (await UserManager.GetUserAsync(authenticationState.User))!;
+        _user = await CurrentUser;
 
         IEnumerable<UserCredential> credentials = await UserManager.FindFido2CredentialsByUserAsync(_user);
-        _securityKeys = credentials.ToList();
+        _securityKeys = [.. credentials];
 
         foreach (UserCredential credential in _securityKeys)
         {

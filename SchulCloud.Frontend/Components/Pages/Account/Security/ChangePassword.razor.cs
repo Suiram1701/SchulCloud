@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
@@ -35,7 +34,7 @@ public sealed partial class ChangePassword : ComponentBase
     private readonly PasswordChangeModel _model = new();
 
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    private Task<ApplicationUser> CurrentUser { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,8 +44,7 @@ public sealed partial class ChangePassword : ComponentBase
             return;
         }
 
-        AuthenticationState state = await AuthenticationState;
-        _user = (await UserManager.GetUserAsync(state.User))!;
+        _user = await CurrentUser;
     }
 
     private async Task Form_OnValidSubmitAsync()

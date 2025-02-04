@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
@@ -42,15 +41,14 @@ public sealed partial class LoginAttempts : ComponentBase
     public int? Page { get; set; }
 
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    private HttpContext? HttpContext { get; set; }
 
     [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
+    private Task<ApplicationUser> CurrentUser { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authenticationState = await AuthenticationState;
-        _user = (await UserManager.GetUserAsync(authenticationState.User))!;
+        _user = await CurrentUser;
 
         if (HttpContext is null)
         {

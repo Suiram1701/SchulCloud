@@ -6,6 +6,7 @@ using MudBlazor.Services;
 using SchulCloud.Frontend.JsInterop;
 using SchulCloud.Frontend.Options;
 using SchulCloud.Frontend.RequestCultureProviders;
+using SchulCloud.Frontend.UserContext;
 using SchulCloud.Identity;
 
 namespace SchulCloud.Frontend.Extensions;
@@ -93,5 +94,18 @@ public static class ApplicationBuilderExtensions
             });
 
         return services;
+    }
+
+    /// <summary>
+    /// Adds a cascading value named <c>CurrentUser</c> providing the currently signed in user.
+    /// </summary>
+    /// <param name="services">The service collection to use.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddCascadingUser(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddScoped<UserCascadingValueSource>();
+        return services.AddCascadingValue<Task<ApplicationUser?>>(sp => sp.GetRequiredService<UserCascadingValueSource>());
     }
 }
