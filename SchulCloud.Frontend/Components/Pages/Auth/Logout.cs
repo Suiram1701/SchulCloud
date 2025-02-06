@@ -7,6 +7,7 @@ namespace SchulCloud.Frontend.Components.Pages.Auth;
 
 [AllowAnonymous]     // it doesn't have a .razor page so _Imports.razor won't be applied.
 [Route("/auth/logout")]
+[ExcludeFromInteractiveRouting]
 public sealed class Logout : ComponentBase
 {
     [Inject]
@@ -22,9 +23,6 @@ public sealed class Logout : ComponentBase
     private NavigationManager NavigationManager { get; set; } = default!;
 
     [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
-
-    [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
@@ -32,18 +30,23 @@ public sealed class Logout : ComponentBase
         AuthenticationState authenticationState = await AuthenticationState;
         if (SignInManager.IsSignedIn(authenticationState.User))
         {
-            if (HttpContext is null)
-            {
-                NavigationManager.Refresh(forceReload: true);     // Forces the client to send a GET request which is required for the sign out.
-                return;
-            }
-
             await SignInManager.SignOutAsync();
 
             string userId = UserManager.GetUserId(authenticationState.User)!;
             Logger.LogDebug("User {id} signed out.", userId);
         }
 
+#if DEBUG
+        try
+        {
+            NavigationManager.NavigateToLogin();
+        }
+        catch (NavigationException)
+        {
+            throw;     // This prevents the debugger from breaking at this point.
+        }
+#else
         NavigationManager.NavigateToLogin();
+#endif
     }
 }
