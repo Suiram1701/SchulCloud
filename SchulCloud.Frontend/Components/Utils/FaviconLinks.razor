@@ -2,5 +2,5 @@
 
 @foreach (PresentationOptions.Favicon favicon in PresentationOptionsAccessor.Value.Favicons)
 {
-    <link rel="icon" href="@favicon.Path" type="@favicon.MimeType" sizes="@favicon.Sizes" />
+    <link rel="icon" href="@Assets[favicon.Path]" type="@favicon.MimeType" sizes="@favicon.Sizes" />
 }

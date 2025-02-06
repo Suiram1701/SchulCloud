@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Localization;
 using System.Security.Claims;
 
-namespace SchulCloud.Frontend.RequestCultureProviders;
+namespace SchulCloud.Frontend.UserContext;
 
 /// <summary>
 /// A request culture provider that reads the culture from claims of an authenticated user.

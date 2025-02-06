@@ -5,7 +5,6 @@ using MudBlazor;
 using MudBlazor.Services;
 using SchulCloud.Frontend.JsInterop;
 using SchulCloud.Frontend.Options;
-using SchulCloud.Frontend.RequestCultureProviders;
 using SchulCloud.Frontend.UserContext;
 using SchulCloud.Identity;
 

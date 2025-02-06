@@ -11,6 +11,7 @@ public static class WebApplicationExtensions
         ArgumentNullException.ThrowIfNull(app);
 
         ServiceOptions appOptions = app.Services.GetRequiredService<IOptions<ServiceOptions>>().Value;
+
         app.MapGet(appOptions.GetPathWithBase("favicon.ico"), (IOptionsSnapshot<PresentationOptions> optionsAccessor) =>
         {
             string? iconPath = optionsAccessor.Value.GetBestFavicon()?.Path;
