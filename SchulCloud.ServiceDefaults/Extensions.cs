@@ -27,6 +27,10 @@ namespace SchulCloud.ServiceDefaults;
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
 public static class Extensions
 {
+    public const string CommandApiKeyConfig = "Commands:ApiKey";
+    private const string _commandApiAuthScheme = "command-api";
+    private const string _commandApiRateLimiter = "command-fixedLimiter";
+
     public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
     {
         builder.ConfigureOpenTelemetry();
@@ -117,21 +121,21 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddAuthentication()
-            .AddScheme<StaticKeySchemeOptions, StaticKeyScheme>("command-api", configure =>
+            .AddScheme<StaticKeySchemeOptions, StaticKeyScheme>(_commandApiAuthScheme, configure =>
             {
-                configure.Key = builder.Configuration.GetValue<string>("Commands:ApiKey");
+                configure.Key = builder.Configuration.GetValue<string>(CommandApiKeyConfig);
             });
         builder.Services.AddAuthorizationBuilder()
-            .AddPolicy("command-api", policy =>
+            .AddPolicy(_commandApiAuthScheme, policy =>
             {
-                policy.AuthenticationSchemes = ["command-api"];
+                policy.AuthenticationSchemes = [_commandApiAuthScheme];
                 policy.RequireAuthenticatedUser();
             });
 
         builder.Services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.AddFixedWindowLimiter("command-fixed", configure =>
+            options.AddFixedWindowLimiter(_commandApiRateLimiter, configure =>
             {
                 if (builder.Configuration.GetSection("Commands:RateLimiter").Exists())
                 {
@@ -201,8 +205,8 @@ public static class Extensions
             subApp.UseEndpoints(routeBuilder =>
             {
                 RouteGroupBuilder groupBuilder = routeBuilder.MapGroup("/commands")
-                    .RequireAuthorization("command-api")
-                    .RequireRateLimiting("command-fixed");
+                    .RequireAuthorization(_commandApiAuthScheme)
+                    .RequireRateLimiting(_commandApiRateLimiter);
                 groupBuilder.MapGet("/clear-cache", async context =>
                 {
                     if (context.RequestServices.GetService<IMemoryCache>() is MemoryCache cache)

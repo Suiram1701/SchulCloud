@@ -1,10 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace SchulCloud.AppHost.Extensions;
 
 internal static class ResourceBuilderExtensions
 {
+    public const string CommandApiKeyResource = "command-apiKey";
+    public const string CommandApiKeyConfig = "CommandApiKey";
+
     /// <summary>
     /// Adds the default health check endpoint offered by ServiceDefaults to the resource.
     /// </summary>
@@ -119,11 +123,15 @@ internal static class ResourceBuilderExtensions
         Func<UpdateCommandStateContext, ResourceCommandState>? updateState = null,
         string? description = null,
         string? confirmMessage = null,
-        string? iconName = default,
+        string? iconName = null,
         IconVariant? iconVariant = null)
         where TResource : IResourceWithEndpoints, IResourceWithEnvironment
     {
         ArgumentNullException.ThrowIfNull(builder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
+        if (!Uri.IsWellFormedUriString(path, UriKind.Relative))
+            throw new ArgumentException("A valid relative uri was expected.", nameof(path));
 
         method ??= HttpMethod.Get;
         endpointName ??= "http";
@@ -132,11 +140,18 @@ internal static class ResourceBuilderExtensions
             .FirstOrDefault(endpoint => endpoint.EndpointName == endpointName)
             ?? throw new DistributedApplicationException($"Could not create HTTP command for resource '{builder.Resource.Name}' as no endpoint named '{endpointName}' was found.");
 
+        // Try to get an existing api key parameter
+        ParameterResource? apiKeyParameter = builder.ApplicationBuilder.Resources
+            .OfType<ParameterResource>()
+            .FirstOrDefault(p => p.Name == CommandApiKeyResource);
 
-        ParameterResource? apiKeyParameter = builder.ApplicationBuilder.Resources.OfType<ParameterResource>().FirstOrDefault(p => p.Name == "command-apiKey");
-        apiKeyParameter ??= builder.ApplicationBuilder.AddParameterFromConfiguration("command-apiKey", "CommandApiKey", secret: true).Resource;
+        // Get api key config if exist or create a random key
+        apiKeyParameter ??= !string.IsNullOrEmpty(builder.ApplicationBuilder.Configuration[CommandApiKeyConfig])
+            ? builder.ApplicationBuilder.AddParameterFromConfiguration(CommandApiKeyResource, CommandApiKeyConfig, secret: true).Resource
+            : ParameterResourceBuilderExtensions.CreateDefaultPasswordParameter(builder.ApplicationBuilder, CommandApiKeyResource);
+
         string keyValue = apiKeyParameter.Value;
-        builder.WithEnvironment("ASPNETCORE_Commands__ApiKey", keyValue);
+        builder.WithEnvironment(ServiceDefaults.Extensions.CommandApiKeyConfig.Replace(":", "__"), keyValue);
 
         return builder.WithCommand(
             name: $"http-{name}",
@@ -144,9 +159,7 @@ internal static class ResourceBuilderExtensions
             executeCommand: async context =>
             {
                 if (!endpoint.IsAllocated)
-                {
                     return new ExecuteCommandResult { Success = false, ErrorMessage = "Endpoints are not yet allocated." };
-                }
 
                 Uri uri = new UriBuilder(endpoint.Url) { Path = path }.Uri;
                 HttpClient httpClient = context.ServiceProvider.GetRequiredService<IHttpClientFactory>().CreateClient();

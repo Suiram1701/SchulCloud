@@ -92,9 +92,6 @@
                     <MudButton Class="mr-2" Color="Color.Primary" Href="@Routes.LoginAttempts(page: OriginPage)" Variant="Variant.Filled">
                         @Localizer["backBtn"]
                     </MudButton>
-                    <MudButton Color="Color.Error" StartIcon="@MaterialSymbols.Outlined.Delete" OnClick="Remove_ClickAsync">
-                        @Localizer["removeBtn"]
-                    </MudButton>
                 </MudItem>
             </MudGrid>
         </MudPaper>
@@ -146,7 +143,6 @@ else
                 <MudButton Class="mr-2" Color="Color.Primary" Href="@Routes.LoginAttempts(page: OriginPage)" Variant="Variant.Filled">
                     @Localizer["backBtn"]
                 </MudButton>
-                <MudButton Color="Color.Error" StartIcon="@MaterialSymbols.Outlined.Delete" Disabled>@Localizer["removeBtn"]</MudButton>
             </MudItem>
         </MudGrid>
     </MudPaper>

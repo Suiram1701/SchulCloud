@@ -382,24 +382,6 @@ public partial class AppUserManager<TUser>(
     }
 
     /// <summary>
-    /// Removes a single login attempt of a user.
-    /// </summary>
-    /// <param name="user">The user that this attempt is for.</param>
-    /// <param name="attempt">The attempt to remove.</param>
-    /// <returns>The result of the operation.</returns>
-    public virtual async Task<IdentityResult> RemoveLoginAttemptAsync(TUser user, UserLoginAttempt attempt)
-    {
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(user);
-        ArgumentNullException.ThrowIfNull(attempt);
-
-        IUserLoginAttemptStore<TUser> store = GetLoginAttemptStore();
-        await store.RemoveLoginAttemptAsync(attempt, CancellationToken);
-
-        return await Store.UpdateAsync(user, CancellationToken);
-    }
-
-    /// <summary>
     /// Removes all login attempts of a user.
     /// </summary>
     /// <param name="user">The user to remove all attempts from.</param>

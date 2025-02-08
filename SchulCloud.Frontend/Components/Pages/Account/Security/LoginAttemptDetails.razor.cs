@@ -1,12 +1,10 @@
 ﻿using GoogleMapsComponents.Maps;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
 using MyCSharp.HttpUserAgentParser;
 using MyCSharp.HttpUserAgentParser.Providers;
-using SchulCloud.Frontend.Extensions;
 using Microsoft.JSInterop;
 using GoogleMapsComponents;
 using SchulCloud.Identity.Models;
@@ -118,23 +116,6 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
         });
     }
 
-    private async Task Remove_ClickAsync()
-    {
-        if (_attempt is not null)
-        {
-            IdentityResult removeResult = await UserManager.RemoveLoginAttemptAsync(_user, _attempt);
-            if (removeResult.Succeeded)
-            {
-                SnackbarService.AddSuccess(Localizer["removeSuccess"]);
-                NavigationManager.NavigateToLoginAttempts(page: OriginPage);
-            }
-            else
-            {
-                SnackbarService.AddError(removeResult.Errors, Localizer["removeError"]);
-            }
-        }
-    }
-
     public async ValueTask DisposeAsync()
     {
         try
@@ -145,7 +126,6 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
             }
         }
         catch (JSDisconnectedException) { }
-
 
         try
         {

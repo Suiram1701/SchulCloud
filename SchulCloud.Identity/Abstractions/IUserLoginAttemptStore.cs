@@ -43,13 +43,6 @@ public interface IUserLoginAttemptStore<TUser>
     public Task AddLoginAttemptAsync(TUser user, UserLoginAttempt attempt, CancellationToken ct = default);
 
     /// <summary>
-    /// Removes a log in attempt of the user.
-    /// </summary>
-    /// <param name="attempt">The attempt to remove.</param>
-    /// <param name="ct">Cancellation token</param>
-    public Task RemoveLoginAttemptAsync(UserLoginAttempt attempt, CancellationToken ct = default);
-
-    /// <summary>
     /// Removes all log in attempts of a user.
     /// </summary>
     /// <param name="user">The user to delete the attempts for.</param>
