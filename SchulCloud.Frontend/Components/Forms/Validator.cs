@@ -4,6 +4,10 @@ using System.Linq.Expressions;
 
 namespace SchulCloud.Frontend.Components.Forms;
 
+/// <summary>
+/// An extensions component for <see cref="EditForm"/> that provides custom validation logic for a certain field.
+/// </summary>
+/// <typeparam name="TValue">The type the field value.</typeparam>
 public class Validator<TValue> : ComponentBase, IDisposable
 {
     private bool _disposedValue;

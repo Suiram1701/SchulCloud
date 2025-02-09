@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>3aada3c3-44d9-44cb-8e25-9be67af78b8d</UserSecretsId>
   </PropertyGroup>
-
+	
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="BlazorGoogleMaps" Version="4.9.2" />
@@ -24,6 +24,9 @@
     <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="Quartz.AspNetCore" Version="3.13.1" />
     <PackageReference Include="Suiram1.BlazorRoutesGenerator" Version="1.1.1" />
+
+    <!-- Not used but required to supress warnings -->
+	<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.7.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,13 +42,18 @@
     <AdditionalFiles Include="BlazorRoutesGenerator.config.json" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
+  <!-- Disables MSBuild TypeScript compiler -->
   <ItemGroup>
+	<TypeScriptCompile Remove="**" />
+  </ItemGroup>
+
+	<ItemGroup>
 	<Content Update="package-lock.json" CopyToOutputDirectory="Never" />
 	<Content Update="package.json" CopyToOutputDirectory="Never" />
 	<Content Update="tsconfig.json" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
-	<!-- Exclude every else web asset excluding _content -->
+  <!-- Exclude every else web asset excluding _content -->
   <ItemGroup>
     <Content Remove="wwwroot/**" />
     <Content Include="wwwroot/_content/**/*" />

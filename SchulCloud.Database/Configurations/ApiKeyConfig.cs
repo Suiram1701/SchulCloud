@@ -26,6 +26,6 @@ internal sealed class ApiKeyConfig : IEntityTypeConfiguration<ApiKey>
 
         builder.ToTable("AspNetApiKeys");
 
-        builder.HasQueryFilter(key => key.Expiration <= DateTime.UtcNow || key.Expiration == null);
+        builder.HasQueryFilter(key => key.Expiration > DateTime.UtcNow || key.Expiration == null);
     }
 }
