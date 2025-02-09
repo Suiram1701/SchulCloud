@@ -1,4 +1,4 @@
-﻿using Humanizer;
+using Humanizer;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
@@ -70,7 +70,6 @@ public sealed partial class ResetPassword : ComponentBase
         {
             _user = await UserManager.FindByIdAsync(UserId);
         }
-
     }
 
     private async Task SendResetCode_ClickAsync()
