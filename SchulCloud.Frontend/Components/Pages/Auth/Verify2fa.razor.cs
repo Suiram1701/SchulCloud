@@ -1,5 +1,4 @@
 using Fido2NetLib;
-using Fido2NetLib.Objects;
 using Humanizer;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -249,29 +248,17 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
 
     private async Task Verify2faAsync()
     {
-        if (!UserManager.SupportsUserTwoFactorEmail && Model.Method == TwoFactorMethod.Email)
+        // Verifies that the selected verification method is supported (manipulation possible through form field)
+        switch (Model.Method)
         {
-            return;
-        }
-        else if (!UserManager.SupportsUserTwoFactorSecurityKeys && Model.Method == TwoFactorMethod.SecurityKey)
-        {
-            return;
-        }
-        else if (!UserManager.SupportsUserTwoFactorRecoveryCodes && Model.Method == TwoFactorMethod.Recovery)
-        {
-            return;
+            case TwoFactorMethod.Email when !UserManager.SupportsUserTwoFactorEmail:
+            case TwoFactorMethod.SecurityKey when !UserManager.SupportsUserTwoFactorSecurityKeys:
+            case TwoFactorMethod.Recovery when !UserManager.SupportsUserTwoFactorRecoveryCodes:
+                return;
         }
 
-        SignInResult verifyResult = await (Model.Method switch
-        {
-            TwoFactorMethod.Authenticator => SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.ShouldRememberClient),
-            TwoFactorMethod.Email => SignInManager.TwoFactorEmailSignInAsync(Model.TrimmedCode, Persistent, Model.ShouldRememberClient),
-            TwoFactorMethod.SecurityKey => VerifyTwoFactorSecurityKeyAsync(Model.AuthenticatorDataAccessKey, Persistent, Model.ShouldRememberClient),
-            TwoFactorMethod.Recovery => SignInManager.TwoFactorRecoveryCodeSignInAsync(Model.TrimmedCode),
-            _ => Task.FromResult(SignInResult.Failed)
-        });
-
-        switch (verifyResult)
+        SignInResult verificationResult = await ProcessVerification(Model.Method);
+        switch (verificationResult)
         {
             case { Succeeded: true }:
                 NavigationManager.NavigateSaveTo(ReturnUrl ?? Routes.Dashboard());
@@ -279,15 +266,24 @@ public sealed partial class Verify2fa : ComponentBase, IDisposable
             case { IsLockedOut: true }:
                 DateTimeOffset lockOutEnd = (await UserManager.GetLockoutEndDateAsync(_user)).Value;
 
-                _errorMessage = lockOutEnd.Offset <= TimeSpan.MaxValue     // MaxValue means that the user is locked without an end. It has to unlocked manually.
+                _errorMessage = lockOutEnd.Offset <= TimeSpan.MaxValue     // MaxValue means the user is locked without an end. It has to be unlocked manually.
                     ? Localizer["signIn_LockedOut", lockOutEnd.Humanize()]
                     : Localizer["signIn_LockedOut_NotSpecified"];
                 break;
             default:
-                _errorMessage = Localizer["signIn_" + verifyResult];
+                _errorMessage = Localizer["signIn_" + verificationResult];
                 break;
         }
     }
+
+    private async Task<SignInResult> ProcessVerification(TwoFactorMethod method) => method switch
+    {
+        TwoFactorMethod.Authenticator => await SignInManager.TwoFactorAuthenticatorSignInAsync(Model.TrimmedCode, Persistent, Model.ShouldRememberClient),
+        TwoFactorMethod.Email => await SignInManager.TwoFactorEmailSignInAsync(Model.TrimmedCode, Persistent, Model.ShouldRememberClient),
+        TwoFactorMethod.SecurityKey => await VerifyTwoFactorSecurityKeyAsync(Model.AuthenticatorDataAccessKey, Persistent, Model.ShouldRememberClient),
+        TwoFactorMethod.Recovery => await SignInManager.TwoFactorRecoveryCodeSignInAsync(Model.TrimmedCode),
+        _ => SignInResult.Failed
+    };
 
     private async Task<SignInResult> VerifyTwoFactorSecurityKeyAsync(string? dataAccessKey, bool isPersistent, bool rememberClient)
     {

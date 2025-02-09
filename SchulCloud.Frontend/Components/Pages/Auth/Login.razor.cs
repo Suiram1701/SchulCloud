@@ -160,12 +160,9 @@ public sealed partial class Login : ComponentBase, IDisposable
     private async Task PasskeySignIn_ClickAsync()
     {
         if (!UserManager.SupportsUserPasskeys || !_webAuthnSupported)
-        {
             return;
-        }
 
         AssertionOptions assertionOptions = await UserManager.CreateFido2AssertionOptionsAsync(null);
-
         try
         {
             AuthenticatorAssertionRawResponse authenticatorResponse = await WebAuthnService.GetCredentialAsync(assertionOptions, _webAuthnCts.Token);
