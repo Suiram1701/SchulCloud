@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SchulCloud.Authorization;
-using SchulCloud.Database.Enums;
 using SchulCloud.Database.Models;
 using SchulCloud.Identity.Abstractions;
 using SchulCloud.Identity.Enums;
@@ -12,6 +11,7 @@ using System.Globalization;
 using System.Net;
 using System.Security.Claims;
 using LoginAttemptResult = SchulCloud.Database.Enums.LoginAttemptResult;
+using TwoFactorMethod = SchulCloud.Database.Enums.TwoFactorMethod;
 
 namespace SchulCloud.Database.Stores;
 

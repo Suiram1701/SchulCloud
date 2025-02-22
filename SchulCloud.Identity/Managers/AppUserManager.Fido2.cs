@@ -17,7 +17,7 @@ partial class AppUserManager<TUser>
     /// <summary>
     /// Indicates whether the store supports fido2 credentials
     /// </summary>
-    public virtual bool SupportsUserCredentials => SupportsStore<IUserCredentialStore<TUser>>() && _services.GetService<IFido2>() is not null;
+    public virtual bool SupportsUserCredentials => SupportsStore<IUserCredentialStore<TUser>>();
 
     /// <summary>
     /// Creates options that can be used to request a fido2 credential creation.

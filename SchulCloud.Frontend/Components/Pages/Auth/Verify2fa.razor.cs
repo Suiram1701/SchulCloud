@@ -8,13 +8,13 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SchulCloud.Frontend.Enums;
 using SchulCloud.Frontend.Extensions;
 using SchulCloud.Frontend.Identity.Managers;
 using SchulCloud.Frontend.JsInterop;
 using SchulCloud.Frontend.Models;
 using SchulCloud.Frontend.Services.Exceptions;
 using SchulCloud.Frontend.Services.Interfaces;
+using SchulCloud.Identity.Enums;
 using System.Security.Cryptography;
 
 namespace SchulCloud.Frontend.Components.Pages.Auth;

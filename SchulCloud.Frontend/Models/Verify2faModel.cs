@@ -1,4 +1,4 @@
-﻿using SchulCloud.Frontend.Enums;
+﻿using SchulCloud.Identity.Enums;
 
 namespace SchulCloud.Frontend.Models;
 

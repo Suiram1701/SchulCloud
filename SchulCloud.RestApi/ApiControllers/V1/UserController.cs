@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using SchulCloud.Authorization;
 using SchulCloud.Authorization.Attributes;
 using SchulCloud.Authorization.Extensions;
+using SchulCloud.Identity.Enums;
+using SchulCloud.Identity.Models;
 using SchulCloud.Identity.Services;
 using SchulCloud.RestApi.Extensions;
 using SchulCloud.RestApi.Models;
@@ -151,10 +153,8 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
         ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
         if (user is null)
             return UserNotFoundResponse(userId);
-
-        ObjectResult? authResponse = await CheckProfileImageAccessAsync(userId).ConfigureAwait(false);
-        if (authResponse is not null)
-            return authResponse;
+        if (!await ModifyProfileImageAccessAsync(userId).ConfigureAwait(false))
+            return UserNotPermittedResponse();
 
         using Stream imageStream = image.OpenReadStream();
         IdentityResult updateResult = await userManager.UpdateProfileImageAsync(user, imageStream).ConfigureAwait(false);
@@ -189,15 +189,118 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
         ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
         if (user is null)
             return UserNotFoundResponse(userId);
-
-        ObjectResult? authResponse = await CheckProfileImageAccessAsync(userId).ConfigureAwait(false);
-        if (authResponse is not null)
-            return authResponse;
+        if (!await ModifyProfileImageAccessAsync(userId).ConfigureAwait(false))
+            return UserNotPermittedResponse();
 
         IdentityResult deleteResult = await userManager.RemoveProfileImageAsync(user).ConfigureAwait(false);
         return deleteResult.Succeeded
             ? NoContent()
             : this.IdentityErrors(deleteResult.Errors);
+    }
+
+    /// <summary>
+    /// Retrieves the security settings of a specific user.
+    /// </summary>
+    /// <remarks>
+    /// Requesting the settings of the requesting user doesn't require any permission but for any other user permission **Users** with level read or greater is required.
+    /// </remarks>
+    /// <param name="userId">The id of the user to retrieve the security settings for.</param>
+    /// <response code="200">Returns the security settings of the user.</response>
+    /// <response code="403">The requesting user isn't permitted to request this data.</response>
+    /// <response code="404">No user with the requested id was found.</response>
+    [HttpGet("{userId}/security")]
+    [ProducesResponseType<SecuritySettings>(StatusCodes.Status200OK, Application.Json)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, Application.ProblemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Application.ProblemJson)]
+    public async Task<IActionResult> GetSecuritySettingsAsync([FromRoute] string userId)
+    {
+        ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
+        if (user is null)
+            return UserNotFoundResponse(userId);
+
+        if (userManager.GetUserId(HttpContext.User) != userId)
+        {
+            AuthorizationResult authResult = await authorizationService.RequirePermissionAsync(User, Permissions.Users, PermissionLevel.Read).ConfigureAwait(false);
+            if (!authResult.Succeeded)
+                return UserNotPermittedResponse();
+        }
+
+        // Check which 2fa methods are enabled
+        HashSet<TwoFactorMethod>? enabledMethods = null;
+        if (userManager.SupportsUserTwoFactor && await userManager.GetTwoFactorEnabledAsync(user).ConfigureAwait(false))
+        {
+            enabledMethods = [TwoFactorMethod.Authenticator];     // Always enabled if 2fa is enabled
+
+            if (userManager.SupportsUserTwoFactorEmail && await userManager.GetTwoFactorEmailEnabledAsync(user).ConfigureAwait(false))
+                enabledMethods.Add(TwoFactorMethod.Email);
+            if (userManager.SupportsUserTwoFactorSecurityKeys && await userManager.GetTwoFactorSecurityKeyEnableAsync(user).ConfigureAwait(false))
+                enabledMethods.Add(TwoFactorMethod.SecurityKey);
+            if (userManager.SupportsUserTwoFactorRecoveryCodes && await userManager.CountRecoveryCodesAsync(user).ConfigureAwait(false) > 0)
+                enabledMethods.Add(TwoFactorMethod.Recovery);
+        }
+
+        // Fetch and convert FIDO2 credentials
+        Fido2Credential[]? credentials = null;
+        if (userManager.SupportsUserCredentials)
+        {
+            IEnumerable<UserCredential> userCredentials = await userManager.FindFido2CredentialsByUserAsync(user).ConfigureAwait(false);
+            credentials = await Task.WhenAll(userCredentials.Select(async cred =>
+            {
+                return cred.Adapt<Fido2Credential>() with
+                {
+                    IsPasskey = await userManager.GetIsPasskey(cred).ConfigureAwait(false)
+                };
+            })).ConfigureAwait(false);
+        }
+
+        SecuritySettings settings = new(
+            userManager.SupportsUserPassword
+                ? await userManager.HasPasswordAsync(user).ConfigureAwait(false)
+                : null,
+            userManager.SupportsUserTwoFactor
+                ? enabledMethods?.Count > 0
+                : null,
+            userManager.SupportsUserTwoFactor
+                ? enabledMethods?.ToArray() ?? []
+                : null,
+            userManager.SupportsUserPasskeys
+                ? await userManager.GetPasskeySignInEnabledAsync(user).ConfigureAwait(false)
+                : null,
+            credentials);
+        return Ok(settings);
+    }
+
+    /// <summary>
+    /// Retrieves the login attempts of a user.
+    /// </summary>
+    /// <remarks>
+    /// Requesting the attempts of the requesting user doesn't require any permission but for any other user permission **Users** with level read or greater is required.
+    /// </remarks>
+    /// <param name="userId">The id of the user to get the login attempts of.</param>
+    /// <response code="200">Returns the login attempts of the user ordered descending by the login time.</response>
+    /// <response code="403">The requesting user isn't permitted to request this data.</response>
+    /// <response code="404">No user with the requested id was found.</response>
+    [HttpGet("{userId}/loginAttempts")]
+    [FilteringFilter<LoginAttempt>]
+    [PaginationFilter<LoginAttempt>]
+    [ProducesResponseType<LoginAttempt[]>(StatusCodes.Status200OK, Application.Json)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, Application.ProblemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Application.ProblemJson)]
+    public async Task<IActionResult> GetLoginAttemptsAsync([FromRoute] string userId)
+    {
+        ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
+        if (user is null)
+            return UserNotFoundResponse(userId);
+
+        if (userManager.GetUserId(HttpContext.User) != userId)
+        {
+            AuthorizationResult authResult = await authorizationService.RequirePermissionAsync(User, Permissions.Users, PermissionLevel.Read).ConfigureAwait(false);
+            if (!authResult.Succeeded)
+                return UserNotPermittedResponse();
+        }
+
+        IEnumerable<UserLoginAttempt> attempts = await userManager.FindLoginAttemptsByUserAsync(user).ConfigureAwait(false);
+        return Ok(attempts.Adapt<LoginAttempt[]>(LoginAttempt._adapterConfig).OrderByDescending(a => a.DateTime));
     }
 
     private ObjectResult UserNotFoundResponse(string userId)
@@ -209,27 +312,25 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
                 extensions: new Dictionary<string, object?> { { "UserId", userId } });
     }
 
-    /// <summary>
-    /// Checks whether the current user is authorized to change a certain user's profile image.
-    /// </summary>
-    /// <param name="userId">The user to check the access to.</param>
-    /// <returns>If <c>null</c> authorized if not it is the error response.</returns>
-    private async Task<ObjectResult?> CheckProfileImageAccessAsync(string userId)
+    private ObjectResult UserNotPermittedResponse()
     {
-        if (userManager.GetUserId(HttpContext.User) == userId)
-        {
-            return null;
-        }
-        if ((await authorizationService.RequirePermissionAsync(HttpContext.User, Permissions.Users, PermissionLevel.Write)).Succeeded)
-        {
-            return null;
-        }
-        else
-        {
-            return Problem(
+        string userId = userManager.GetUserId(HttpContext.User)!;
+        return Problem(
+                title: "Access denied",
                 statusCode: StatusCodes.Status403Forbidden,
-                detail: "The current user isn't authorized to change this user's profile image.",
+                detail: "The requesting user isn't allowed to access this resource.",
                 extensions: new Dictionary<string, object?> { { "UserId", userId } });
+    }
+
+    private async Task<bool> ModifyProfileImageAccessAsync(string userId)
+    {
+        bool permitted = userManager.GetUserId(HttpContext.User) == userId;
+        if (!permitted)
+        {
+            AuthorizationResult authResult = await authorizationService.RequirePermissionAsync(HttpContext.User, Permissions.Users, PermissionLevel.Write).ConfigureAwait(false);
+            permitted |= authResult.Succeeded;
         }
+
+        return permitted;
     }
 }
