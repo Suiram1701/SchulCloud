@@ -21,7 +21,7 @@ namespace SchulCloud.RestApi.ApiControllers.V1;
 [ApiController]
 [ApiVersion(1)]
 [Route($"{VersionPrefix}/users")]
-public sealed class UserController(ILogger<UserController> logger, IAuthorizationService authorizationService, AppUserManager userManager, AppRoleManager roleManager) : ControllerBase
+public sealed class UserController(ILogger<UserController> logger, IAuthorizationService authorizationService, AppUserManager userManager) : ControllerBase
 {
     /// <summary>
     /// Gets every user that is registered on the site.
@@ -69,8 +69,11 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
         if (!(await authorizationService.RequirePermissionAsync(User, Permissions.Users, PermissionLevel.Read).ConfigureAwait(false)).Succeeded)
         {
             // The permission Users >= Read is required to get these fields.
-            userDto.Email = null;
-            userDto.PhoneNumber = null;
+            userDto = userDto with
+            {
+                Email = null,
+                PhoneNumber = null
+            };
         }
 
         string requestingUserId = userManager.GetUserId(User)!;
@@ -82,7 +85,11 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
     /// <summary>
     /// Gets the roles a user has.
     /// </summary>
+    /// <remarks>
+    /// Requesting the roles of the requesting user doesn't require any permission but for any other user permission **Users** with level read or greater is required.
+    /// </remarks>
     /// <param name="userId">The id of the user to get the roles from.</param>
+    /// <param name="roleManager"></param>
     /// <returns>A list of roles.</returns>
     /// <response code="200">Returns a list of roles the user has.</response>
     /// <response code="404">No user with the requested id was found.</response>
@@ -91,12 +98,18 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
     [SortingFilter<User>]
     [ProducesResponseType<Role[]>(StatusCodes.Status200OK, Application.Json)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Application.ProblemJson)]
-    [RequirePermission(Permissions.Users, PermissionLevel.Read)]
-    public async Task<IActionResult> GetRolesAsync([FromRoute] string userId)
+    public async Task<IActionResult> GetRolesAsync([FromRoute] string userId, [FromServices] AppRoleManager roleManager)
     {
         ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
         if (user is null)
             return UserNotFoundResponse(userId);
+
+        if (userManager.GetUserId(HttpContext.User) != userId)
+        {
+            AuthorizationResult authResult = await authorizationService.RequirePermissionAsync(User, Permissions.Users, PermissionLevel.Read).ConfigureAwait(false);
+            if (!authResult.Succeeded)
+                return UserNotPermittedResponse();
+        }
 
         IList<string> roleNames = await userManager.GetRolesAsync(user).ConfigureAwait(false);
         ApplicationRole[] roles = await Task.WhenAll(roleNames.Select(async name =>
@@ -303,6 +316,7 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
         return Ok(attempts.Adapt<LoginAttempt[]>(LoginAttempt._adapterConfig).OrderByDescending(a => a.DateTime));
     }
 
+    [NonAction]
     private ObjectResult UserNotFoundResponse(string userId)
     {
         return Problem(
@@ -312,6 +326,7 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
                 extensions: new Dictionary<string, object?> { { "UserId", userId } });
     }
 
+    [NonAction]
     private ObjectResult UserNotPermittedResponse()
     {
         string userId = userManager.GetUserId(HttpContext.User)!;
@@ -322,6 +337,7 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
                 extensions: new Dictionary<string, object?> { { "UserId", userId } });
     }
 
+    [NonAction]
     private async Task<bool> ModifyProfileImageAccessAsync(string userId)
     {
         bool permitted = userManager.GetUserId(HttpContext.User) == userId;

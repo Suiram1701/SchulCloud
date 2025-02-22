@@ -1,30 +1,37 @@
-﻿using Fido2NetLib;
-using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-
-namespace SchulCloud.Identity.Enums;
+﻿namespace SchulCloud.Identity.Enums;
 
 /// <summary>
 /// Different methods that can be used to log in into a user's account or verify 2fa with.
 /// </summary>
-[JsonConverter(typeof(FidoEnumConverter<LoginAttemptMethod>))]
 public enum LoginAttemptMethod
 {
-    [EnumMember(Value = "password")]
+    /// <summary>
+    /// The user's password were used for sign in.
+    /// </summary>
     Password,
 
-    [EnumMember(Value = "passkey")]
+    /// <summary>
+    /// A username less login were performed using a passkey.
+    /// </summary>
     Passkey,
 
-    [EnumMember(Value = "twoFactor_Authenticator")]
+    /// <summary>
+    /// A 2fa verification using an authenticator app were done.
+    /// </summary>
     TwoFactorAuthenticator,
 
-    [EnumMember(Value = "twoFactor_Email")]
+    /// <summary>
+    /// A 2fa verification using an email were done.
+    /// </summary>
     TwoFactorEmail,
 
-    [EnumMember(Value = "twoFactor_securityKey")]
+    /// <summary>
+    /// A 2fa verification using a security hardware key were done.
+    /// </summary>
     TwoFactorSecurityKey,
 
-    [EnumMember(Value = "twoFactor_recovery")]
+    /// <summary>
+    /// A 2fa verification using one of the user's recovery codes were done.
+    /// </summary>
     TwoFactorRecoveryCode
 }

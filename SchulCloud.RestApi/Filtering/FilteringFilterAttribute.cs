@@ -98,7 +98,7 @@ public class FilteringFilterAttribute<TItem> : ActionFilterAttribute
                     @operator = FilterOperators.Eq;
                 }
 
-                if (!TryParseValue(property.PropertyType, parts[1], out object? value))
+                if (!TryParseComparisonValue(property.PropertyType, parts[1], out object? value))
                 {
                     errors.Add($"The provided value for field '{propertyName}' to filter could not be parsed.");
                     continue;
@@ -235,10 +235,10 @@ public class FilteringFilterAttribute<TItem> : ActionFilterAttribute
         }
     }
 
-    private static bool TryParseValue(Type type, string value, out object? result)
+    private static bool TryParseComparisonValue(Type type, string value, out object? result)
     {
         bool nullable = false;
-        if (type.GenericTypeArguments.Length > 0)
+        if (type.GenericTypeArguments.Length == 1)     // Check for nullable primitive type
         {
             Type genericParam = type.GenericTypeArguments[0];
             if (type == typeof(Nullable<>).MakeGenericType(genericParam))
@@ -248,15 +248,19 @@ public class FilteringFilterAttribute<TItem> : ActionFilterAttribute
             }
         }
 
-        if (type == typeof(string))
+        if (type == typeof(string))     // string
         {
             result = value;
             return true;
         }
-        else if (nullable && string.IsNullOrEmpty(value))
+        else if (nullable && string.IsNullOrEmpty(value))     // string?
         {
             result = null;
             return true;
+        }
+        else if (type.IsEnum)     // Enum
+        {
+            return Enum.TryParse(type, value, ignoreCase: true, out result);
         }
         else
         {

@@ -89,18 +89,20 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
         }
 
         string roleName = (await roleManager.GetRoleNameAsync(role).ConfigureAwait(false))!;
-        IList<ApplicationUser> users = await userManager.GetUsersInRoleAsync(roleName).ConfigureAwait(false);
-        IList<User> userDtos = users.Adapt<IList<User>>();
+        IEnumerable<ApplicationUser> users = await userManager.GetUsersInRoleAsync(roleName).ConfigureAwait(false);
+        IEnumerable<User> userDtos = users.Adapt<IList<User>>();
 
         if (!(await authorizationService.RequirePermissionAsync(User, Permissions.Users, PermissionLevel.Read).ConfigureAwait(false)).Succeeded)
         {
-            foreach (User userDto in userDtos)
+            userDtos = userDtos.Select(dto =>
             {
                 // The permission Users >= Read is required to get these fields.
-                userDto.Email = null;
-                userDto.PhoneNumber = null;
-            }
-
+                return dto with
+                {
+                    Email = null,
+                    PhoneNumber = null
+                };
+            });
             logger.LogInformation("Removed sensitive fields from response.");
         }
 
@@ -134,7 +136,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, MediaTypeNames.Application.ProblemJson)]
     [RequirePermission(Permissions.Roles, PermissionLevel.Write)]
-    public async Task<IActionResult> AddUsersToRole([FromRoute] string roleId, [FromBody] string[] userIds)
+    public async Task<IActionResult> AddUsersToRoleAsync([FromRoute] string roleId, [FromBody] string[] userIds)
     {
         (ObjectResult? result, ApplicationRole? role, IEnumerable<ApplicationUser>? users) = await PrepareRoleMemberChangeAsync(roleId, userIds).ConfigureAwait(false);
         if (result is not null)
@@ -202,7 +204,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, MediaTypeNames.Application.ProblemJson)]
     [RequirePermission(Permissions.Roles, PermissionLevel.Write)]
-    public async Task<IActionResult> DeleteUsersFromRole([FromRoute] string roleId, [FromBody] string[] userIds)
+    public async Task<IActionResult> DeleteUsersFromRoleAsync([FromRoute] string roleId, [FromBody] string[] userIds)
     {
         (ObjectResult? result, ApplicationRole? role, IEnumerable<ApplicationUser>? users) = await PrepareRoleMemberChangeAsync(roleId, userIds).ConfigureAwait(false);
         if (result is not null)
@@ -263,6 +265,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
         }
     }
 
+    [NonAction]
     private async Task<(ObjectResult? Result, ApplicationRole? Role, IEnumerable<ApplicationUser>? Users)> PrepareRoleMemberChangeAsync(string roleId, string[] userIds)
     {
         ApplicationRole? role = await roleManager.FindByIdAsync(roleId).ConfigureAwait(false);
@@ -299,6 +302,7 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
         return (null, role, users);
     }
 
+    [NonAction]
     private ObjectResult RoleNotFoundResponse(string roleId)
     {
         return Problem(

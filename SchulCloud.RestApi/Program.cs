@@ -16,6 +16,7 @@ using SchulCloud.RestApi.Swagger;
 using SchulCloud.ServiceDefaults;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using System.Text.Json.Serialization;
 
 namespace SchulCloud.RestApi;
 
@@ -48,7 +49,8 @@ internal class Program
             .AddFluentValidationAutoValidation()
             .AddValidatorsFromAssemblyContaining<IRestApi>();
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddCustomizedProblemDetails();
 
         builder.Services.AddApiVersioning(options =>
@@ -66,10 +68,11 @@ internal class Program
 
             builder.Services.Configure<OpenApiOptions>(builder.Configuration.GetSection("OpenApi"));
             builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwagger>();
-        }
-        if (builder.Configuration.GetValue<bool?>("Swagger:UiEnabled") ?? false)
-        {
-            builder.Services.AddTransient<IConfigureOptions<SwaggerUIOptions>, ConfigureSwaggerUI>();
+
+            if (builder.Configuration.GetValue<bool?>("Swagger:UiEnabled") ?? false)
+            {
+                builder.Services.AddTransient<IConfigureOptions<SwaggerUIOptions>, ConfigureSwaggerUI>();
+            }
         }
 
         WebApplication app = builder.Build();
@@ -92,10 +95,11 @@ internal class Program
         if (app.Configuration.GetValue<bool?>("Swagger:Enabled") ?? false)
         {
             app.UseSwagger();
-        }
-        if (app.Configuration.GetValue<bool?>("Swagger:UiEnabled") ?? false)
-        {
-            app.UseSwaggerUI();
+
+            if (app.Configuration.GetValue<bool?>("Swagger:UiEnabled") ?? false)
+            {
+                app.UseSwaggerUI();
+            }
         }
 
         app.Run();

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using SchulCloud.RestApi.Linq;
-using SchulCloud.RestApi.Models;
 using System.Linq.Expressions;
 using System.Reflection;
 

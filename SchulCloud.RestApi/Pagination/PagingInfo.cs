@@ -1,4 +1,4 @@
-﻿namespace SchulCloud.RestApi.Models;
+﻿namespace SchulCloud.RestApi.Pagination;
 
 /// <summary>
 /// A wrapper around a pageable response.
