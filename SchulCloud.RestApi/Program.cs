@@ -11,6 +11,7 @@ using SchulCloud.FileStorage.S3;
 using SchulCloud.Identity;
 using SchulCloud.Identity.Services;
 using SchulCloud.RestApi.Extensions;
+using SchulCloud.RestApi.FieldAuthorization;
 using SchulCloud.RestApi.Options;
 using SchulCloud.RestApi.Swagger;
 using SchulCloud.ServiceDefaults;
@@ -50,6 +51,7 @@ internal class Program
             .AddValidatorsFromAssemblyContaining<IRestApi>();
 
         builder.Services.AddControllers()
+            .AddMvcOptions(options => options.Filters.Add<FieldPermissionFilter>())
             .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddCustomizedProblemDetails();
 

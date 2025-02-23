@@ -1,10 +1,37 @@
-﻿namespace SchulCloud.RestApi.Models;
+﻿using SchulCloud.Authorization;
+using SchulCloud.RestApi.FieldAuthorization;
+
+namespace SchulCloud.RestApi.Models;
+
+/* 
+ * This class like record declaration is required for EF Core to work properly with type projection.
+ * -> EF Core can't work well with constructors.
+*/
 
 /// <summary>
-/// A user of the application.
+/// A single user.
 /// </summary>
-/// <param name="Id">The unique identifier of the user.</param>
-/// <param name="UserName">The unique name of the user.</param>
-/// <param name="Email">The email of the user. This field will only be returned if the request was made with the permission **Users** at the level **Read** or greater.</param>
-/// <param name="PhoneNumber">The phone number of this user. This field will only be returned if the request was made with the permission **Users** at the level **Read** or greater.</param>
-public record User(string Id, string UserName, string? Email, string? PhoneNumber);
+public record User
+{
+    /// <summary>
+    /// The unique identifier of the user.
+    /// </summary>
+    public required string Id { get; init; }
+
+    /// <summary>
+    /// The unique name of the user.
+    /// </summary>
+    public required string UserName { get; init; }
+
+    /// <summary>
+    /// The unique email of the user. This field will only be returned if the request was made with the permission **Users** at the level **Read** or greater.
+    /// </summary>
+    [RequireFieldPermission(Permissions.Users, PermissionLevel.Read)]
+    public string? Email { get; init; }
+
+    /// <summary>
+    /// The phone number of the user. This field will only be returned if the request was made with the permission **Users** at the level **Read** or greater.
+    /// </summary>
+    [RequireFieldPermission(Permissions.Users, PermissionLevel.Read)]
+    public string? PhoneNumber { get; init; }
+}

@@ -65,21 +65,10 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
             return UserNotFoundResponse(userId);
         }
 
-        User userDto = user.Adapt<User>();
-        if (!(await authorizationService.RequirePermissionAsync(User, Permissions.Users, PermissionLevel.Read).ConfigureAwait(false)).Succeeded)
-        {
-            // The permission Users >= Read is required to get these fields.
-            userDto = userDto with
-            {
-                Email = null,
-                PhoneNumber = null
-            };
-        }
-
         string requestingUserId = userManager.GetUserId(User)!;
         logger.LogTrace("User '{userId}' requested user '{requestUserId}'", requestingUserId, userId);
 
-        return Ok(userDto);
+        return Ok(user.Adapt<User>());
     }
 
     /// <summary>

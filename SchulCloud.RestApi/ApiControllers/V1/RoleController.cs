@@ -17,7 +17,7 @@ namespace SchulCloud.RestApi.ApiControllers.V1;
 [ApiController]
 [ApiVersion(1)]
 [Route($"{VersionPrefix}/roles")]
-public sealed class RoleController(ILogger<RoleController> logger, IAuthorizationService authorizationService, AppUserManager userManager, AppRoleManager roleManager) : ControllerBase
+public sealed class RoleController(ILogger<RoleController> logger, AppUserManager userManager, AppRoleManager roleManager) : ControllerBase
 {
     /// <summary>
     /// Gets every role that is available.
@@ -90,26 +90,11 @@ public sealed class RoleController(ILogger<RoleController> logger, IAuthorizatio
 
         string roleName = (await roleManager.GetRoleNameAsync(role).ConfigureAwait(false))!;
         IEnumerable<ApplicationUser> users = await userManager.GetUsersInRoleAsync(roleName).ConfigureAwait(false);
-        IEnumerable<User> userDtos = users.Adapt<IList<User>>();
-
-        if (!(await authorizationService.RequirePermissionAsync(User, Permissions.Users, PermissionLevel.Read).ConfigureAwait(false)).Succeeded)
-        {
-            userDtos = userDtos.Select(dto =>
-            {
-                // The permission Users >= Read is required to get these fields.
-                return dto with
-                {
-                    Email = null,
-                    PhoneNumber = null
-                };
-            });
-            logger.LogInformation("Removed sensitive fields from response.");
-        }
 
         string userId = userManager.GetUserId(User)!;
         logger.LogTrace("User '{userId}' requested users of role '{requestRole}'.", userId, roleId);
 
-        return Ok(userDtos);
+        return Ok(users.Adapt<IList<User>>());
     }
 
     /// <summary>
