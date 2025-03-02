@@ -1,6 +1,6 @@
 ﻿using SchulCloud.Authorization;
 
-namespace SchulCloud.RestApi.FieldAuthorization;
+namespace SchulCloud.RestApi.FieldPermission;
 
 /// <summary>
 /// Marks a field or property that it's requires a specific permission to be returned.

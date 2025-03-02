@@ -29,9 +29,10 @@
     <Using Include="SchulCloud.RestApi.RouteConstants">
       <Static>True</Static>
     </Using>
+	<Using Include="SchulCloud.RestApi.FieldPermission" />
 	<Using Include="SchulCloud.RestApi.Filtering" />
-	<Using Include="SchulCloud.RestApi.Sorting" />
 	<Using Include="SchulCloud.RestApi.Pagination" />
+	<Using Include="SchulCloud.RestApi.Sorting" />
   </ItemGroup>
 
 </Project>

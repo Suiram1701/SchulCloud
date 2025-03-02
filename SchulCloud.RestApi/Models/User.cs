@@ -24,13 +24,13 @@ public record User
     public required string UserName { get; init; }
 
     /// <summary>
-    /// The unique email of the user. This field will only be returned if the request was made with the permission **Users** at the level **Read** or greater.
+    /// The unique email of the user.
     /// </summary>
     [RequireFieldPermission(Permissions.Users, PermissionLevel.Read)]
     public string? Email { get; init; }
 
     /// <summary>
-    /// The phone number of the user. This field will only be returned if the request was made with the permission **Users** at the level **Read** or greater.
+    /// The phone number of the user.
     /// </summary>
     [RequireFieldPermission(Permissions.Users, PermissionLevel.Read)]
     public string? PhoneNumber { get; init; }

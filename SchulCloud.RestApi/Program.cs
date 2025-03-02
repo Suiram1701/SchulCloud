@@ -11,7 +11,6 @@ using SchulCloud.FileStorage.S3;
 using SchulCloud.Identity;
 using SchulCloud.Identity.Services;
 using SchulCloud.RestApi.Extensions;
-using SchulCloud.RestApi.FieldAuthorization;
 using SchulCloud.RestApi.Options;
 using SchulCloud.RestApi.Swagger;
 using SchulCloud.ServiceDefaults;

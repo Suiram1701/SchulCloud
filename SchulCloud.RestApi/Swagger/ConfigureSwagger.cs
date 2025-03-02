@@ -34,5 +34,8 @@ internal class ConfigureSwagger(IApiVersionDescriptionProvider provider, IOption
         options.OperationFilter<PaginationFilter>();
         options.OperationFilter<SecurityFilter>();
         options.OperationFilter<BasePathOperationFilter>();
+
+        options.DocumentFilter<FieldPermissionSwaggerFilter>();
+        options.OperationFilter<FieldPermissionSwaggerFilter>();
     }
 }

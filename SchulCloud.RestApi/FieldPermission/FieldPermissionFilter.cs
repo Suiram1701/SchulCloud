@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace SchulCloud.RestApi.FieldAuthorization;
+namespace SchulCloud.RestApi.FieldPermission;
 
 /// <summary>
 /// A result filter that removes fields if the requesting user isn't authorized to access those.
@@ -124,12 +124,13 @@ public class FieldPermissionFilter : IAsyncResultFilter, IOrderedFilter
         List<PropertyInfo> properties = [];
         foreach (PropertyInfo property in declaringType.GetProperties(BindingFlags.Public | BindingFlags.Instance) ?? [])
         {
-            if (property.GetCustomAttribute<RequireFieldPermissionAttribute>() is RequireFieldPermissionAttribute attribute)
-            {
-                AuthorizationResult authResult = await authorization.RequirePermissionAsync(context.HttpContext.User, attribute.Name, attribute.Level).ConfigureAwait(false);
-                if (!authResult.Succeeded)
-                    properties.Add(property);
-            }
+            IEnumerable<Task<AuthorizationResult>> permissionResults = property
+                .GetCustomAttributes<RequireFieldPermissionAttribute>()
+                .Select(attribute => authorization.RequirePermissionAsync(context.HttpContext.User, attribute.Name, attribute.Level));
+            AuthorizationResult[] results = await Task.WhenAll(permissionResults).ConfigureAwait(false);
+
+            if (!results.All(result => result.Succeeded))
+                properties.Add(property);
         }
 
         return properties;

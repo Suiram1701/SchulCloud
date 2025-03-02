@@ -47,9 +47,6 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
     /// <summary>
     /// Gets a single user by his id.
     /// </summary>
-    /// <remarks>
-    /// This endpoint can be called without any permission but some fields of the model are only set of the permission **Users** is **Read** or greater is available.
-    /// </remarks>
     /// <param name="userId">The id of the user to get.</param>
     /// <returns>The user that has the requested id.</returns>
     /// <response code="200">Returns the user that has the requested id.</response>
