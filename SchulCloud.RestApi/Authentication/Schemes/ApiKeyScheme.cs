@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using SchulCloud.Authorization;
@@ -11,7 +9,7 @@ using SchulCloud.Identity.Models;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 
-namespace SchulCloud.Authentication.Schemes;
+namespace SchulCloud.RestApi.Authentication.Schemes;
 
 internal class ApiKeyScheme<TUser>(
     IProblemDetailsService problemDetailsService,
@@ -24,7 +22,7 @@ internal class ApiKeyScheme<TUser>(
 {
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (!Context.Request.Headers.TryGetValue(HeaderNames.ApiKeyHeader, out StringValues headerValues))
+        if (!Context.Request.Headers.TryGetValue("x-api-key", out StringValues headerValues))
         {
             return AuthenticateResult.NoResult();
         }

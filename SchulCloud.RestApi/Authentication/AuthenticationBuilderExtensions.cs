@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.DependencyInjection;
-using SchulCloud.Authentication.Schemes;
+using SchulCloud.RestApi.Authentication.Schemes;
 
-namespace SchulCloud.Authentication;
+namespace SchulCloud.RestApi.Authentication;
 
+/// <summary>
+/// A class containing extensions for <see cref="AuthenticationBuilder"/>.
+/// </summary>
 public static class AuthenticationBuilderExtensions
 {
     /// <summary>
@@ -17,7 +19,6 @@ public static class AuthenticationBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.AddMemoryCache();
         builder.Services.AddProblemDetails();
         return builder.AddScheme<ApiKeySchemeOptions, ApiKeyScheme<TUser>>(SchemeNames.ApiKeyScheme, null);
     }
