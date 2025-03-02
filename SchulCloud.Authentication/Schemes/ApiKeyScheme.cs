@@ -59,7 +59,7 @@ internal class ApiKeyScheme<TUser>(
             {
                 Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status401Unauthorized),
                 Status = StatusCodes.Status401Unauthorized,
-                Detail = "An API key is required to call this endpoint.",
+                Detail = "An API key is required to access this resource.",
             }
         }).ConfigureAwait(false);
     }
@@ -74,7 +74,7 @@ internal class ApiKeyScheme<TUser>(
             {
                 Title = ReasonPhrases.GetReasonPhrase(StatusCodes.Status403Forbidden),
                 Status = StatusCodes.Status403Forbidden,
-                Detail = "The used API key does not have the privileges to call this endpoint.",
+                Detail = "The used API key does not have the privileges to access this resource.",
             }
         }).ConfigureAwait(false);
     }

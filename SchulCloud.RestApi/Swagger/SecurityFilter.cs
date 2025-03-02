@@ -2,7 +2,6 @@
 using Microsoft.OpenApi.Models;
 using SchulCloud.Authorization.Attributes;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Net.Mime;
 using System.Reflection;
 
 namespace SchulCloud.RestApi.Swagger;
@@ -14,7 +13,7 @@ internal class SecurityFilter : IOperationFilter
             "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
             "title": "Unauthorized",
             "status": 401,
-            "detail": "An API key is required to call this endpoint.",
+            "detail": "An API key is required to access this resource.",
             "traceId": ""
         }
         """;
@@ -24,7 +23,7 @@ internal class SecurityFilter : IOperationFilter
             "type": "https://tools.ietf.org/html/rfc9110#section-15.5.4",
             "title": "Forbidden",
             "status": 403,
-            "detail": "The used API key does not have the privileges to call this endpoint.",
+            "detail": "The used API key does not have the privileges to access this resource.",
             "traceId": ""
         }
         """;
@@ -68,7 +67,7 @@ internal class SecurityFilter : IOperationFilter
         };
         return new Dictionary<string, OpenApiMediaType>()
         {
-            { MediaTypeNames.Application.ProblemJson, mediaType}
+            { Application.ProblemJson, mediaType}
         };
     }
 }

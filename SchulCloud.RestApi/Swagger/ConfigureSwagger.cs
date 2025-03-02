@@ -29,13 +29,17 @@ internal class ConfigureSwagger(IApiVersionDescriptionProvider provider, IOption
         options.IncludeXmlComments(typeof(IRestApi).Assembly, includeControllerXmlComments: true);
 
         options.OperationFilter<ErrorResponseFilter>();
+        
         options.OperationFilter<FilteringFilter>();
         options.OperationFilter<SortingFilter>();
         options.OperationFilter<PaginationFilter>();
-        options.OperationFilter<SecurityFilter>();
-        options.OperationFilter<BasePathOperationFilter>();
 
         options.DocumentFilter<FieldPermissionSwaggerFilter>();
         options.OperationFilter<FieldPermissionSwaggerFilter>();
+
+        options.OperationFilter<SecurityFilter>();
+        options.OperationFilter<RequireSelfOrPermissionFilter>();
+
+        options.OperationFilter<BasePathOperationFilter>();
     }
 }

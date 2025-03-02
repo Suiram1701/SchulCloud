@@ -1,5 +1,4 @@
 ﻿using SchulCloud.Authorization;
-using SchulCloud.RestApi.FieldAuthorization;
 
 namespace SchulCloud.RestApi.Models;
 

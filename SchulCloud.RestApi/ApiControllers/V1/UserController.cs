@@ -1,17 +1,14 @@
 ﻿using Asp.Versioning;
 using Mapster;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SchulCloud.Authorization;
 using SchulCloud.Authorization.Attributes;
-using SchulCloud.Authorization.Extensions;
 using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
 using SchulCloud.Identity.Services;
 using SchulCloud.RestApi.Extensions;
 using SchulCloud.RestApi.Models;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SchulCloud.RestApi.ApiControllers.V1;
 
@@ -21,7 +18,7 @@ namespace SchulCloud.RestApi.ApiControllers.V1;
 [ApiController]
 [ApiVersion(1)]
 [Route($"{VersionPrefix}/users")]
-public sealed class UserController(ILogger<UserController> logger, IAuthorizationService authorizationService, AppUserManager userManager) : ControllerBase
+public sealed class UserController(ILogger<UserController> logger, AppUserManager userManager) : ControllerBase
 {
     /// <summary>
     /// Gets every user that is registered on the site.
@@ -80,6 +77,7 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
     /// <response code="200">Returns a list of roles the user has.</response>
     /// <response code="404">No user with the requested id was found.</response>
     [HttpGet("{userId}/roles")]
+    [RequireSelfOrPermission(Permissions.Users, PermissionLevel.Read)]
     [FilteringFilter<User>]
     [SortingFilter<User>]
     [ProducesResponseType<Role[]>(StatusCodes.Status200OK, Application.Json)]
@@ -89,13 +87,6 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
         ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
         if (user is null)
             return UserNotFoundResponse(userId);
-
-        if (userManager.GetUserId(HttpContext.User) != userId)
-        {
-            AuthorizationResult authResult = await authorizationService.RequirePermissionAsync(User, Permissions.Users, PermissionLevel.Read).ConfigureAwait(false);
-            if (!authResult.Succeeded)
-                return UserNotPermittedResponse();
-        }
 
         IList<string> roleNames = await userManager.GetRolesAsync(user).ConfigureAwait(false);
         ApplicationRole[] roles = await Task.WhenAll(roleNames.Select(async name =>
@@ -132,28 +123,21 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
     /// <summary>
     /// Updates the profile image of a certain user.
     /// </summary>
-    /// <remarks>
-    /// This endpoint can be called without any permission if **userId** is the id of the API key owner otherwise 403 will be returned. 
-    /// If the permissions **Users** is **Write** or higher any users' image can be changed.
-    /// </remarks>
     /// <param name="userId">The id of the user to get the profile image from.</param>
     /// <param name="image">The new image to set. Acceptable image formats are PNG, QOI, PBM, BMP, WebP, JPEG, GIF, TGA and TIFF.</param>
     /// <response code="204">The image were changed successfully.</response>
     /// <response code="400">The uploaded image were invalid.</response>
-    /// <response code="403">The current user isn't permitted to change the profile image.</response>
     /// <response code="404">No user with the requested id was found.</response>
     [HttpPut("{userId}/image")]
+    [RequireSelfOrPermission(Permissions.Users, PermissionLevel.Write)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, Application.ProblemJson)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, Application.ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Application.ProblemJson)]
     public async Task<IActionResult> UpdateProfileImageAsync([FromRoute] string userId, IFormFile image)
     {
         ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
         if (user is null)
             return UserNotFoundResponse(userId);
-        if (!await ModifyProfileImageAccessAsync(userId).ConfigureAwait(false))
-            return UserNotPermittedResponse();
 
         using Stream imageStream = image.OpenReadStream();
         IdentityResult updateResult = await userManager.UpdateProfileImageAsync(user, imageStream).ConfigureAwait(false);
@@ -171,25 +155,18 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
     /// <summary>
     /// Removes the profile image of a certain user.
     /// </summary>
-    /// <remarks>
-    /// This endpoint can be called without any permission if **userId** is the id of the API key owner otherwise 403 will be returned. 
-    /// If the permissions **Users** is **Write** or higher any users' image can be removed.
-    /// </remarks>
     /// <param name="userId">The id of the user to remove the profile image for.</param>
     /// <response code="204">The image were successfully removed.</response>
-    /// <response code="403">The current user isn't permitted to change the profile image.</response>
     /// <response code="404">No user with the requested id was found.</response>
     [HttpDelete("{userId}/image")]
+    [RequireSelfOrPermission(Permissions.Users, PermissionLevel.Write)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, Application.ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Application.ProblemJson)]
     public async Task<IActionResult> DeleteProfileImageAsync([FromRoute] string userId)
     {
         ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
         if (user is null)
             return UserNotFoundResponse(userId);
-        if (!await ModifyProfileImageAccessAsync(userId).ConfigureAwait(false))
-            return UserNotPermittedResponse();
 
         IdentityResult deleteResult = await userManager.RemoveProfileImageAsync(user).ConfigureAwait(false);
         return deleteResult.Succeeded
@@ -200,29 +177,18 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
     /// <summary>
     /// Retrieves the security settings of a specific user.
     /// </summary>
-    /// <remarks>
-    /// Requesting the settings of the requesting user doesn't require any permission but for any other user permission **Users** with level read or greater is required.
-    /// </remarks>
     /// <param name="userId">The id of the user to retrieve the security settings for.</param>
     /// <response code="200">Returns the security settings of the user.</response>
-    /// <response code="403">The requesting user isn't permitted to request this data.</response>
     /// <response code="404">No user with the requested id was found.</response>
     [HttpGet("{userId}/security")]
+    [RequireSelfOrPermission(Permissions.Users, PermissionLevel.Read)]
     [ProducesResponseType<SecuritySettings>(StatusCodes.Status200OK, Application.Json)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, Application.ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Application.ProblemJson)]
     public async Task<IActionResult> GetSecuritySettingsAsync([FromRoute] string userId)
     {
         ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
         if (user is null)
             return UserNotFoundResponse(userId);
-
-        if (userManager.GetUserId(HttpContext.User) != userId)
-        {
-            AuthorizationResult authResult = await authorizationService.RequirePermissionAsync(User, Permissions.Users, PermissionLevel.Read).ConfigureAwait(false);
-            if (!authResult.Succeeded)
-                return UserNotPermittedResponse();
-        }
 
         // Check which 2fa methods are enabled
         HashSet<TwoFactorMethod>? enabledMethods = null;
@@ -272,31 +238,20 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
     /// <summary>
     /// Retrieves the login attempts of a user.
     /// </summary>
-    /// <remarks>
-    /// Requesting the attempts of the requesting user doesn't require any permission but for any other user permission **Users** with level read or greater is required.
-    /// </remarks>
     /// <param name="userId">The id of the user to get the login attempts of.</param>
     /// <response code="200">Returns the login attempts of the user ordered descending by the login time.</response>
-    /// <response code="403">The requesting user isn't permitted to request this data.</response>
     /// <response code="404">No user with the requested id was found.</response>
     [HttpGet("{userId}/loginAttempts")]
+    [RequireSelfOrPermission(Permissions.Users, PermissionLevel.Read)]
     [FilteringFilter<LoginAttempt>]
     [PaginationFilter<LoginAttempt>]
     [ProducesResponseType<LoginAttempt[]>(StatusCodes.Status200OK, Application.Json)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, Application.ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Application.ProblemJson)]
     public async Task<IActionResult> GetLoginAttemptsAsync([FromRoute] string userId)
     {
         ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
         if (user is null)
             return UserNotFoundResponse(userId);
-
-        if (userManager.GetUserId(HttpContext.User) != userId)
-        {
-            AuthorizationResult authResult = await authorizationService.RequirePermissionAsync(User, Permissions.Users, PermissionLevel.Read).ConfigureAwait(false);
-            if (!authResult.Succeeded)
-                return UserNotPermittedResponse();
-        }
 
         IEnumerable<UserLoginAttempt> attempts = await userManager.FindLoginAttemptsByUserAsync(user).ConfigureAwait(false);
         return Ok(attempts.Adapt<LoginAttempt[]>(LoginAttempt._adapterConfig).OrderByDescending(a => a.DateTime));
@@ -310,29 +265,5 @@ public sealed class UserController(ILogger<UserController> logger, IAuthorizatio
                 statusCode: StatusCodes.Status404NotFound,
                 detail: "No user with the specified ID was found.",
                 extensions: new Dictionary<string, object?> { { "UserId", userId } });
-    }
-
-    [NonAction]
-    private ObjectResult UserNotPermittedResponse()
-    {
-        string userId = userManager.GetUserId(HttpContext.User)!;
-        return Problem(
-                title: "Access denied",
-                statusCode: StatusCodes.Status403Forbidden,
-                detail: "The requesting user isn't allowed to access this resource.",
-                extensions: new Dictionary<string, object?> { { "UserId", userId } });
-    }
-
-    [NonAction]
-    private async Task<bool> ModifyProfileImageAccessAsync(string userId)
-    {
-        bool permitted = userManager.GetUserId(HttpContext.User) == userId;
-        if (!permitted)
-        {
-            AuthorizationResult authResult = await authorizationService.RequirePermissionAsync(HttpContext.User, Permissions.Users, PermissionLevel.Write).ConfigureAwait(false);
-            permitted |= authResult.Succeeded;
-        }
-
-        return permitted;
     }
 }
