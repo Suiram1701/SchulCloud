@@ -55,7 +55,7 @@ public class SchulCloudSignInManager(
 
         // Checks whether user and credential support passkeys.
         ApplicationUser user = (await _userManager.FindUserByFido2CredentialAsync(credential))!;
-        if (!await _userManager.GetPasskeySignInEnabledAsync(user) || !await _userManager.GetIsPasskey(credential))
+        if (!await _userManager.GetPasskeySignInEnabledAsync(user) || !await _userManager.GetIsPasskeyAsync(credential))
         {
             return (SignInResult.Failed, null);
         }

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SchulCloud.Authorization;
+using SchulCloud.FileStorage;
 using SchulCloud.FileStorage.Abstractions;
 using SchulCloud.Identity.Abstractions;
 using SchulCloud.Identity.Enums;
@@ -122,7 +123,7 @@ public partial class AppUserManager<TUser>(
     /// </summary>
     /// <param name="credential">The credential.</param>
     /// <returns>The flag.</returns>
-    public virtual async Task<bool> GetIsPasskey(UserCredential credential)
+    public virtual async Task<bool> GetIsPasskeyAsync(UserCredential credential)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(credential);
@@ -723,7 +724,7 @@ public partial class AppUserManager<TUser>(
     /// </summary>
     /// <param name="user">The user to get the profile image of.</param>
     /// <returns>The profile image. If <c>null</c> not image is available.</returns>
-    public virtual async Task<Stream?> GetProfileImageAsync(TUser user)
+    public virtual async Task<FileResultInfo?> GetProfileImageAsync(TUser user)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);

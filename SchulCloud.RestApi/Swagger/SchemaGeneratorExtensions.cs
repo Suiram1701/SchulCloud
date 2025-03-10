@@ -29,4 +29,20 @@ public static class SchemaGeneratorExtensions
         schema.Pattern = pattern;
         return schema;
     }
+
+    /// <summary>
+    /// Generates a schema for a binary.
+    /// </summary>
+    /// <param name="generator">The generator to use.</param>
+    /// <param name="repository">The repository to use.</param>
+    /// <returns>The generated schema.</returns>
+    public static OpenApiSchema GenerateBinarySchema(this ISchemaGenerator generator, SchemaRepository repository)
+    {
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(repository);
+
+        OpenApiSchema schema = generator.GenerateSchema(typeof(string), repository);
+        schema.Pattern = "binary";
+        return schema;
+    }
 }

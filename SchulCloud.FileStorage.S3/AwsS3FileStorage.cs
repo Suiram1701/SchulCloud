@@ -34,7 +34,7 @@ public partial class AwsS3FileStorage<TUser>(
 
     private readonly IAmazonS3 _client = clientFactory.GetS3Client();
 
-    public async Task<Stream?> GetImageAsync(TUser user, CancellationToken ct)
+    public async Task<FileResultInfo?> GetImageAsync(TUser user, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(user);
         ct.ThrowIfCancellationRequested();
@@ -44,7 +44,7 @@ public partial class AwsS3FileStorage<TUser>(
         try
         {
             GetObjectResponse response = await _client.GetObjectAsync(BucketName, objectKey, ct).ConfigureAwait(false);
-            return response.ResponseStream;
+            return new(response.ResponseStream, response.Headers.ContentType, response.ETag, new(response.LastModified));
         }
         catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
         {

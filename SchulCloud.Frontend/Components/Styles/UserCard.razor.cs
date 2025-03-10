@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using SchulCloud.FileStorage;
 
 namespace SchulCloud.Frontend.Components.Styles;
 
@@ -22,12 +23,13 @@ public sealed partial class UserCard : ComponentBase
         {
             _username = await UserManager.GetUserNameAsync(User);
 
-            using Stream? imageStream = await UserManager.GetProfileImageAsync(User);
-            if (imageStream is not null)
+            await using FileResultInfo? imageInfo = await UserManager.GetProfileImageAsync(User);
+            if (imageInfo is not null)
             {
-                using MemoryStream ms = new();
-                await imageStream.CopyToAsync(ms);
-                _base64ProfileImage = Convert.ToBase64String(ms.ToArray());
+                using MemoryStream memory = new();
+                await imageInfo.FileStream.CopyToAsync(memory).ConfigureAwait(false);
+
+                _base64ProfileImage = Convert.ToBase64String(memory.GetBuffer());
             }
 
             _isInitialized = true;

@@ -12,8 +12,8 @@ public interface IProfileImageStore<TUser>
     /// </summary>
     /// <param name="user">The user to get the image of.</param>
     /// <param name="ct">Cancellation token</param>
-    /// <returns>The image. If <c>null</c> the user doesn't have an image.</returns>
-    public Task<Stream?> GetImageAsync(TUser user, CancellationToken ct);
+    /// <returns>The image file info. If <c>null</c> the user doesn't have an image.</returns>
+    public Task<FileResultInfo?> GetImageAsync(TUser user, CancellationToken ct);
 
     /// <summary>
     /// Updates the profile image of a certain user.

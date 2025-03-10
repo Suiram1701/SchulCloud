@@ -2,8 +2,10 @@
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using SchulCloud.Authorization;
 using SchulCloud.Authorization.Attributes;
+using SchulCloud.FileStorage;
 using SchulCloud.Identity.Enums;
 using SchulCloud.Identity.Models;
 using SchulCloud.Identity.Services;
@@ -105,19 +107,35 @@ public sealed class UserController(ILogger<UserController> logger, AppUserManage
     /// <response code="204">The user doesn't have a profile image.</response>
     /// <response code="404">No user with the requested id was found.</response>
     [HttpGet("{userId}/image")]
-    [ProducesResponseType<FileStreamResult>(StatusCodes.Status200OK, Image.Png)]
+    [ProducesFileResponse(Image.Png, supportsRangeProcessing: true)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Application.ProblemJson)]
     public async Task<IActionResult> GetProfileImageAsync([FromRoute] string userId)
     {
         ApplicationUser? user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
         if (user is null)
             return UserNotFoundResponse(userId);
 
-        Stream? profileImage = await userManager.GetProfileImageAsync(user).ConfigureAwait(false);
-        return profileImage is not null
-            ? File(profileImage, Image.Png)
-            : NoContent();
+        FileResultInfo? profileImageInfo = await userManager.GetProfileImageAsync(user).ConfigureAwait(false);
+        if (profileImageInfo is not null)
+        {
+            // range processing requires a seekable stream
+            Stream responseFile = await EnsureSeekableAsync(
+                sourceStream: profileImageInfo.FileStream,
+                disposeIfNot: true,
+                ct: HttpContext.RequestAborted).ConfigureAwait(false);
+
+            return File(
+                fileStream: responseFile,
+                contentType: profileImageInfo.ContentType ?? Image.Png,
+                lastModified: profileImageInfo.LastModified,
+                entityTag: EntityTagHeaderValue.Parse(profileImageInfo.ETag),
+                enableRangeProcessing: true);
+        }
+        else
+        {
+            return NoContent();
+        }
     }
 
     /// <summary>
@@ -213,7 +231,7 @@ public sealed class UserController(ILogger<UserController> logger, AppUserManage
             {
                 return cred.Adapt<Fido2Credential>() with
                 {
-                    IsPasskey = await userManager.GetIsPasskey(cred).ConfigureAwait(false)
+                    IsPasskey = await userManager.GetIsPasskeyAsync(cred).ConfigureAwait(false)
                 };
             })).ConfigureAwait(false);
         }
@@ -265,5 +283,24 @@ public sealed class UserController(ILogger<UserController> logger, AppUserManage
                 statusCode: StatusCodes.Status404NotFound,
                 detail: "No user with the specified ID was found.",
                 extensions: new Dictionary<string, object?> { { "UserId", userId } });
+    }
+
+    [NonAction]
+    private static async Task<Stream> EnsureSeekableAsync(Stream sourceStream, bool disposeIfNot = false, CancellationToken ct = default)
+    {
+        if (!sourceStream.CanSeek)
+        {
+            MemoryStream stream = new();
+            await sourceStream.CopyToAsync(stream, ct).ConfigureAwait(false);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            if (disposeIfNot)
+                await sourceStream.DisposeAsync().ConfigureAwait(false);
+            return stream;
+        }
+        else
+        {
+            return sourceStream;
+        }
     }
 }

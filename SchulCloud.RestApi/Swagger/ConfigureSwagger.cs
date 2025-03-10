@@ -29,7 +29,9 @@ internal class ConfigureSwagger(IApiVersionDescriptionProvider provider, IOption
         options.IncludeXmlComments(typeof(IRestApi).Assembly, includeControllerXmlComments: true);
 
         options.OperationFilter<ErrorResponseFilter>();
-        
+
+        options.OperationFilter<FileResponseFilter>();
+
         options.OperationFilter<FilteringFilter>();
         options.OperationFilter<SortingFilter>();
         options.OperationFilter<PaginationFilter>();

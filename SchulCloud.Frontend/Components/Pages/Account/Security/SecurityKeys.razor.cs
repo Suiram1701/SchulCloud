@@ -207,7 +207,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
 
     private async Task AddSecurityKeyAsync(UserCredential credential)
     {
-        if (await UserManager.GetIsPasskey(credential))
+        if (await UserManager.GetIsPasskeyAsync(credential))
         {
             _passkeys.Add(credential.Id);
         }
