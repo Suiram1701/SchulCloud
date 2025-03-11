@@ -22,15 +22,11 @@ internal class ApiKeyScheme<TUser>(
 {
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (!Context.Request.Headers.TryGetValue("x-api-key", out StringValues headerValues))
-        {
-            return AuthenticateResult.NoResult();
-        }
-
         if (!userManager.SupportsUserApiKeys)
-        {
             return AuthenticateResult.Fail($"{userManager.GetType()} does not support API keys.");
-        }
+
+        if (!Context.Request.Headers.TryGetValue("x-api-key", out StringValues headerValues) || string.IsNullOrWhiteSpace(headerValues))
+            return AuthenticateResult.NoResult();
 
         string providedKey = headerValues.ToString();
         (UserApiKey ApiKey, TUser User)? result = await userManager.FindApiKeyAsync(providedKey).ConfigureAwait(false);

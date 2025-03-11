@@ -22,7 +22,7 @@ internal sealed class FileResponseFilter : AttributeFilterBase<ProducesFileRespo
                 In = ParameterLocation.Header,
                 Description = "Indicates the part of the resource that should be returned.",
                 Example = new OpenApiString("bytes=0-499"),
-                Schema = context.SchemaGenerator.GenerateSchemaStringWithPattern(context.SchemaRepository, @"^^bytes=(\d*)-(\d*)$")
+                Schema = context.SchemaGenerator.GenerateSchemaStringWithPattern(context.SchemaRepository, @"^bytes=(\d*)-(\d*)$")
             });
         }
 

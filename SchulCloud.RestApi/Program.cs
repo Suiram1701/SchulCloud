@@ -2,6 +2,7 @@ using AwsS3.Client;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.Options;
+using Scalar.AspNetCore;
 using SchulCloud.Authorization.Extensions;
 using SchulCloud.Database;
 using SchulCloud.Database.Extensions;
@@ -15,7 +16,6 @@ using SchulCloud.RestApi.Options;
 using SchulCloud.RestApi.Swagger;
 using SchulCloud.ServiceDefaults;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Text.Json.Serialization;
 
 namespace SchulCloud.RestApi;
@@ -54,26 +54,20 @@ internal class Program
             .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddCustomizedProblemDetails();
 
-        builder.Services.AddApiVersioning(options =>
-        {
-            options.ReportApiVersions = true;
-        }).AddApiExplorer(options =>
+        builder.Services
+            .AddApiVersioning(options => options.ReportApiVersions = true)
+            .AddApiExplorer(options =>
         {
             options.GroupNameFormat = "'v'VVV";
             options.SubstituteApiVersionInUrl = true;
         });
 
-        if (builder.Configuration.GetValue<bool?>("Swagger:Enabled") ?? false)
+        if (builder.Configuration.GetValue<bool?>("OpenAPI:Enabled") ?? false)
         {
             builder.Services.AddSwaggerGen();
 
-            builder.Services.Configure<OpenApiOptions>(builder.Configuration.GetSection("OpenApi"));
+            builder.Services.Configure<OpenApiOptions>(builder.Configuration.GetSection("OpenAPI:Info"));
             builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwagger>();
-
-            if (builder.Configuration.GetValue<bool?>("Swagger:UiEnabled") ?? false)
-            {
-                builder.Services.AddTransient<IConfigureOptions<SwaggerUIOptions>, ConfigureSwaggerUI>();
-            }
         }
 
         WebApplication app = builder.Build();
@@ -93,13 +87,17 @@ internal class Program
 
         app.MapControllers().RequireAuthorization();
 
-        if (app.Configuration.GetValue<bool?>("Swagger:Enabled") ?? false)
+        if (app.Configuration.GetValue<bool?>("OpenAPI:Enabled") ?? false)
         {
-            app.UseSwagger();
+            app.UseSwagger(options => options.RouteTemplate = "/openapi/{documentName}.{extension:regex(^(json|ya?ml)$)}");
 
-            if (app.Configuration.GetValue<bool?>("Swagger:UiEnabled") ?? false)
+            if (app.Configuration.GetValue<bool?>("OpenAPI:UiEnabled") ?? false)
             {
-                app.UseSwaggerUI();
+                app.MapScalarApiReference("/openapi/scalar", options => options
+                    .WithTitle("SchulCloud - API Reference")
+                    .WithOpenApiRoutePattern("/openapi/{documentName}.json")
+                    .WithDotNetFlag(true)
+                    .WithDownloadButton(true));
             }
         }
 
