@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="AWSSDK.S3" Version="3.7.415.14" />
-	<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.2" />
-	<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.2" />
-	<PackageReference Include="Microsoft.Extensions.Resilience" Version="9.2.0" />
-	<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.2" />
+	<PackageReference Include="AWSSDK.S3" Version="3.7.416.13" />
+	<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.4" />
+	<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.4" />
+	<PackageReference Include="Microsoft.Extensions.Resilience" Version="9.4.0" />
+	<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.4" />
   </ItemGroup>
 	
 </Project>

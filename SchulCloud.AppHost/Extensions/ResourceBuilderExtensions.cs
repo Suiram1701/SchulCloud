@@ -98,7 +98,7 @@ internal static class ResourceBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a command that performs a http request to an endpoint of this app.
+    /// Adds a command that performs a http request to an endpoint using authorization of this app.
     /// </summary>
     /// <typeparam name="TResource">The type of the resource to add the command to.</typeparam>
     /// <param name="builder">The resource builder to use.</param>
@@ -133,13 +133,6 @@ internal static class ResourceBuilderExtensions
         if (!Uri.IsWellFormedUriString(path, UriKind.Relative))
             throw new ArgumentException("A valid relative uri was expected.", nameof(path));
 
-        method ??= HttpMethod.Get;
-        endpointName ??= "http";
-
-        EndpointReference endpoint = builder.Resource.GetEndpoints()
-            .FirstOrDefault(endpoint => endpoint.EndpointName == endpointName)
-            ?? throw new DistributedApplicationException($"Could not create HTTP command for resource '{builder.Resource.Name}' as no endpoint named '{endpointName}' was found.");
-
         // Try to get an existing api key parameter
         ParameterResource? apiKeyParameter = builder.ApplicationBuilder.Resources
             .OfType<ParameterResource>()
@@ -153,34 +146,23 @@ internal static class ResourceBuilderExtensions
         string keyValue = apiKeyParameter.Value;
         builder.WithEnvironment(ServiceDefaults.Extensions.CommandApiKeyConfig.Replace(":", "__"), keyValue);
 
-        return builder.WithCommand(
-            name: $"http-{name}",
-            displayName: displayName,
-            executeCommand: async context =>
+        HttpCommandOptions option = new()
+        {
+            Method = method ?? HttpMethod.Get,
+            PrepareRequest = request =>
             {
-                if (!endpoint.IsAllocated)
-                    return new ExecuteCommandResult { Success = false, ErrorMessage = "Endpoints are not yet allocated." };
-
-                Uri uri = new UriBuilder(endpoint.Url) { Path = path }.Uri;
-                HttpClient httpClient = context.ServiceProvider.GetRequiredService<IHttpClientFactory>().CreateClient();
-                try
-                {
-                    using HttpRequestMessage request = new(method, uri);
-                    request.Headers.Add("x-api-key", keyValue);
-
-                    using HttpResponseMessage response = await httpClient.SendAsync(request, context.CancellationToken);
-                    response.EnsureSuccessStatusCode();
-                }
-                catch (Exception ex)
-                {
-                    return new ExecuteCommandResult { Success = false, ErrorMessage = ex.Message };
-                }
-                return new ExecuteCommandResult { Success = true };
+                const string headerName = "x-api-key";
+                if (!request.HttpClient.DefaultRequestHeaders.Contains(headerName))
+                    request.HttpClient.DefaultRequestHeaders.Add(headerName, keyValue);
+                return Task.CompletedTask;
             },
-            updateState: updateState,
-            displayDescription: description,
-            confirmationMessage: confirmMessage,
-            iconName: iconName,
-            iconVariant: iconVariant);
+
+            UpdateState = updateState,
+            Description = description,
+            ConfirmationMessage = confirmMessage,
+            IconName = iconName,
+            IconVariant = iconVariant,
+        };
+        return builder.WithHttpCommand(path, displayName, endpointName: endpointName, commandOptions: option);
     }
 }
