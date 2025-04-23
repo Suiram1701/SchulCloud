@@ -68,7 +68,7 @@ public static class Extensions
     }
 
     /// <summary>
-    /// Adds a new <see cref="MinIOBucketResource"/> referring to a specific bucket.
+    /// Adds a new <see cref="MinIOBucketDatabaseResource"/> referring to a specific bucket.
     /// </summary>
     /// <remarks>
     /// If a bucket with the name <paramref name="bucketName"/> is already registered an <see cref="InvalidOperationException"/> will be thrown.
@@ -77,14 +77,14 @@ public static class Extensions
     /// <param name="name">The name of this resource.</param>
     /// <param name="bucketName">The name of the bucket. If <c>null</c> <paramref name="name"/> will be used.</param>
     /// <returns>The resource builder of this bucket.</returns>
-    public static IResourceBuilder<MinIOBucketResource> AddBucket(this IResourceBuilder<MinIOServerResource> builder, string name, string? bucketName = null)
+    public static IResourceBuilder<MinIOBucketDatabaseResource> AddBucket(this IResourceBuilder<MinIOServerResource> builder, string name, string? bucketName = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         bucketName ??= name;
 
         builder.Resource.AddBucket(name, bucketName);
-        MinIOBucketResource bucket = new(name, bucketName, builder.Resource);
+        MinIOBucketDatabaseResource bucket = new(name, bucketName, builder.Resource);
         return builder.ApplicationBuilder.AddResource(bucket);
     }
 }

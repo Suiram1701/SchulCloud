@@ -11,11 +11,12 @@ public class Program
     {
         IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-        IResourceBuilder<PostgresServerResource> postgresServer = builder.AddPostgresServer("postgres-server");
-        IResourceBuilder<PostgresDatabaseResource> identityDb = postgresServer.AddDatabase(ResourceNames.IdentityDatabase);
-
-        IResourceBuilder<MinIOServerResource> minIOStorage = builder.AddMinIO("minio-server");
-        IResourceBuilder<MinIOBucketResource> schulcloudBucket = minIOStorage.AddBucket(ResourceNames.SchulCloudStorage);
+        IResourceBuilder<PostgresDatabaseResource> identityDb = builder
+            .AddPostgresServer("postgres-server")
+            .AddDatabase(ResourceNames.IdentityDatabase);
+        IResourceBuilder<MinIOBucketDatabaseResource> schulcloudBucket = builder
+            .AddMinIO("minio-server")
+            .AddBucket(ResourceNames.FileBucket);
 
         IResourceBuilder<MailDevResource> mailDev = builder.AddMailDev(ResourceNames.MailServer);
 
@@ -27,7 +28,8 @@ public class Program
             .WaitFor(schulcloudBucket)
             .WaitFor(mailDev)
             .WithDefaultHealthChecks()
-            .WithDefaultCommands();
+            .WithDefaultCommands()
+            .WithExternalHttpEndpoints();
 
         IResourceBuilder<ProjectResource> restApi = builder.AddProject<Projects.SchulCloud_RestApi>("rest-api")
             .WithReference(identityDb)
@@ -35,7 +37,8 @@ public class Program
             .WaitFor(identityDb)
             .WaitFor(schulcloudBucket)
             .WithDefaultHealthChecks()
-            .WithDefaultCommands();
+            .WithDefaultCommands()
+            .WithExternalHttpEndpoints();
 
         builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
             .WithReference(identityDb)
@@ -44,13 +47,12 @@ public class Program
             .WithDefaultCommands()
             .WithDbManagerCommands();
 
-        builder.AddYarp("gateway")
-            .WithEndpoint(scheme: "http", port: 8000)
-            .WithEndpoint(scheme: "https", port: 8001)
-            .WithExternalHttpEndpoints()
+        builder.AddProject<Projects.Gateway>("gateway")
             .WithReference(webFrontend)
             .WithReference(restApi)
-            .LoadFromConfiguration("ReverseProxy");
+            .WithEndpoint("http", e => e.Port = 8000, createIfNotExists: false)
+            .WithEndpoint("https", e => e.Port = 8001, createIfNotExists: false)
+            .WithExternalHttpEndpoints();
 
         builder.Build().Run();
     }

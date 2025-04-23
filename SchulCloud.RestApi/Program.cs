@@ -30,7 +30,7 @@ internal class Program
             .ConfigureIdentity();
 
         builder.AddAspirePostgresDb<AppDbContext>(ResourceNames.IdentityDatabase);
-        builder.AddMinIOAwsClient(ResourceNames.SchulCloudStorage);
+        builder.AddMinIOAwsClient(ResourceNames.FileBucket);
 
         builder.Services.AddIdentityCore<AppUser>()
             .AddRoles<AppRole>()

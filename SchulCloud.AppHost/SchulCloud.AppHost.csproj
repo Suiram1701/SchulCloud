@@ -1,24 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.2.0" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsAspireHost>true</IsAspireHost>
     <UserSecretsId>4465588b-99fc-48d3-8d41-9c3fc71ff5b5</UserSecretsId>
-    <StartupObject>SchulCloud.AppHost.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspirant.Hosting.Yarp" Version="0.0.4" />
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.0" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Aspire.Hosting.MinIO\Aspire.Hosting.MinIO.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\Gateway\Gateway.csproj" />
     <ProjectReference Include="..\SchulCloud.DbManager\SchulCloud.DbManager.csproj" />
     <ProjectReference Include="..\SchulCloud.Frontend\SchulCloud.Frontend.csproj" />
     <ProjectReference Include="..\Aspire.Hosting.MailDev\Aspire.Hosting.MailDev.csproj" IsAspireProjectResource="false" />

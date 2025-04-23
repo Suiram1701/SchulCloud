@@ -10,7 +10,7 @@ namespace Aspire.Hosting.MinIO;
 /// <param name="name">The name of this resource.</param>
 /// <param name="bucketName">The name of the bucket.</param>
 /// <param name="minIOParentResource">The MinIO parent server.</param>
-public class MinIOBucketResource(string name, string bucketName, MinIOServerResource minIOParentResource) : Resource(name), IResourceWithParent<MinIOServerResource>, IResourceWithConnectionString
+public class MinIOBucketDatabaseResource(string name, string bucketName, MinIOServerResource minIOParentResource) : Resource(name), IResourceWithParent<MinIOServerResource>, IResourceWithConnectionString
 {
     public MinIOServerResource Parent => ThrowIfNull(minIOParentResource);
 

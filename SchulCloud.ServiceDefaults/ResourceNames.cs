@@ -7,7 +7,7 @@ public static class ResourceNames
 {
     public const string IdentityDatabase = "identity-db";
 
-    public const string SchulCloudStorage = "schulcloud-storage";
+    public const string FileBucket = "schulcloud-bucket";
 
     public const string MailServer = "maildev";
 }
