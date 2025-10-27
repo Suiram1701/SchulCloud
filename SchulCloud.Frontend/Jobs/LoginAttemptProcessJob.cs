@@ -41,7 +41,7 @@ public class LoginAttemptProcessJob(IServiceScopeFactory scopeFactory, ILogger<L
             }
             else
             {
-                logger.LogDebug("IP address lookup for a address '{address}' failed.", attempt.IpAddress);
+                logger.LogWarning("IP address lookup for a address '{address}' failed.", attempt.IpAddress);
             }
         }
 

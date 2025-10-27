@@ -38,9 +38,8 @@ public class AwsS3ClientSettings
             throw new InvalidOperationException($"The connection string is missing. It should be provided in 'ConnectionString:<connectionName>'");
         }
 
-        AwsS3Config ??= new();
+        AwsS3Config ??= new AmazonS3Config();
         AwsS3Config.ForcePathStyle = true;
-        AwsS3Config.SignatureVersion = "4";
 
         DbConnectionStringBuilder builder = new()
         {

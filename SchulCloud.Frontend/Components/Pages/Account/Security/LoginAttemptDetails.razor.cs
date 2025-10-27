@@ -22,7 +22,7 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
     private ISnackbar SnackbarService { get; set; } = default!;
 
     [Inject]
-    private IJSRuntime JSRuntime { get; set; } = default!;
+    private IJSRuntime JsRuntime { get; set; } = default!;
 
     [Inject]
     private IHttpUserAgentParserProvider UserAgentParserProvider { get; set; } = default!;
@@ -88,13 +88,13 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
 
     private async Task InitializeMapAsync()
     {
-        (bool success, _importRef) = await JSRuntime.InvokeAsyncWithErrorHandling<IJSObjectReference>("import", "/_content/BlazorGoogleMaps/js/objectManager.js");
+        (bool success, _importRef) = await JsRuntime.InvokeAsyncWithErrorHandling<IJSObjectReference>("import", "/_content/BlazorGoogleMaps/js/objectManager.js");
         if (success)
         {
             _mapOptions = new()
             {
                 MapTypeId = MapTypeId.Satellite,
-                Center = new(_attempt!.Latitude!.Value, _attempt.Longitude!.Value),
+                Center = new((double)_attempt!.Latitude!.Value, (double)_attempt.Longitude!.Value),     // Verified that it's not null
                 Zoom = 10,
             };
         }
@@ -102,10 +102,10 @@ public sealed partial class LoginAttemptDetails : ComponentBase, IAsyncDisposabl
     
     private async Task Map_OnAfterInitAsync()
     {
-        _mapMarker = await Marker.CreateAsync(_map!.JsRuntime, new()
+        _mapMarker = await Marker.CreateAsync(_map!.JsRuntime, new MarkerOptions()
         {
             Map = _map.InteropObject,
-            Position = new(_attempt!.Latitude!.Value, _attempt.Longitude!.Value),
+            Position = new((double)_attempt!.Latitude!.Value, (double)_attempt.Longitude!.Value),     // Verified that it's not null
             Label = new MarkerLabel()
             {
                 Text = _attempt.IpAddress.ToString(),

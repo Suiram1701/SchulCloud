@@ -44,7 +44,7 @@ public partial class AwsS3FileStorage<TUser>(
         try
         {
             GetObjectResponse response = await _client.GetObjectAsync(BucketName, objectKey, ct).ConfigureAwait(false);
-            return new(response.ResponseStream, response.Headers.ContentType, response.ETag, new(response.LastModified));
+            return new FileResultInfo(response.ResponseStream, response.Headers.ContentType, response.ETag, response.LastModified);
         }
         catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
         {
@@ -53,7 +53,7 @@ public partial class AwsS3FileStorage<TUser>(
         catch (AmazonS3Exception ex)
         {
             LogAwsS3Exception(logger, ex, BucketName, objectKey);
-            return null;     // The profile image isn't critical so its may okay if its not available.
+            return null;     // The profile image isn't critical so its may okay if it's not available.
         }
     }
 
@@ -67,7 +67,7 @@ public partial class AwsS3FileStorage<TUser>(
         string objectKey = GetProfileImageObjectKey(userId);
         try
         {
-            _ = await _client.PutObjectAsync(new()
+            _ = await _client.PutObjectAsync(new PutObjectRequest()
             {
                 Key = objectKey,
                 BucketName = BucketName,

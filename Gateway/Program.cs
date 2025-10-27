@@ -11,6 +11,7 @@ public class Program
 
         builder.Services
             .AddReverseProxy()
+            .AddServiceDiscoveryDestinationResolver()
             .LoadFromConfig(builder.Configuration);
 
         WebApplication app = builder.Build();

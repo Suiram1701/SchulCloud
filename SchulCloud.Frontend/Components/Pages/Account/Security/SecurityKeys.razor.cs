@@ -182,7 +182,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
                     creationOptions);
                 if (storeResult.Succeeded)
                 {
-                    UserCredential credential = (await UserManager.FindFido2Credential(authenticatorResponse.Id))!;
+                    UserCredential credential = (await UserManager.FindFido2Credential(Convert.FromBase64String(authenticatorResponse.Id)))!;
                     (_securityKeys ??= []).Add(credential);
 
                     await AddSecurityKeyAsync(credential);
@@ -193,7 +193,7 @@ public sealed partial class SecurityKeys : ComponentBase, IDisposable
                     SnackbarService.AddError(storeResult.Errors, Localizer["registerDialog_SaveError"]);
                 }
 
-                _registerModel = new();
+                _registerModel = new RegisterSecurityKeyModel();
             }
             catch (WebAuthnException ex)
             {

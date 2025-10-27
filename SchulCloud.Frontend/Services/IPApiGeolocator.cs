@@ -48,7 +48,7 @@ public class IPApiGeolocator(ILogger<IPApiGeolocator> logger, HttpClient client)
             JObject responseObj = JObject.Parse(responseStr);
             if (responseObj["status"]!.Value<string>() == "success")
             {
-                return new(
+                return new IPGeoLookupResult(
                     IPAddress.Parse(responseObj["query"]!.Value<string>()!),
                     responseObj["continent"]!.Value<string>()!,
                     responseObj["continentCode"]!.Value<string>()!,

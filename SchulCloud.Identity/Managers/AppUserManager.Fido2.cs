@@ -133,11 +133,11 @@ partial class AppUserManager<TUser>
             existingKeys = existingCreds.Select(cred => cred.ToCredentialDescriptor()).ToArray();
         }
 
-        return fido2.GetAssertionOptions(new()
+        return fido2.GetAssertionOptions(new GetAssertionOptionsParams()
         {
             AllowedCredentials = existingKeys,
             UserVerification = GetFido2Options().UserVerificationRequirement,
-            Extensions = new()
+            Extensions = new AuthenticationExtensionsClientInputs()
             {
                 Extensions = true,
                 UserVerificationMethod = true
@@ -168,19 +168,11 @@ partial class AppUserManager<TUser>
         IFido2 fido2 = GetFido2Service();
         IUserCredentialStore<TUser> store = GetCredentialStore();
 
-        if (await store.FindCredentialAsync(authenticatorResponse.Id, CancellationToken).ConfigureAwait(false) is not UserCredential credential)
+        if (await store.FindCredentialAsync(Convert.FromBase64String(authenticatorResponse.Id), CancellationToken).ConfigureAwait(false) is not { } credential)
         {
             return null;
         }
-
-        async Task<bool> isOwnedByUserHandleCallback(IsUserHandleOwnerOfCredentialIdParams @params, CancellationToken ct)
-        {
-            TUser? user = await FindByIdAsync(Encoding.UTF8.GetString(@params.UserHandle));
-            UserCredential? credential = await store.FindCredentialAsync(@params.CredentialId, ct);
-
-            return user is not null && credential is not null && await store.IsCredentialOwnedByUser(user, credential, ct);
-        }
-
+        
         try
         {
             VerifyAssertionResult assertionResult = await fido2.MakeAssertionAsync(new()
@@ -189,7 +181,13 @@ partial class AppUserManager<TUser>
                 OriginalOptions = options,
                 StoredPublicKey = credential.PublicKey,
                 StoredSignatureCounter = credential.SignCount,
-                IsUserHandleOwnerOfCredentialIdCallback = isOwnedByUserHandleCallback
+                IsUserHandleOwnerOfCredentialIdCallback = async (@params, ct) =>
+                { 
+                    TUser? credUser = await FindByIdAsync(Encoding.UTF8.GetString(@params.UserHandle)); 
+                    UserCredential? cred = await store.FindCredentialAsync(@params.CredentialId, ct);
+                    
+                    return credUser is not null && cred is not null && await store.IsCredentialOwnedByUser(credUser, cred, ct); 
+                }
             }, CancellationToken).ConfigureAwait(false);
             credential.SignCount = assertionResult.SignCount;
             credential.IsBackedUp = assertionResult.IsBackedUp;
