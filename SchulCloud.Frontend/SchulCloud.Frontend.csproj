@@ -5,6 +5,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>3aada3c3-44d9-44cb-8e25-9be67af78b8d</UserSecretsId>
+      
+    <BlazorRoutesGenerator_NameOverrides>
+        SchulCloud.Frontend.Components.Pages.Account.Overview=AccountOverview
+        SchulCloud.Frontend.Components.Pages.Account.Settings=AccountSettings
+        SchulCloud.Frontend.Components.Pages.Account.Security.Overview=SecurityOverview
+        SchulCloud.Frontend.Components.Pages.Account.Security.TwoFactor.Authenticator=TwoFactorAuthenticator
+        SchulCloud.Frontend.Components.Pages.Account.Security.TwoFactor.Recovery=TwoFactorRecovery
+    </BlazorRoutesGenerator_NameOverrides>
   </PropertyGroup>
 	
   <ItemGroup>
@@ -22,7 +30,7 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Quartz" Version="1.11.0-beta.2" />
     <PackageReference Include="QRCoder" Version="1.7.0" />
     <PackageReference Include="Quartz.AspNetCore" Version="3.15.1" />
-    <PackageReference Include="Suiram1.BlazorRoutesGenerator" Version="1.1.1" />
+    <PackageReference Include="Suiram1.BlazorRoutesGenerator" Version="2.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,10 +40,6 @@
     <ProjectReference Include="..\SchulCloud.Identity\SchulCloud.Identity.csproj" />
     <ProjectReference Include="..\SchulCloud.Database\SchulCloud.Database.csproj" />
     <ProjectReference Include="..\SchulCloud.ServiceDefaults\SchulCloud.ServiceDefaults.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="BlazorRoutesGenerator.config.json" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,8 +70,21 @@
   </Target>
 
   <Target Name="_TranspileTypeScript" AfterTargets="Build">
-    <Exec Command="npm install" WorkingDirectory=".\" />
-    <Exec Command="set NODE_ENV=$(Configuration) %26%26 npx rollup -c" WorkingDirectory=".\" />
+      
+      <!-- Verify whether npm and npx are available -->
+      <Exec Command="npm --version" IgnoreExitCode="true" 
+            StandardOutputImportance="Low" StandardErrorImportance="Low">
+          <Output TaskParameter="ExitCode" PropertyName="NpmExitCode" />
+      </Exec>
+      <Exec Command="npx --version" IgnoreExitCode="true"
+            StandardOutputImportance="Low" StandardErrorImportance="Low">
+          <Output TaskParameter="ExitCode" PropertyName="NpxExitCode" />
+      </Exec>
+      <Error Condition="'$(NpmExitCode)' != '0'" Text="npm isn't installed or not in the PATH. Please install Node.Js" />
+      <Error Condition="'$(NpxExitCode)' != '0'" Text="npx isn't installed or not in the PATH. Please install Node.js" />
+      
+    <Exec Command="npm install" WorkingDirectory=".\" StandardOutputImportance="Low" StandardErrorImportance="Low" />
+    <Exec Command="npx rollup -c" WorkingDirectory=".\" EnvironmentVariables="NODE_ENV=$(Configuration);FORCE_COLOR=0" />
   </Target>
     
 </Project>

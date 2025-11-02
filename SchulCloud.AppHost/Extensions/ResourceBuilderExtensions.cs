@@ -13,7 +13,7 @@ internal static class ResourceBuilderExtensions
     /// Adds the default health check endpoint offered by ServiceDefaults to the resource.
     /// </summary>
     /// <remarks>
-    /// The endpoints are only added when the application is is development environment.
+    /// The endpoints are only added when the application is development environment.
     /// </remarks>
     /// <param name="builder">The resource builder.</param>
     /// <returns>The resource builder pipeline.</returns>
@@ -143,17 +143,21 @@ internal static class ResourceBuilderExtensions
             ? builder.ApplicationBuilder.AddParameterFromConfiguration(CommandApiKeyResource, CommandApiKeyConfig, secret: true).Resource
             : ParameterResourceBuilderExtensions.CreateDefaultPasswordParameter(builder.ApplicationBuilder, CommandApiKeyResource);
 
-        string keyValue = apiKeyParameter.Value;
-        builder.WithEnvironment(ServiceDefaults.Extensions.CommandApiKeyConfig.Replace(":", "__"), keyValue);
+        builder.WithEnvironment(ServiceDefaults.Extensions.CommandApiKeyConfig.Replace(":", "__"), apiKeyParameter);
 
         HttpCommandOptions option = new()
         {
             Method = method ?? HttpMethod.Get,
             PrepareRequest = request =>
             {
+                string? headerValue = apiKeyParameter.GetValueAsync(CancellationToken.None)
+                    .AsTask()
+                    .GetAwaiter()
+                    .GetResult(); // Should not block
+                
                 const string headerName = "x-api-key";
                 if (!request.HttpClient.DefaultRequestHeaders.Contains(headerName))
-                    request.HttpClient.DefaultRequestHeaders.Add(headerName, keyValue);
+                    request.HttpClient.DefaultRequestHeaders.Add(headerName, headerValue);
                 return Task.CompletedTask;
             },
 

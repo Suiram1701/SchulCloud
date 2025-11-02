@@ -84,10 +84,10 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
     {
         if (firstRender && IsAutoColorTheme)
         {
-            _isDarkMode = await _themeProvider.GetSystemPreference();
+            _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
             StateHasChanged();
 
-            await _themeProvider.WatchSystemPreference(darkMode =>
+            await _themeProvider.WatchSystemDarkModeAsync(darkMode =>
             {
                 _isDarkMode = darkMode;
                 StateHasChanged();
@@ -101,7 +101,7 @@ public sealed partial class AnonymousLayout : LayoutComponentBase, IDisposable
     {
         _colorTheme = theme;
         _isDarkMode = _colorTheme == ColorTheme.Auto
-            ? await _themeProvider.GetSystemPreference()
+            ? await _themeProvider.GetSystemDarkModeAsync()
             : _colorTheme == ColorTheme.Dark;
 
         await UserPreferences.SetPreferredColorThemeAsync(theme);

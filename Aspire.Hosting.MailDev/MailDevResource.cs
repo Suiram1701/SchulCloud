@@ -6,13 +6,15 @@ public sealed class MailDevResource(string name, ParameterResource? username, Pa
 {
     private const string _defaultUserName = "mail-dev";
 
-    internal ReferenceExpression UsernameReference => ReferenceExpression.Create($"{UsernameParameter?.Value ?? _defaultUserName}");
-
+    internal ReferenceExpression UsernameReference => UsernameParameter is not null
+        ? ReferenceExpression.Create($"{UsernameParameter}")
+        : ReferenceExpression.Create($"{_defaultUserName}");
+    
     public ParameterResource? UsernameParameter { get; set; } = username;
 
     public ParameterResource PasswordParameter { get; set; } = password;
 
-    public EndpointReference SmtpEndpoint => _smtpEndpoint ??= new(this, "smtp");
+    public EndpointReference SmtpEndpoint => _smtpEndpoint ??= new EndpointReference(this, "smtp");
     private EndpointReference? _smtpEndpoint;
 
     public ReferenceExpression ConnectionStringExpression =>

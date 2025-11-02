@@ -32,8 +32,8 @@ internal class Program
         builder.AddAspirePostgresDb<AppDbContext>(ResourceNames.IdentityDatabase);
         builder.AddMinIOAwsClient(ResourceNames.FileBucket);
 
-        builder.Services.AddIdentityCore<AppUser>()
-            .AddRoles<AppRole>()
+        builder.Services.AddIdentityCore<ApplicationUser>()
+            .AddRoles<ApplicationRole>()
             .AddSchulCloudEntityFrameworkStores<AppDbContext>()
             .AddS3ProfileImageStorage()
             .AddManagers()
@@ -41,7 +41,7 @@ internal class Program
         builder.ConfigureIdentity();
 
         builder.Services.AddAuthentication(SchemeNames.ApiKeyScheme)
-            .AddApiKey<AppUser>();
+            .AddApiKey<ApplicationUser>();
         builder.Services.AddAuthorizationBuilder()
             .AddPermissionsPolicies();
 
@@ -96,8 +96,8 @@ internal class Program
                 app.MapScalarApiReference("/openapi/scalar", options => options
                     .WithTitle("SchulCloud - API Reference")
                     .WithOpenApiRoutePattern("/openapi/{documentName}.json")
-                    .WithDotNetFlag(true)
-                    .WithDownloadButton(true));
+                    .WithDotNetFlag()
+                    .WithDocumentDownloadType(DocumentDownloadType.Json));
             }
         }
 

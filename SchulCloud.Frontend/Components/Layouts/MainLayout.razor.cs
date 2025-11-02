@@ -49,10 +49,10 @@ public sealed partial class MainLayout : LayoutComponentBase
     {
         if (firstRender && _isAutoThemeMode)
         {
-            _isDarkMode = await _themeProvider.GetSystemPreference();
+            _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
             StateHasChanged();
 
-            await _themeProvider.WatchSystemPreference(darkMode =>
+            await _themeProvider.WatchSystemDarkModeAsync(darkMode =>
             {
                 _isDarkMode = darkMode;
                 StateHasChanged();
