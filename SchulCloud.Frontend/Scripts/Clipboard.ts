@@ -1,5 +1,3 @@
-import { DotNetStreamReference } from "./Declarations/DotnetStreamReference";
-
 export namespace Clipboard {
     export function isSupported(): boolean {
         return navigator.clipboard instanceof globalThis.Clipboard;

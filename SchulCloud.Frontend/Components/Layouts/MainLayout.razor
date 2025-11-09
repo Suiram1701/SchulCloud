@@ -1,9 +1,9 @@
 ﻿@using SchulCloud.Frontend.Options
 @using SchulCloud.Frontend.Extensions;
 
-@inherits LayoutComponentBase
+@inherits BaseLayout
 
-<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="_isDarkMode" ObserveSystemThemeChange="_isAutoThemeMode" />
+<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="_isDarkMode" ObserveSystemThemeChange="IsAutoColorTheme" />
 
 <MudLayout>
     <MudAppBar Elevation="1" Dense>

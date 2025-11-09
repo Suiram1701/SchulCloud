@@ -1,5 +1,3 @@
-import { DotNetStreamReference } from "./Declarations/DotnetStreamReference";
-
 export namespace File {
     export async function download(streamReference: DotNetStreamReference, fileName: string, mimeType?: string, endings?: EndingType): Promise<void> {
         const arrayBuffer: ArrayBuffer = await streamReference.arrayBuffer();

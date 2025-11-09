@@ -11,7 +11,8 @@ namespace SchulCloud.Frontend.Services;
 public class CookieUserPreferencesStore(CookieConsentService cookieConsentService, CookieService cookieService) : IUserPreferencesStore
 {
     private readonly string _themeCookieName = ".AspNetCore.ColorTheme";
-    private readonly CookieOptions _cookieOptions = new() { Expires = DateTime.UtcNow.AddDays(400) };
+    
+    private readonly CookieOptions _cookieOptions = new() { Expires = DateTime.UtcNow.AddDays(365.25) };
 
     public async Task<ColorTheme> GetPreferredColorThemeAsync(CancellationToken ct = default)
     {
@@ -22,7 +23,7 @@ public class CookieUserPreferencesStore(CookieConsentService cookieConsentServic
         }
         return result;
     }
-
+    
     public async Task SetPreferredColorThemeAsync(ColorTheme theme, CancellationToken ct = default)
     {
         if (await IsFunctionalCookiesAllowedAsync(ct))

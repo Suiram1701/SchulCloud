@@ -1,12 +1,12 @@
 import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
 
-const outputDir = 'wwwroot/_content';
+const outputDir = './wwwroot/_content';
 const isDevelopment = (process.env.NODE_ENV || '').trim() === 'Debug';
 
 export default {
     input: {
-        'Frontend': 'Scripts/Frontend.ts'
+        'Frontend': './Scripts/Frontend.ts'
     },
     output: [
         {

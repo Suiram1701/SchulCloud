@@ -1,65 +1,42 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Globalization;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
-using MudBlazor;
-using SchulCloud.Frontend.Options;
 using SchulCloud.Identity.Enums;
 
 namespace SchulCloud.Frontend.Components.Layouts;
 
-public sealed partial class MainLayout : LayoutComponentBase
+public sealed partial class MainLayout : BaseLayout
 {
     #region Injections
     [Inject]
-    private IStringLocalizer<MainLayout> Localizer { get; set; } = default!;
+    private IStringLocalizer<MainLayout> Localizer { get; set; } = null!;
 
     [Inject]
-    private IOptions<PresentationOptions> PresentationOptionsAccessor { get; set; } = default!;
-
-    [Inject]
-    private ApplicationUserManager UserManager { get; set; } = default!;
+    private ApplicationUserManager UserManager { get; set; } = null!;
     #endregion
-
-    private MudThemeProvider _themeProvider = default!;
-
-    private ApplicationUser _user = default!;
+    
+    private ApplicationUser _user = null!;
     private bool _drawerOpen = false;
-
-    private bool _isAutoThemeMode;
-    private bool _isDarkMode;
+    
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; } = null!;
 
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
-
-    [CascadingParameter]
-    private Task<ApplicationUser> CurrentUser { get; set; } = default!;
+    private Task<ApplicationUser> CurrentUser { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState state = await AuthenticationState;
         _user = await CurrentUser;
-
-        ColorTheme theme = UserManager.GetColorTheme(state.User);
-        _isAutoThemeMode = theme == ColorTheme.Auto;
-        _isDarkMode = theme == ColorTheme.Dark;
+        await base.OnInitializedAsync();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task<(ColorTheme, CultureInfo?)> GetUserPreferencesAsync()
     {
-        if (firstRender && _isAutoThemeMode)
-        {
-            _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
-            StateHasChanged();
-
-            await _themeProvider.WatchSystemDarkModeAsync(darkMode =>
-            {
-                _isDarkMode = darkMode;
-                StateHasChanged();
-
-                return Task.CompletedTask;
-            });
-        }
+        AuthenticationState state = await AuthenticationState;
+        ColorTheme theme = UserManager.GetColorTheme(state.User);
+        
+        return (theme, null);
     }
 
     private void ToggleMenu_Click()
