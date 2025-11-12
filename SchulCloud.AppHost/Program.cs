@@ -1,59 +1,70 @@
 using Aspire.Hosting.MailDev;
 using Aspire.Hosting.MinIO;
+using Aspire.Hosting.Yarp.Transforms;
+using Microsoft.Extensions.DependencyInjection;
 using SchulCloud.AppHost.Extensions;
 using SchulCloud.ServiceDefaults;
 
-namespace SchulCloud.AppHost;
+IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-public class Program
+// Hide parameters in the dashboard
+builder.Eventing.Subscribe<BeforeStartEvent>(async (e, _) =>
 {
-    public static void Main(string[] args)
+    var resourceNotification = e.Services.GetRequiredService<ResourceNotificationService>();
+    foreach (ParameterResource p in e.Model.Resources.OfType<ParameterResource>())
     {
-        IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
-
-        IResourceBuilder<PostgresDatabaseResource> identityDb = builder
-            .AddPostgresServer("postgres-server")
-            .AddDatabase(ResourceNames.IdentityDatabase);
-        IResourceBuilder<MinIOBucketDatabaseResource> schulcloudBucket = builder
-            .AddMinIO("minio-server")
-            .AddBucket(ResourceNames.FileBucket);
-
-        IResourceBuilder<MailDevResource> mailDev = builder.AddMailDev(ResourceNames.MailServer);
-
-        IResourceBuilder<ProjectResource> webFrontend = builder.AddProject<Projects.SchulCloud_Frontend>("web-frontend")
-            .WithReference(identityDb)
-            .WithReference(schulcloudBucket)
-            .WithReference(mailDev)
-            .WaitFor(identityDb)
-            .WaitFor(schulcloudBucket)
-            .WaitFor(mailDev)
-            .WithDefaultHealthChecks()
-            .WithDefaultCommands()
-            .WithExternalHttpEndpoints();
-
-        IResourceBuilder<ProjectResource> restApi = builder.AddProject<Projects.SchulCloud_RestApi>("rest-api")
-            .WithReference(identityDb)
-            .WithReference(schulcloudBucket)
-            .WaitFor(identityDb)
-            .WaitFor(schulcloudBucket)
-            .WithDefaultHealthChecks()
-            .WithDefaultCommands()
-            .WithExternalHttpEndpoints();
-
-        builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
-            .WithReference(identityDb)
-            .WaitFor(identityDb)
-            .WithDefaultHealthChecks()
-            .WithDefaultCommands()
-            .WithDbManagerCommands();
-
-        builder.AddProject<Projects.Gateway>("gateway")
-            .WithReference(webFrontend)
-            .WithReference(restApi)
-            .WithEndpoint("http", e => e.Port = 8000, createIfNotExists: false)
-            .WithEndpoint("https", e => e.Port = 8001, createIfNotExists: false)
-            .WithExternalHttpEndpoints();
-
-        builder.Build().Run();
+        await resourceNotification.PublishUpdateAsync(p, s => s with { IsHidden = true });
     }
-}
+});
+
+IResourceBuilder<PostgresDatabaseResource> identityDb = builder 
+    .AddPostgresServer("postgres-server")
+    .AddDatabase(ResourceNames.IdentityDatabase); 
+IResourceBuilder<MinIOBucketDatabaseResource> schulcloudBucket = builder
+    .AddMinIO("minio-server")
+    .AddBucket(ResourceNames.FileBucket);
+
+IResourceBuilder<MailDevResource> mailDev = builder.AddMailDev(ResourceNames.MailServer);
+
+IResourceBuilder<ProjectResource> webFrontend = builder.AddProject<Projects.SchulCloud_Frontend>("web-frontend")
+    .WithReference(identityDb)
+    .WithReference(schulcloudBucket)
+    .WithReference(mailDev)
+    .WaitFor(identityDb)
+    .WaitFor(schulcloudBucket)
+    .WaitFor(mailDev)
+    .WithDefaultHealthChecks()
+    .WithDefaultCommands()
+    .WithExternalHttpEndpoints();
+
+
+IResourceBuilder<ProjectResource> restApi = builder.AddProject<Projects.SchulCloud_RestApi>("rest-api")
+    .WithReference(identityDb)
+    .WithReference(schulcloudBucket)
+    .WaitFor(identityDb)
+    .WaitFor(schulcloudBucket)
+    .WithDefaultHealthChecks()
+    .WithDefaultCommands()
+    .WithExternalHttpEndpoints();
+
+builder.AddProject<Projects.SchulCloud_DbManager>("db-manager")
+    .WithReference(identityDb)
+    .WaitFor(identityDb)
+    .WithDefaultHealthChecks()
+    .WithDefaultCommands()
+    .WithDbManagerCommands();
+
+builder.AddYarp("gateway")
+    .WithConfiguration(yarp =>
+    {
+        yarp.AddRoute("{**catch-all}", webFrontend);
+        yarp.AddRoute("/api/rest/{**remainder}", restApi)
+            .WithTransformPathRemovePrefix("/api/rest");
+    })
+    .WithEnvironment("REVERSEPROXY__CLUSTERS__cluster_web-frontend__HTTPCLIENT__DANGEROUSACCEPTANYSERVERCERTIFICATE", "true")
+    .WithEnvironment("REVERSEPROXY__CLUSTERS__cluster_rest-api__HTTPCLIENT__DANGEROUSACCEPTANYSERVERCERTIFICATE", "true")
+    .WithEndpoint("http", e => e.Port = 8000)
+    // .WithEndpoint("https", e => e.Port = 8001)     // Waiting for HTTPS support in https://github.com/dotnet/aspire/issues/11534
+    .WithExternalHttpEndpoints();
+
+builder.Build().Run();
