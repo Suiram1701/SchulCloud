@@ -13,7 +13,7 @@ builder.Eventing.Subscribe<BeforeStartEvent>(async (e, _) =>
     var resourceNotification = e.Services.GetRequiredService<ResourceNotificationService>();
     foreach (ParameterResource p in e.Model.Resources.OfType<ParameterResource>())
     {
-        await resourceNotification.PublishUpdateAsync(p, s => s with { IsHidden = true });
+        await resourceNotification.PublishUpdateAsync(p, s => s with {  IsHidden = true });
     }
 });
 
@@ -36,7 +36,6 @@ IResourceBuilder<ProjectResource> webFrontend = builder.AddProject<Projects.Schu
     .WithDefaultHealthChecks()
     .WithDefaultCommands()
     .WithExternalHttpEndpoints();
-
 
 IResourceBuilder<ProjectResource> restApi = builder.AddProject<Projects.SchulCloud_RestApi>("rest-api")
     .WithReference(identityDb)
@@ -61,8 +60,6 @@ builder.AddYarp("gateway")
         yarp.AddRoute("/api/rest/{**remainder}", restApi)
             .WithTransformPathRemovePrefix("/api/rest");
     })
-    .WithEnvironment("REVERSEPROXY__CLUSTERS__cluster_web-frontend__HTTPCLIENT__DANGEROUSACCEPTANYSERVERCERTIFICATE", "true")
-    .WithEnvironment("REVERSEPROXY__CLUSTERS__cluster_rest-api__HTTPCLIENT__DANGEROUSACCEPTANYSERVERCERTIFICATE", "true")
     .WithEndpoint("http", e => e.Port = 8000)
     // .WithEndpoint("https", e => e.Port = 8001)     // Waiting for HTTPS support in https://github.com/dotnet/aspire/issues/11534
     .WithExternalHttpEndpoints();
