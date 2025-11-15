@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Net.Mime;
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 
 namespace SchulCloud.RestApi.Swagger;
 
@@ -19,14 +19,14 @@ internal class ErrorResponseFilter : IOperationFilter
 
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        foreach ((string status, OpenApiResponse response) in operation.Responses)
+        foreach ((string status, IOpenApiResponse response) in operation.Responses ?? new OpenApiResponses())
         {
             if (!(int.TryParse(status, out int statusCode) && statusCode >= 400))
-            {
                 continue;
-            }
-
-            foreach ((_, OpenApiMediaType mediaType) in response.Content.Where(kvp => kvp.Key == MediaTypeNames.Application.ProblemJson))
+            if (response.Content is null)
+                continue;
+            
+            foreach ((_, OpenApiMediaType mediaType) in response.Content.Where(kvp => kvp.Key == Application.ProblemJson))
             {
                 string typeSection = statusCode < 500
                     ? $"5.{statusCode - 399}"
@@ -37,7 +37,7 @@ internal class ErrorResponseFilter : IOperationFilter
                     arg1: ReasonPhrases.GetReasonPhrase(statusCode),
                     arg2: statusCode);
 
-                mediaType.Example = OpenApiAnyFactory.CreateFromJson(exampleResponse);
+                mediaType.Example = JsonNode.Parse(exampleResponse);
             }
         }
     }

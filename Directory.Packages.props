@@ -50,7 +50,7 @@
     <PackageVersion Include="QRCoder" Version="1.7.0" />
     <PackageVersion Include="Quartz.AspNetCore" Version="3.15.1" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.10.3" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.0.1" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageVersion Include="Suiram1.BlazorRoutesGenerator" Version="2.0.1" />
   </ItemGroup>

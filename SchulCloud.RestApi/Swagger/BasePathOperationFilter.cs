@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using SchulCloud.ServiceDefaults.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 

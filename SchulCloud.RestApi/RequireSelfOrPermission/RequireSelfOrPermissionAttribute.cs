@@ -41,10 +41,10 @@ public class RequireSelfOrPermissionAttribute(string permission, PermissionLevel
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
         ILogger logger = RequestService<ILogger<RequireSelfOrPermissionAttribute>>(context);
-        IAuthorizationService authorization = RequestService<IAuthorizationService>(context);
+        var authorization = RequestService<IAuthorizationService>(context);
         UserManager<ApplicationUser> userManager = RequestService<UserManager<ApplicationUser>>(context);
 
-        string? requestingUser = context.RouteData.Values[selfParameter]?.ToString();
+        var requestingUser = context.RouteData.Values[selfParameter]?.ToString();
         if (requestingUser == userManager.GetUserId(context.HttpContext.User))     // Requested user isn't the authorized user.
             return;
 

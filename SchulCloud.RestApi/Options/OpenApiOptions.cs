@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi;
 
 namespace SchulCloud.RestApi.Options;
 
@@ -18,7 +18,7 @@ internal class OpenApiOptions
     public string Description { get; set; } = "A cloud application for students and teachers";
 
     /// <summary>
-    /// An uri that provides a link to the terms of service.
+    /// A uri that provides a link to the terms of service.
     /// </summary>
     public Uri? TermsOfService { get; set; }
 
@@ -62,7 +62,7 @@ internal class OpenApiOptions
 
         if (ContactName is not null)
         {
-            info.Contact = new()
+            info.Contact = new OpenApiContact
             {
                 Name = ContactName,
                 Email = ContactEmail,
@@ -72,7 +72,7 @@ internal class OpenApiOptions
 
         if (LicenseName is not null)
         {
-            info.License = new()
+            info.License = new OpenApiLicense
             {
                 Name = LicenseName,
                 Url = LicenseUrl

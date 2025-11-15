@@ -46,7 +46,7 @@ public class FieldPermissionFilter : IAsyncResultFilter, IOrderedFilter
                 if (valueType.IsAssignableTo(typeof(IQueryable<>).MakeGenericType(itemType)))
                 {
                     // Exclude using IQueryable
-                    IQueryable query = (IQueryable)result.Value!;
+                    var query = (IQueryable)result.Value!;
 
                     UpdateSelectVisitor selectVisitor = new((_, exp) => RemovePropsFromSelectorInit(exp, removeProperties));
                     Expression newQueryExpression = selectVisitor.Visit(query.Expression)!;
@@ -77,16 +77,16 @@ public class FieldPermissionFilter : IAsyncResultFilter, IOrderedFilter
                 else
                 {
                     // Exclude using IEnumerable
-                    Type sourceType = Type.MakeGenericMethodParameter(0);
-                    Type resultType = Type.MakeGenericMethodParameter(1);
+                    var sourceType = Type.MakeGenericMethodParameter(0);
+                    var resultType = Type.MakeGenericMethodParameter(1);
                     Type[] parameterTypes = [typeof(IEnumerable<>).MakeGenericType(sourceType), typeof(Func<,>).MakeGenericType(sourceType, resultType)];
 
                     MethodInfo selectMethod = typeof(Enumerable)
                         .GetMethod(nameof(Enumerable.Select), BindingFlags.Public | BindingFlags.Static, parameterTypes)!
                         .MakeGenericMethod(itemType, itemType);
 
-                    LambdaExpression LambdaExpression = BuildRemovalLambda(itemType, removeProperties);
-                    result.Value = selectMethod.Invoke(null, parameters: [result.Value, LambdaExpression.Compile()]);
+                    LambdaExpression lambdaExpression = BuildRemovalLambda(itemType, removeProperties);
+                    result.Value = selectMethod.Invoke(null, parameters: [result.Value, lambdaExpression.Compile()]);
 
                     LogPropertiesRemoved(logger, removeProperties, "item collection");
                 }
@@ -119,7 +119,7 @@ public class FieldPermissionFilter : IAsyncResultFilter, IOrderedFilter
 
     private static async Task<IEnumerable<PropertyInfo>> GetRemovalPropertiesAsync(Type declaringType, ResultExecutingContext context)
     {
-        IAuthorizationService authorization = context.HttpContext.RequestServices.GetRequiredService<IAuthorizationService>();
+        var authorization = context.HttpContext.RequestServices.GetRequiredService<IAuthorizationService>();
 
         List<PropertyInfo> properties = [];
         foreach (PropertyInfo property in declaringType.GetProperties(BindingFlags.Public | BindingFlags.Instance) ?? [])
@@ -183,11 +183,12 @@ public class FieldPermissionFilter : IAsyncResultFilter, IOrderedFilter
         return Expression.Lambda(initExpression, itemParamExpression);
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2254", Justification = "The kind of the removal shouldn't be a parameter.")]
     private static void LogPropertiesRemoved(ILogger logger, IEnumerable<PropertyInfo> props, string kind)
     {
         string formattedProperties = string.Join(", ", props.Select(prop => $"'{prop.Name}'"));
+#pragma warning disable CA2254
         logger.LogInformation($"Sensitive properties {{props}} removed from {kind}.", formattedProperties);
+#pragma warning restore CA2254
     }
 
     private static bool IsSuccessCode(int? code) => code is >= 200 and < 300;

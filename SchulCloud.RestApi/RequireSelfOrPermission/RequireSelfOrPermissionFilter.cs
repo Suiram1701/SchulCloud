@@ -1,6 +1,7 @@
-﻿using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
+﻿using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 
 namespace SchulCloud.RestApi.RequireSelfOrPermission;
 
@@ -22,7 +23,7 @@ public class RequireSelfOrPermissionFilter : IOperationFilter
     /// <inheritdoc />
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        RequireSelfOrPermissionAttribute? attribute = context.MethodInfo.GetCustomAttribute<RequireSelfOrPermissionAttribute>();
+        var attribute = context.MethodInfo.GetCustomAttribute<RequireSelfOrPermissionAttribute>();
         if (attribute is not null)
         {
             operation.Description ??= string.Empty;
@@ -33,9 +34,9 @@ public class RequireSelfOrPermissionFilter : IOperationFilter
                 $"To call this endpoint the parameter '{attribute.SelfParameter}' have to match with the ID of the user owning the used API key " +
                 $"or the permission **{attribute.PermissionName}** with level **{attribute.PermissionLevel}** or greater have to be available.";
 
-            OpenApiResponse errorResponse = operation.Responses[StatusCodes.Status403Forbidden.ToString()];
+            IOpenApiResponse errorResponse = (operation.Responses ??= new OpenApiResponses())[StatusCodes.Status403Forbidden.ToString()];
             errorResponse.Description = "The requirements to call to call this endpoint were not meet.";
-            errorResponse.Content[Application.ProblemJson].Example = OpenApiAnyFactory.CreateFromJson(_forbiddenExample);
+            errorResponse.Content?[Application.ProblemJson].Example = JsonNode.Parse(_forbiddenExample);
         }
     }
 }

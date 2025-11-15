@@ -1,8 +1,7 @@
-﻿using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-using SchulCloud.RestApi.Swagger;
-using Swashbuckle.AspNetCore.SwaggerGen;
+﻿using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 
 namespace SchulCloud.RestApi.Sorting;
 
@@ -10,18 +9,24 @@ internal class SortingFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
+        operation.Parameters ??= new List<IOpenApiParameter>();
+        
         Attribute? sortingAttribute = context.MethodInfo.GetCustomAttributes().FirstOrDefault(IsSortingAttribute);
         if (sortingAttribute is not null)
         {
-            operation.Parameters.Add(new()
+            operation.Parameters.Add(new OpenApiParameter
             {
                 Name = "sort",
                 Description = "A parameter used for sorting results. Accepts multiple fields, prioritized by their order in the list. " +
                               "Use the name of the field to specify the field to sort by leading with **+** or nothing for ascending (default) and **-** for descending. " +
                               "Its allowed to define this parameter multiple times.",
                 In = ParameterLocation.Query,
-                Schema = context.SchemaGenerator.GenerateSchemaStringWithPattern(context.SchemaRepository, "^([+-]?[a-zA-Z]+)(?:,([+-]?[a-zA-Z]+))*$"),
-                Example = new OpenApiString("-Name,+Id")
+                Schema = new OpenApiSchema
+                {
+                    Type = JsonSchemaType.String,
+                    Pattern = "^([+-]?[a-zA-Z]+)(?:,([+-]?[a-zA-Z]+))*$"
+                },
+                Example = JsonValue.Create("-Name,+Id")
             });
         }
     }

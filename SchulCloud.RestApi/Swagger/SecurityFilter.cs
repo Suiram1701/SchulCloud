@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Models;
 using SchulCloud.Authorization.Attributes;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 
 namespace SchulCloud.RestApi.Swagger;
 
@@ -35,27 +36,28 @@ internal class SecurityFilter : IOperationFilter
             Description = "No API key were provided in the request.",
             Content = GetProblemMediaType(context, _unauthorizedExample)
         };
+        operation.Responses ??= new OpenApiResponses();
         operation.Responses.Add(StatusCodes.Status401Unauthorized.ToString(), unauthorizedResponse);
 
-        IEnumerable<RequirePermissionAttribute> permissionAttributes = context.MethodInfo.GetCustomAttributes<RequirePermissionAttribute>();
-        if (permissionAttributes.Any())
+        RequirePermissionAttribute[] permissionAttributes = [.. context.MethodInfo.GetCustomAttributes<RequirePermissionAttribute>()];
+        if (permissionAttributes.Length <= 0)
+            return;
+        
+        foreach (RequirePermissionAttribute permission in permissionAttributes)
         {
-            foreach (RequirePermissionAttribute permission in permissionAttributes)
+            if (!(operation.Description?.EndsWith("\r\n") ?? true))
             {
-                if (!(operation.Description?.EndsWith("\r\n") ?? true))
-                {
-                    operation.Description += "\r\n";
-                }
-                operation.Description += $"Requires the permission **{permission.Name}** with level **{permission.Level}** or greater.";
+                operation.Description += "\r\n";
             }
-
-            OpenApiResponse response = new()
-            {
-                Description = "The used API key does not have the privileges to call this endpoint.",
-                Content = GetProblemMediaType(context, _forbiddenExample),
-            };
-            operation.Responses.Add(StatusCodes.Status403Forbidden.ToString(), response);
+            operation.Description += $"Requires the permission **{permission.Name}** with level **{permission.Level}** or greater.";
         }
+
+        OpenApiResponse response = new()
+        {
+            Description = "The used API key does not have the privileges to call this endpoint.",
+            Content = GetProblemMediaType(context, _forbiddenExample),
+        };
+        operation.Responses.Add(StatusCodes.Status403Forbidden.ToString(), response);
     }
 
     private static Dictionary<string, OpenApiMediaType> GetProblemMediaType(OperationFilterContext context, string exampleJson)
@@ -63,7 +65,7 @@ internal class SecurityFilter : IOperationFilter
         OpenApiMediaType mediaType = new()
         {
             Schema = context.SchemaGenerator.GenerateSchema(typeof(ProblemDetails), context.SchemaRepository),
-            Example = OpenApiAnyFactory.CreateFromJson(exampleJson)
+            Example = JsonNode.Parse(exampleJson)
         };
         return new Dictionary<string, OpenApiMediaType>()
         {
